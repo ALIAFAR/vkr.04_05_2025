@@ -1,0 +1,605 @@
+/* Устанавливаем высоту для html и body */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Фон для всей страницы */
+body {
+    position: relative; /* Для размещения псевдоэлемента */
+    color: #333;
+    /*overflow: hidden; /* Скрыть возможные прокрутки */
+}
+
+/* Псевдоэлемент для прозрачного фона */
+body::before {
+    content: '';
+    position: fixed; /* Меняем на fixed, чтобы фон фиксировался на месте */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('/public/фон.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0.4; /* Устанавливаем прозрачность для фона */
+    z-index: -1; /* Убедитесь, что псевдоэлемент находится на заднем фоне */
+}
+
+/* Верхняя навигационная панель */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    color: black;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid #cccccc;
+}
+
+/* Логотип и текст UniGo */
+.logo {
+    display: flex;
+    align-items: center;
+    margin-left: 20px; 
+}
+
+.logo-img {
+    width: 30px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.logo-text {
+    font-size: 30px; 
+    font-weight: bold;
+    margin-left: 20px; 
+}
+
+
+.registration-choice {
+    padding: 20px;
+    text-align: center;
+}
+
+.registration-choice h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.choice-options button {
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #cccccc; /* Серый цвет фона */
+    color: #333333; /* Цвет текста темно-серый */
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Плавный переход */
+}
+
+.choice-options button:hover {
+    background-color: #004282; /* Синий цвет при наведении */
+    color: white; /* Цвет текста белый при наведении */
+}
+
+.choice-options button:focus,
+.choice-options button:active {
+    background-color: #cccccc; /* Возвращаем серый цвет при фокусе или нажатии */
+    color: #333333; /* Возвращаем текст темно-серым */
+    outline: none; /* Убираем обводку при фокусе */
+}
+.registration-email {
+    padding: 20px;
+    text-align: center;
+}
+
+.registration-email h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.email-input {
+    padding: 10px 20px;
+    width: 80%;
+    max-width: 300px;
+    margin: 10px auto;
+    background-color: #cccccc; /* Серый цвет фона */
+    color: #333333; /* Цвет текста */
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    font-size: 16px;
+}
+
+.email-input:focus {
+    outline: none;
+    background-color: #e0e0e0;
+}
+
+
+
+.continue-btn {
+    padding: 10px 20px;
+    background-color: #004282; /* Синий цвет кнопки */
+    color: white;
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Плавный переход */
+}
+
+.continue-btn:hover {
+    background-color: #003366; /* Более темный синий при наведении */
+}
+.registration-phone {
+    padding: 20px;
+    text-align: center;
+}
+
+.registration-phone h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.phone-input {
+    padding: 10px 20px;
+    width: 80%;
+    max-width: 300px;
+    margin: 10px auto;
+    background-color: #cccccc; /* Серый цвет фона */
+    color: #333333; /* Цвет текста */
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    font-size: 16px;
+}
+
+.phone-input:focus {
+    outline: none;
+    background-color: #e0e0e0;
+}
+
+/* Контейнер для кнопки с отступом сверху */
+.button-container {
+    margin-top: 5px;
+}
+
+.continue-btn {
+    padding: 10px 20px;
+    background-color: #004282; /* Синий цвет кнопки */
+    color: white;
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Плавный переход */
+}
+
+.continue-btn:hover {
+    background-color: #003366; /* Более темный синий при наведении */
+}
+.registration-details {
+    display: flex;
+    flex-direction: column; /* Размещение элементов по вертикали */
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.details-input {
+    width: 80%; /* Ширина поля */
+    padding: 10px;
+    margin: 10px 0; /* Расстояние между полями */
+    background-color: #cccccc; /* Серый фон */
+    border: none;
+    border-radius: 15px; /* Скругленные углы */
+    font-size: 16px;
+}
+
+
+.continue-btn {
+    padding: 10px 20px;
+    background-color: #004282; /* Синий цвет фона */
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.continue-btn:hover {
+    background-color: #003366; /* Цвет при наведении */
+}
+/* registration.css */
+.details-input {
+    width: 100%; /* Поля будут занимать всю ширину контейнера */
+    max-width: 400px; /* Задаем максимальную ширину, чтобы элементы выглядели гармонично */
+    padding: 10px; /* Добавляем внутренние отступы для удобства ввода */
+    margin-bottom: 15px; /* Пространство между элементами */
+    border: 1px solid #ccc; /* Устанавливаем границу */
+    border-radius: 5px; /* Скругляем углы */
+    box-sizing: border-box; /* Учитываем отступы */
+    font-size: 16px; /* Размер шрифта */
+}
+/* Общие стили для кнопок */
+button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #D3D3D3; /* Серый фон */
+    color: white;
+    border: none;
+    border-radius: 10px; /* Скругленные края */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #003366; /* Темно-синий фон при наведении */
+    transform: scale(1.05); /* Легкое увеличение кнопки при наведении */
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Центрирование кнопок */
+button.register-btn {
+    display: block;
+    margin: 20px auto; /* Центрирование кнопки */
+}
+/* Общие стили для кнопок */
+button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #D3D3D3; /* Серый фон */
+    color: white;
+    border: none;
+    border-radius: 10px; /* Скругленные края */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #003366; /* Темно-синий фон при наведении */
+    transform: scale(1.05); /* Легкое увеличение кнопки при наведении */
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Центрирование кнопок */
+button.register-btn {
+    display: block;
+    margin: 20px auto; /* Центрирование кнопки */
+}
+
+/* Стили для поля ввода пароля */
+.password-input {
+    display: block;
+    width: 100%;
+    max-width: 400px; /* Ограничение ширины */
+    padding: 12px;
+    margin: 20px auto;
+    background-color: #D3D3D3; /* Серый фон */
+    border: 1px solid #ccc;
+    border-radius: 10px; /* Скругленные края */
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.password-input:focus {
+    background-color: #003366; /* Темно-синий при фокусе */
+    color: white;
+    outline: none;
+}
+
+
+/* Стили для заголовка */
+h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+/* Стили для инпута телефона */
+.phone-input {
+    display: block;
+    width: 100%;
+    max-width: 400px; /* Ограничение ширины */
+    padding: 12px;
+    margin: 20px auto;
+    background-color: #D3D3D3; /* Серый фон */
+    border: 1px solid #ccc;
+    border-radius: 10px; /* Скругленные края */
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.phone-input:focus {
+    background-color: #003366; /* Темно-синий при фокусе */
+    color: white;
+    outline: none;
+}
+/* Стиль для уведомления */
+.notification {
+    position: fixed; /* Фиксированное положение */
+    top: 0; /* Располагаем в верхней части страницы */
+    left: 50%;
+    transform: translateX(-50%); /* Центрируем по горизонтали */
+    background-color: #4CAF50; /* Зеленый фон */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    width: 80%;
+    text-align: center;
+    z-index: 1000; /* Чтобы оно было поверх всех элементов */
+    display: none; /* Скрыто по умолчанию */
+}
+
+.notification p {
+    margin: 0;
+}
+
+.continue-btn {
+    background-color: #003366;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.continue-btn:hover {
+    background-color:  #003366;
+}
+/* Стиль для уведомления о сложности пароля */
+.password-notification {
+    position: fixed; /* Фиксированное положение */
+    top: 0; /* Располагаем в верхней части страницы */
+    left: 50%;
+    transform: translateX(-50%); /* Центрируем по горизонтали */
+    background-color: rgba(0, 0, 0, 0.8); /* Темный полупрозрачный фон */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    width: 80%;
+    text-align: center;
+    z-index: 1000; /* Чтобы оно было поверх всех элементов */
+    display: none; /* Скрыто по умолчанию */
+}
+
+.password-notification p {
+    margin: 0;
+}
+/* Модальное окно успешной регистрации */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+
+/* Стиль для кнопки продолжения */
+.continue-btn {
+    background-color:   #003366;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.continue-btn:hover {
+    background-color:  #003366;
+}
+
+/* Уведомление о сложности пароля */
+.password-notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    width: 80%;
+    text-align: center;
+    z-index: 1000;
+    display: none;
+}
+
+.password-notification.green {
+    background-color: green;
+}
+
+.password-notification.red {
+    background-color: red;
+}
+
+/* Уведомление об ошибке */
+.notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    width: 80%;
+    text-align: center;
+    z-index: 1000;
+    display: none;
+}
+
+.notification p {
+    margin: 0;
+}
+@media (max-width: 768px) {
+    .password-container {
+        padding: 10px;
+    }
+
+    .password-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .register-btn {
+        width: 100%;
+    }
+}
+.notification {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.hint {
+    display: block;
+    font-size: 17px; /* Размер текста */
+    color: gray; /* Цвет текста */
+    margin-top: 5px; /* Отступ сверху */
+    margin-left: 5px; /* Легкий отступ слева для выравнивания */
+}
+.details-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.details-input:focus {
+    border-color: #0056b3;
+    outline: none;
+}
+#error-message {
+    color: red;
+    display: none;
+    font-size: 14px;
+    margin-top: 10px;
+} 
+/* Основной контейнер */
+.password-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.password-container h2 {
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+/* Поля ввода */
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-field:focus {
+    border-color: #003366;
+    box-shadow: 0 0 8px rgba(0, 115, 230, 0.3);
+}
+
+/* Сообщения */
+.message {
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+/* Ошибки */
+.error-message {
+    color: red;
+    font-weight: bold;
+}
+
+/* Кнопка регистрации */
+.register-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #003366;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.register-btn:hover {
+    background-color: #003366;
+}
+
+
+/* Стили для кнопки "Главная" */
+.back-button {
+    background-color: #005b96;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-left: auto;
+  }
+  
+  .back-button:hover {
+    background-color: #003f73;
+  }
+  

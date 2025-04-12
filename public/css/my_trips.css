@@ -1,0 +1,396 @@
+
+html, body {
+height: 100%; /* Высота всей страницы */
+margin: 0; /* Убираем отступы */
+padding: 0; /* Убираем внутренние отступы */
+}
+
+/* Фон для всей страницы */
+body {
+position: relative; /* Для размещения псевдоэлемента */
+color: #333;
+}
+
+/* Псевдоэлемент для прозрачного фона */
+body::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-image: url('/public/фон.jpg');
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+opacity: 0.4; /* Устанавливаем прозрачность для фона */
+z-index: -1; /* Убедитесь, что псевдоэлемент находится на заднем фоне */
+height: 100%; /* Устанавливаем высоту на весь экран */
+}
+
+
+/* Верхняя навигационная панель */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    color: black;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid #cccccc;
+}
+
+/* Логотип и текст UniGo */
+.logo {
+    display: flex;
+    align-items: center;
+    margin-left: 20px; 
+}
+
+.logo-img {
+    width: 30px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.logo-text {
+    font-size: 30px; 
+    font-weight: bold;
+    margin-left: 20px; 
+}
+/* Стили для выпадающего меню */
+.profile-dropdown {
+display: none;
+position: absolute;
+top: 50px;
+right: 10px;
+background-color: white;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+border-radius: 8px;
+padding: 10px;
+z-index: 1000;
+}
+.profile-dropdown a {
+display: block;
+padding: 8px;
+text-decoration: none;
+color: black;
+border-bottom: 1px solid #eee;
+}
+.profile-dropdown a:hover {
+background-color: #f0f0f0;
+}
+.profile-photo {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background-color: #ccc;
+cursor: pointer;
+}
+/* Стили для календаря */
+.calendar-container {
+display: none;
+}
+/* Стиль для значка календаря перед датой */
+.date-picker-container {
+display: flex;
+align-items: center;
+cursor: pointer;
+gap: 8px; /* Отступ между иконкой и текстом */
+}
+.calendar-icon {
+width: 20px;
+height: 20px;
+background-image: url('/pngwing.com (4).png'); /* Путь к иконке календаря */
+background-size: cover;
+margin-right: 8px; /* Отступ, чтобы иконка календаря совпадала с другими элементами */
+}
+
+/* Контейнер с кнопками и фото профиля */
+.nav-container {
+display: flex;
+align-items: center;
+}
+
+nav {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+.nav-btn {
+padding: 10px 20px;
+background: rgba(255, 255, 255, 0.9);
+color: black;
+border-radius: 20px;
+cursor: pointer;
+border: none;
+font-size: 16px;
+}
+
+.nav-btn:hover {
+background-color: rgba(0, 66, 129, 0.8);
+}
+/* Фото профиля */
+.profile-photo {
+width: 40px;
+height: 40px;
+border-radius: 50%; /* Круглая форма */
+background-image: url('/pngwing.com (5).png'); /* Путь к изображению профиля */
+background-size: cover; /* Изображение будет покрывать круг */
+background-position: center; /* Центрируем изображение */
+background-repeat: no-repeat; /* Запрещаем повторение изображения */
+}
+
+/* Основной контент */
+main {
+padding: 100px 20px;
+text-align: center;
+}
+
+/* Основное содержание */
+#app {
+padding: 20px;
+}
+
+.my-trips-title {
+font-size: 28px;
+margin-bottom: 20px;
+}
+
+.trips-list {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+gap: 30px; /* Увеличиваем расстояние между карточками */
+}
+
+.trip-card {
+background-color: white;
+border-radius: 10px;
+padding: 15px;
+box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-info {
+margin-bottom: 15px;
+}
+
+.book-btn {
+background-color: #004282;
+color: white;
+border: none;
+padding: 10px;
+border-radius: 5px;
+cursor: pointer;
+margin-right: 10px;
+transition: background-color 0.3s;
+}
+
+.book-btn:hover {
+background-color: #004282;
+}
+
+.book-btn:active {
+background-color: #004282;
+}
+
+/* Модальное окно */
+.modal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.modal-content {
+background-color: white;
+padding: 30px;
+border-radius: 10px;
+box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+width: 400px;
+}
+
+.modal h3 {
+margin-bottom: 20px;
+}
+
+.form-group {
+margin-bottom: 15px;
+}
+
+label {
+font-weight: bold;
+margin-bottom: 5px;
+display: block;
+}
+
+input[type="text"],
+input[type="number"] {
+width: 100%;
+padding: 10px;
+border-radius: 5px;
+border: 1px solid #ccc;
+font-size: 16px;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+outline: none;
+border-color: #004282;
+}
+
+.modal-button {
+background-color: #004282;
+color: white;
+border: none;
+padding: 10px;
+border-radius: 5px;
+width: 100%;
+margin-top: 20px;
+cursor: pointer;
+}
+
+.modal-button:hover {
+background-color: #004282;
+}
+
+.close-btn {
+background-color: #900000;
+color: white;
+border: none;
+padding: 10px;
+border-radius: 5px;
+width: 100%;
+cursor: pointer;
+margin-top: 10px;
+}
+
+.close-btn:hover {
+background-color: #900000;
+}
+
+.form-actions {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+/* Стили для адаптивности */
+@media screen and (max-width: 768px) {
+.trips-list {
+grid-template-columns: 1fr;
+}
+
+.navbar {
+flex-direction: column;
+align-items: center;
+}
+
+.navbar .nav-btn {
+margin: 5px 0;
+}
+
+/**/
+/* Стили для кнопок действий */
+.action-btn {
+    padding: 10px 20px;
+    background-color: #004282;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin: 5px;
+}
+
+.action-btn:hover {
+    background-color: #003066;
+}
+
+.action-btn:active {
+    background-color: #00254d;
+}
+
+
+.profile-dropdown {
+position: static;
+display: block;
+margin-top: 10px;
+}
+
+.profile-dropdown a {
+text-align: left;
+}
+
+} 
+/* Основной блок */
+main {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 800px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    text-align: center;
+    color: #00468b;
+    margin-bottom: 20px;
+}
+/* Список поездок */
+#trip-list-ul {
+    list-style: none;
+    padding: 0;
+}
+
+#trip-list-ul li {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: white;
+}
+
+#trip-list-ul li p {
+    margin: 5px 0;
+}
+
+#trip-list-ul li p strong {
+    color: #00468b;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+/* Кнопки */
+button {
+    cursor: pointer;
+}
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .trip-list {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+}
