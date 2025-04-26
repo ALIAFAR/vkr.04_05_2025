@@ -4,7 +4,8 @@
     <div class="navbar">
       <div class="logo" @click="goToHome">
         <img src="/Logotip.png" alt="Operator Logo" class="logo-img" />
-        UniGo Панель оператора
+        <span class="logo-text">UniGo</span>
+        <span class="logo-text-mobile"> Панель оператора</span>
       </div>
       <div class="menu">
         <button class="menu-item" @click="goToDataUpload">Загрузка данных</button>
@@ -13,7 +14,7 @@
         <button class="menu-item" @click="goToCars">Автомобили</button>
 
         <!-- Выход -->
-        <div class="profile">
+        <div class="profile" ref="profile">
           <img
             src="/pngwing.com (5).png"
             class="profile-photo"
@@ -25,14 +26,28 @@
           </div>
         </div>
       </div>
+      <button class="mobile-menu-btn" @click="toggleMobileMenu">
+        ☰
+      </button>
+    </div>
+
+    <!-- Мобильное меню -->
+    <div v-if="isMobileMenuVisible" class="mobile-menu">
+      <button class="mobile-menu-item" @click="goToDataUpload">Загрузка данных</button>
+      <button class="mobile-menu-item active">Уведомления</button>
+      <button class="mobile-menu-item" @click="goToUsers">Пользователи</button>
+      <button class="mobile-menu-item" @click="goToCars">Автомобили</button>
+      <button class="mobile-menu-item logout-btn" @click="confirmLogout">Выход</button>
     </div>
 
     <!-- Модальное окно для подтверждения выхода -->
     <div v-if="isLogoutConfirmVisible" class="logout-modal">
       <div class="modal-content">
         <p>Вы уверены, что хотите выйти из профиля?</p>
-        <button @click="logout">Да</button>
-        <button @click="cancelLogout">Нет</button>
+        <div class="modal-buttons">
+          <button @click="logout">Да</button>
+          <button @click="cancelLogout">Нет</button>
+        </div>
       </div>
     </div>
 
@@ -80,13 +95,14 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      notifications: [], // Уведомления будут загружаться с сервера
+      notifications: [],
       isProfileDropdownVisible: false,
       isLogoutConfirmVisible: false,
+      isMobileMenuVisible: false,
+      windowWidth: window.innerWidth,
     };
   },
   methods: {
-    // Загрузка уведомлений с сервера
     async fetchNotifications() {
       try {
         const response = await axios.get('/api/notifications');
@@ -97,10 +113,8 @@ export default {
         }));
       } catch (error) {
         console.error('Ошибка при загрузке уведомлений:', error);
-        //alert('Не удалось загрузить уведомления.');
       }
     },
-    // Отправка ответа на уведомление
     async sendReply(index) {
       const notification = this.notifications[index];
       if (notification.replyMessage.trim()) {
@@ -109,8 +123,8 @@ export default {
             message: notification.replyMessage,
           });
           alert('Ответ отправлен.');
-          notification.replyMessage = ''; // Очищаем поле ввода
-          notification.showReplyInput = false; // Скрываем поле ввода
+          notification.replyMessage = '';
+          notification.showReplyInput = false;
         } catch (error) {
           console.error('Ошибка при отправке ответа:', error);
           alert('Не удалось отправить ответ.');
@@ -119,7 +133,6 @@ export default {
         alert('Введите сообщение перед отправкой.');
       }
     },
-    // Отправка жалобы на пользователя
     async reportUser(index) {
       const notification = this.notifications[index];
       try {
@@ -130,39 +143,55 @@ export default {
         alert('Не удалось отправить жалобу.');
       }
     },
-    // Блокировка пользователя
     async blockUser(index) {
       const notification = this.notifications[index];
       try {
         await axios.post(`/api/users/${notification.userId}/block`);
-        this.notifications.splice(index, 1); // Удаляем уведомление
+        this.notifications.splice(index, 1);
         alert('Пользователь заблокирован.');
       } catch (error) {
         console.error('Ошибка при блокировке пользователя:', error);
         alert('Не удалось заблокировать пользователя.');
       }
     },
-    // Навигация
     goToHome() {
       this.$router.push('/operator-panel');
     },
     goToDataUpload() {
+      this.isMobileMenuVisible = false;
       this.$router.push('/operator-panel');
     },
     goToNotifications() {
-      this.$router.push('/notifications');
+      this.isMobileMenuVisible = false;
     },
     goToUsers() {
+      this.isMobileMenuVisible = false;
       this.$router.push('/user-verification');
     },
     goToCars() {
+      this.isMobileMenuVisible = false;
       this.$router.push('/car-verification');
     },
     toggleProfileDropdown() {
       this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
     },
+    toggleMobileMenu() {
+      this.isMobileMenuVisible = !this.isMobileMenuVisible;
+    },
+    handleOutsideClick(event) {
+      const profile = this.$refs.profile;
+      if (profile && !profile.contains(event.target)) {
+        this.isProfileDropdownVisible = false;
+      }
+      
+      if (!event.target.closest('.mobile-menu-btn') && !event.target.closest('.mobile-menu')) {
+        this.isMobileMenuVisible = false;
+      }
+    },
     confirmLogout() {
       this.isLogoutConfirmVisible = true;
+      this.isProfileDropdownVisible = false;
+      this.isMobileMenuVisible = false;
     },
     logout() {
       localStorage.removeItem('authToken');
@@ -176,15 +205,32 @@ export default {
     toggleReplyInput(index) {
       this.notifications[index].showReplyInput = !this.notifications[index].showReplyInput;
     },
+    handleResize() {
+      this.windowWidth = window.innerWidth;
+      if (this.windowWidth > 768) {
+        this.isMobileMenuVisible = false;
+      }
+    }
   },
   mounted() {
-    this.fetchNotifications(); // Загружаем уведомления при монтировании компонента
+    this.fetchNotifications();
+    document.addEventListener("click", this.handleOutsideClick);
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleOutsideClick);
+    window.removeEventListener('resize', this.handleResize);
   },
 };
 </script>
 
 <style scoped>
-/* Стили для навигационной панели */
+/* Общие стили */
+* {
+  box-sizing: border-box;
+}
+
+/* Навигационная панель */
 .navbar {
   position: fixed;
   top: 0;
@@ -203,8 +249,6 @@ export default {
 .logo {
   display: flex;
   align-items: center;
-  margin-right: 80px;
-  font-size: 36px;
   font-family: 'Poppins', sans-serif;
   font-weight: bold;
   color: rgba(0, 66, 129, 1);
@@ -212,26 +256,31 @@ export default {
 }
 
 .logo-img {
-  width: 100px;
+  width: 60px;
   height: auto;
   margin-right: 10px;
 }
 
+.logo-text {
+  font-size: 18px;
+}
+
 .menu {
   display: flex;
-  gap: 20px;
-  margin-right: 40px;
+  gap: 15px;
+  align-items: center;
 }
 
 .menu-item {
   background-color: transparent;
   border: none;
   color: rgba(0, 66, 129, 0.8);
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 10px 20px;
+  padding: 8px 12px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
 }
 
 .menu-item:hover {
@@ -243,10 +292,10 @@ export default {
   text-decoration: underline;
 }
 
-/* Стили для профиля */
+/* Профиль */
 .profile {
   position: relative;
-  margin-left: auto;
+  margin-left: 15px;
 }
 
 .profile-photo {
@@ -261,17 +310,20 @@ export default {
   top: 100%;
   right: 0;
   background-color: white;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
   border-radius: 5px;
-  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  min-width: 120px;
 }
 
 .dropdown-menu button {
   background: transparent;
   border: none;
-  padding: 10px;
+  padding: 10px 15px;
   width: 100%;
   text-align: left;
+  color: rgba(0, 66, 129, 0.8);
   cursor: pointer;
 }
 
@@ -279,7 +331,53 @@ export default {
   background-color: rgba(0, 66, 129, 0.1);
 }
 
-/* Стили для модального окна */
+/* Мобильное меню */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: rgba(0, 66, 129, 1);
+  padding: 5px 10px;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 999;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+}
+
+.mobile-menu-item {
+  padding: 15px 20px;
+  border: none;
+  background: none;
+  text-align: left;
+  color: rgba(0, 66, 129, 0.8);
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.mobile-menu-item:hover {
+  background-color: rgba(0, 66, 129, 0.1);
+}
+
+.mobile-menu-item.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.logout-btn {
+  color: #ff4d4d;
+}
+
+/* Модальное окно выхода */
 .logout-modal {
   position: fixed;
   top: 0;
@@ -290,7 +388,7 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
+  z-index: 1002;
 }
 
 .modal-content {
@@ -298,28 +396,55 @@ export default {
   padding: 20px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  width: 400px;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
 }
 
 .modal-content button {
-  margin: 10px;
   padding: 10px 20px;
-  background-color: rgba(0, 66, 129, 1);
-  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  min-width: 80px;
 }
 
-.modal-content button:hover {
+.modal-content button:first-child {
+  background-color: rgba(0, 66, 129, 1);
+  color: white;
+}
+
+.modal-content button:first-child:hover {
   background-color: rgba(0, 66, 129, 0.8);
 }
 
-/* Стили для секции уведомлений */
+.modal-content button:last-child {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-content button:last-child:hover {
+  background-color: #e0e0e0;
+}
+
+/* Секция уведомлений */
 .notifications-section {
   margin-top: 100px;
   padding: 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .notification-item {
@@ -338,6 +463,7 @@ export default {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .action-button {
@@ -348,6 +474,7 @@ export default {
   background-color: rgba(0, 66, 129, 1);
   color: white;
   transition: background-color 0.3s ease;
+  font-size: 14px;
 }
 
 .action-button:hover {
@@ -362,7 +489,6 @@ export default {
   background-color: #cc0000;
 }
 
-/* Стили для поля ввода ответа */
 .reply-input {
   margin-top: 10px;
 }
@@ -388,5 +514,90 @@ export default {
 
 .send-reply-button:hover {
   background-color: rgba(0, 66, 129, 0.8);
+}
+
+/* Адаптивные стили */
+@media (max-width: 992px) {
+  .logo-text {
+    font-size: 16px;
+  }
+  
+  .menu-item {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    display: none;
+  }
+  
+  .mobile-menu-btn {
+    display: block;
+  }
+  
+  .mobile-menu {
+    display: flex;
+  }
+  
+  .logo-text {
+    font-size: 14px;
+  }
+  
+  .notifications-section {
+    padding: 15px;
+  }
+  
+  .notification-item {
+    padding: 15px;
+  }
+  
+  .action-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-text {
+    display: none;
+  }
+  
+  .navbar {
+    padding: 10px;
+  }
+  
+  .notifications-section {
+    margin-top: 80px;
+    padding: 10px;
+  }
+  
+  .notification-content p {
+    font-size: 14px;
+  }
+  
+  .notification-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .action-button {
+    width: 100%;
+  }
+  
+  .modal-content {
+    width: 90%;
+    padding: 15px;
+  }
+  
+  .modal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .modal-content button {
+    width: 100%;
+  }
 }
 </style>

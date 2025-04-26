@@ -109,78 +109,179 @@ export default {
 </script>
 
 <style scoped>
+/* Основные стили для всех устройств */
 .booking-container {
-  padding: 20px;
+  padding: 2rem;
   max-width: 800px;
-  margin: 100px auto;
+  margin: 6rem auto;
   text-align: center;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 66, 129, 0.1);
 }
 
 .booking-header h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
   color: #004281;
+  font-weight: 600;
 }
 
 .booking-list {
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .trip-item {
-  padding: 20px;
-  margin-bottom: 20px;
-  background: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 66, 129, 0.1);
 }
 
 .trip-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 66, 129, 0.15);
 }
 
 .detail-item {
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
   text-align: left;
+  display: flex;
+  justify-content: space-between;
 }
 
 .detail-item p {
   margin: 0;
-  font-weight: bold;
+  font-weight: 600;
   color: #004281;
+  font-size: 0.95rem;
 }
 
 .detail-item span {
-  font-size: 14px;
-  color: #555;
+  font-size: 0.95rem;
+  color: #4a5568;
+  text-align: right;
 }
 
 .no-trips {
-  font-size: 18px;
-  color: #555;
-  padding: 20px;
-  background: #fff;
+  font-size: 1.1rem;
+  color: #4a5568;
+  padding: 1.5rem;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  border: 1px dashed rgba(0, 66, 129, 0.2);
 }
 
 .back-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 16px;
-  color: #fff;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #ffffff;
   background-color: #004281;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 66, 129, 0.2);
 }
 
 .back-button:hover {
-  background-color: #003365;
+  background-color: #003366;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 66, 129, 0.25);
+}
+
+/* Адаптация для планшетов */
+@media (max-width: 1024px) {
+  .booking-container {
+    margin: 5rem auto;
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+  
+  .booking-header h1 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  .booking-container {
+    margin: 7rem auto 3rem;
+    padding: 1.25rem;
+    width: 95%;
+    border-radius: 12px;
+  }
+
+  .booking-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .trip-item {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-left: 4px solid #004281;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail-item p,
+  .detail-item span {
+    width: 100%;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  .detail-item span {
+    margin-top: 0.25rem;
+    color: #4a5568;
+  }
+
+  .back-button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Особые стили для маленьких экранов */
+@media (max-width: 480px) {
+  .booking-container {
+    margin: 6rem auto 2rem;
+    padding: 1rem;
+  }
+
+  .booking-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .trip-item {
+    padding: 1rem;
+  }
+
+  .no-trips {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Ориентация landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+  .booking-container {
+    margin: 5rem auto 2rem;
+  }
+  
+  .detail-item {
+    flex-direction: row;
+  }
 }
 </style>

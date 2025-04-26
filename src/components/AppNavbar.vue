@@ -4,12 +4,26 @@
     <div class="navbar">
       <div class="logo" @click="goToHome">
         <img src="/Logotip.png" alt="UniGo Logo" class="logo-img" />
-        UniGo
+        <span class="logo-text">UniGo</span>
       </div>
-      <div class="menu">
-        <button class="menu-item" @click="goToBookings">Бронирование</button>
-        <button @click="goToMyTrips" class="menu-item my-trips-button">Мои поездки</button>
+      
+      <!-- Бургер-меню для мобильных -->
+      <div class="burger-menu" @click="toggleMobileMenu">
+        <div class="burger-line" :class="{'burger-line-1': isMobileMenuOpen}"></div>
+        <div class="burger-line" :class="{'burger-line-2': isMobileMenuOpen}"></div>
+        <div class="burger-line" :class="{'burger-line-3': isMobileMenuOpen}"></div>
+      </div>
+      
+      <div class="menu" :class="{'mobile-menu-active': isMobileMenuOpen}">
+        <button class="menu-item" @click="navWithClose('/booking')">Бронирование</button>
+        <button class="menu-item my-trips-button" @click="navWithClose({ name: 'my-trips-page' })">Мои поездки</button>
         <button class="menu-item" @click="goToPublishTrip">Опубликовать поездку</button>
+
+        <!-- Кнопки входа и регистрации для мобильных -->
+        <template v-if="!isAuthenticated && windowWidth <= 768">
+          <button class="menu-item mobile-auth-btn" @click="navWithClose('/registration')">Регистрация</button>
+          <button class="menu-item mobile-auth-btn" @click="navWithClose('/login')">Вход</button>
+        </template>
 
         <!-- Профиль -->
         <div class="profile" ref="profile">
@@ -20,16 +34,14 @@
             alt="Профиль"
           />
           <div v-if="isProfileDropdownVisible" class="dropdown-menu">
-            <!-- Пункты меню для авторизованных пользователей -->
             <template v-if="isAuthenticated">
-              <button @click="goToProfile">Профиль</button>
-              <button @click="goToChats">Чаты</button>
+              <button @click="navWithClose('/personal-information')">Профиль</button>
+              <button @click="navWithClose('/chat')">Чаты</button>
               <button @click="confirmLogout">Выход</button>
             </template>
-            <!-- Пункты меню для неавторизованных пользователей -->
             <template v-else>
-              <button @click="goToRegister">Регистрация</button>
-              <button @click="goToLogin">Вход</button>
+              <button @click="navWithClose('/registration')">Регистрация</button>
+              <button @click="navWithClose('/login')">Вход</button>
             </template>
           </div>
         </div>
@@ -40,21 +52,28 @@
     <div v-if="isLogoutConfirmVisible" class="logout-modal">
       <div class="modal-content">
         <p>Вы уверены, что хотите выйти из профиля?</p>
-        <button @click="logout">Да</button>
-        <button @click="cancelLogout">Нет</button>
+        <div class="modal-buttons">
+          <button @click="logout">Да</button>
+          <button @click="cancelLogout">Нет</button>
+        </div>
       </div>
     </div>
 
     <!-- Уведомление при неавторизованном пользователе -->
-    <div v-if="showNotification" class="notification error">
-      Для публикации поездки необходимо авторизоваться.
-    </div>
+    <transition name="notification">
+      <div v-if="showNotification" class="notification error">
+        <div class="notification-content">
+          <span class="notification-icon">⚠️</span>
+          <span class="notification-message">Для публикации поездки необходимо авторизоваться.</span>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import Cookies from "js-cookie"; // Импортируем библиотеку для работы с кукисами
+import Cookies from "js-cookie";
 
 export default {
   data() {
@@ -62,44 +81,38 @@ export default {
       isProfileDropdownVisible: false,
       isLogoutConfirmVisible: false,
       showNotification: false,
-      isAuthenticated: false, // Состояние авторизации
+      isAuthenticated: false,
+      isMobileMenuOpen: false,
+      windowWidth: window.innerWidth,
     };
   },
   methods: {
     async isUserAuthenticated() {
       try {
-        // Получаем токен из кукисов
         const token = Cookies.get("token");
-
-        // Если токена нет, пользователь не авторизован
         if (!token) {
           this.isAuthenticated = false;
           return false;
         }
 
-        // Отправляем запрос на сервер для проверки авторизованности
         const response = await axios.get("http://localhost:5000/api/user/auth", {
           headers: {
-            Authorization: `Bearer ${token}`, // Передаем токен в заголовке
+            Authorization: `Bearer ${token}`,
           },
+          timeout: 5000
         });
 
-        console.log("Данные пользователя:", response.data);
-
-        // Если запрос успешен, пользователь авторизован
-        this.isAuthenticated = true;
-        return true;
-      } catch (error) {
-        // Обработка ошибок
-        if (error.response?.status === 401) {
-          console.error("Ошибка 401: Пользователь не авторизован");
-          this.isAuthenticated = false;
-          return false;
-        } else {
-          console.error("Другая ошибка:", error.response?.data?.message || error.message);
-          this.isAuthenticated = false;
-          return false;
+        if (response.status === 200) {
+          this.isAuthenticated = true;
+          return true;
         }
+        return false;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          Cookies.remove("token");
+        }
+        this.isAuthenticated = false;
+        return false;
       }
     },
 
@@ -113,101 +126,138 @@ export default {
         }, 3000);
         return;
       }
+      this.navWithClose("/publish-trip");
+    },
 
-      this.$router.push("/publish-trip");
+    navWithClose(route) {
+      this.closeMobileMenu();
+      this.closeDropdown();
+      this.$router.push(route);
     },
 
     goToHome() {
-      this.$router.push("/");
+      this.navWithClose("/");
     },
+
     toggleProfileDropdown() {
       this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
+      if (this.isProfileDropdownVisible) {
+        this.closeMobileMenu();
+      }
     },
+
     closeDropdown() {
       this.isProfileDropdownVisible = false;
     },
+
     handleOutsideClick(event) {
       const profile = this.$refs.profile;
       if (profile && !profile.contains(event.target)) {
         this.closeDropdown();
       }
     },
-    goToMyTrips() {
-      this.$router.push({ name: "my-trips-page" });
-    },
-    goToBookings() {
-      this.$router.push("/booking");
-    },
-    goToProfile() {
-      this.$router.push("/personal-information");
-    },
-    goToChats() {
-      this.$router.push("/chat");
-    },
-    goToLogin() {
-      this.$router.push("/login");
-    },
-    goToRegister() {
-      this.$router.push("/registration");
-    },
+
     confirmLogout() {
       this.isLogoutConfirmVisible = true;
+      this.closeDropdown();
     },
+
     logout() {
       Cookies.remove("token");
-      this.isAuthenticated = false; // Обновляем состояние авторизации
+      this.isAuthenticated = false;
       this.isLogoutConfirmVisible = false;
+      this.closeMobileMenu();
       this.$router.push("/");
     },
+
     cancelLogout() {
       this.isLogoutConfirmVisible = false;
     },
+
+    toggleMobileMenu() {
+      this.isMobileMenuOpen = !this.isMobileMenuOpen;
+      if (this.isMobileMenuOpen) {
+        this.closeDropdown();
+      }
+    },
+
+    closeMobileMenu() {
+      this.isMobileMenuOpen = false;
+    },
+
+    handleResize() {
+      this.windowWidth = window.innerWidth;
+      if (this.windowWidth > 768) {
+        this.closeMobileMenu();
+      }
+    }
   },
   async mounted() {
-    // Проверяем авторизацию при монтировании компонента
     await this.isUserAuthenticated();
     document.addEventListener("click", this.handleOutsideClick);
+    window.addEventListener('resize', this.handleResize);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleOutsideClick);
+    window.removeEventListener('resize', this.handleResize);
   },
 };
 </script>
 
 <style scoped>
+/* Базовые стили */
+body {
+  font-family: 'Lora', Arial, sans-serif;
+  margin: 0;
+  padding-top: 60px;
+}
+
 /* Стили для уведомления */
 .notification {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 9999;
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+  width: 90%;
+  max-width: 500px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  font-family: 'Lora', sans-serif;
+  background-color: #ff4444;
+  color: white;
 }
 
-.notification.error {
-  background-color: rgba(255, 0, 0, 0.61);
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.616);
+.notification-icon {
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  background-image: url("/public/фон.jpg") no-repeat center center fixed;
-  background-size: cover;
-  margin: 0;
-  padding-top: 80px; /* Пространство для панели */
+.notification-message {
+  flex-grow: 1;
+  text-align: center;
+}
+
+/* Анимации для уведомления */
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.4s ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
 }
 
 /* Навигационная панель */
@@ -216,160 +266,365 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 80px;
+  height: 60px;
   background-color: white;
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  margin-right: 80px;
-  font-size: 36px; /* Увеличенный размер шрифта */
-  font-family: 'Poppins', sans-serif; /* Пример красивого шрифта */
-  font-weight: bold; /* Сделать шрифт жирным */
-  color: rgba(0, 66, 129, 1); /* Цвет шрифта */
-  cursor: pointer; /* Добавить указатель курсора для логотипа */
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  min-width: 120px;
 }
 
-/* Подключение шрифта Lora */
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;700&display=swap');
+.logo:hover {
+  transform: scale(1.02);
+}
 
 .logo-img {
-  width: 100px; /* Увеличьте ширину логотипа */
-  height: auto; /* Сохраняет пропорции изображения */
-  margin-right: 10px; /* Отступ между логотипом и текстом */
+  width: 50px;
+  height: auto;
+  margin-right: 10px;
 }
 
+.logo-text {
+  font-size: 22px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  color: rgba(0, 66, 129, 1);
+  white-space: nowrap;
+}
+
+/* Бургер-меню */
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 25px;
+}
+
+.burger-line {
+  width: 100%;
+  height: 3px;
+  background-color: rgba(0, 66, 129, 1);
+  transition: all 0.3s ease;
+}
+
+.burger-line-1 {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.burger-line-2 {
+  opacity: 0;
+}
+
+.burger-line-3 {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Основное меню */
 .menu {
   display: flex;
-  gap: 20px;
-  margin-right: 40px;
+  gap: 12px;
+  align-items: center;
+  transition: all 0.3s ease;
+  margin-right: 30px;
 }
 
 .menu-item {
   background-color: transparent;
   border: none;
-  color: rgba(0, 66, 129, 0.8);
-  font-size: 16px;
+  color: rgba(0, 66, 129, 0.9);
+  font-size: 15px;
   cursor: pointer;
-  padding: 10px 20px;
+  padding: 8px 12px;
   border-radius: 5px;
-  transition: background-color 0.3s ease;
-}
-.menu-item:hover {
-  background-color: rgba(0, 66, 129, 0.1);
+  transition: all 0.3s ease;
+  font-family: 'Lora', sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-/* Стили для профиля */
+.menu-item:hover {
+  background-color: rgba(0, 66, 129, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Кнопки авторизации для мобильных */
+.mobile-auth-btn {
+  display: none;
+}
+
+/* Профиль */
 .profile {
   position: relative;
-  margin-left: auto;
+  margin-left: 10px;
 }
 
 .profile-photo {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   cursor: pointer;
-}
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999; /* Убедитесь, что z-index достаточно высок */
-  visibility: visible; /* Убедитесь, что уведомление видно */
-  opacity: 1; /* Убедитесь, что уведомление не скрыто */
-  transition: opacity 0.3s ease-in-out; /* Плавное исчезновение */
+  transition: transform 0.3s ease;
+  object-fit: cover;
 }
 
-.notification.error {
-  background-color: rgba(255, 0, 0, 0.61);
+.profile-photo:hover {
+  transform: scale(1.1);
 }
 
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.616);
-}
-
+/* Выпадающее меню */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: rgba(0, 66, 129, 0.8);
-  color: black;
-  box-shadow: 0px 4px 6px rgba(0, 66, 129, 0.8);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  overflow: hidden;
+  z-index: 1002;
+  transform-origin: top right;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .dropdown-menu button {
-  background: transparent;
-  border: none;
-  padding: 10px;
   width: 100%;
+  padding: 10px 16px;
   text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  font-family: 'Lora', sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999; /* Убедитесь, что z-index достаточно высок */
+.dropdown-menu button:hover {
+  background-color: rgba(0, 66, 129, 0.1);
+  color: rgba(0, 66, 129, 1);
 }
 
-/* Стили для модального окна */
+/* Модальное окно */
 .logout-modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1001;
 }
 
 .modal-content {
   background-color: white;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
 .modal-content button {
-  margin: 10px;
-  padding: 10px 20px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.modal-content button:first-child {
   background-color: rgba(0, 66, 129, 1);
   color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+}
+
+.modal-content button:last-child {
+  background-color: #f0f0f0;
+  color: #333;
 }
 
 .modal-content button:hover {
-  background-color: rgba(0, 66, 129, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Адаптивные стили */
+@media (max-width: 992px) {
+  .logo-text {
+    font-size: 20px;
+  }
+  
+  .menu {
+    gap: 8px;
+  }
+  
+  .menu-item {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+  
+  .burger-menu {
+    display: flex;
+    margin-left: auto;
+  }
+  
+  .menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    gap: 0;
+    margin-right: 0;
+  }
+  
+  .menu.mobile-menu-active {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  .menu-item {
+    width: 100%;
+    padding: 14px 20px;
+    text-align: left;
+    border-radius: 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+  }
+  
+  /* Показываем кнопки авторизации в мобильном меню */
+  .mobile-auth-btn {
+    display: block;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .profile {
+    order: -1;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-left: 0;
+  }
+  
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    width: 100%;
+    margin-top: 8px;
+    animation: none;
+  }
+  
+  .dropdown-menu button {
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 12px;
+  }
+  
+  .logo-img {
+    width: 42px;
+  }
+  
+  .logo-text {
+    font-size: 18px;
+  }
+  
+  .modal-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-content button {
+    width: 100%;
+  }
+  
+  .notification {
+    top: 15px;
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+  
+  .profile-photo {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Анимации для уведомления */
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
 }
 </style>

@@ -2,22 +2,49 @@
   <div>
     <AppNavbar />
     <div class="display-data-container">
-      <!-- Блок для отображения сообщений -->
-      
-
       <h1 class="section-title">Профиль:</h1>
 
-      <!-- Личные данные -->
-      <div class="data-section">
-        <h2>Личные данные</h2>
-        <div class="data-item" v-for="(value, key) in userData" :key="key">
-          <label>{{ formatLabel(key) }}:</label>
-          <span>{{ formatValue(key, value) }}</span>
+      <!-- Блок с аватаром и личными данными -->
+      <div class="profile-header">
+        <div class="avatar-container">
+          <img 
+            :src="avatarUrl || '/default-avatar.png'" 
+            alt="Аватар" 
+            class="avatar-image"
+            @click="triggerFileInput"
+          />
+          <input 
+            type="file" 
+            ref="fileInput" 
+            @change="handleAvatarUpload" 
+            accept="image/*" 
+            style="display: none"
+          />
+          <button @click="triggerFileInput" class="btn-avatar-change">
+            {{ avatarUrl ? 'Изменить фото' : 'Добавить фото' }}
+          </button>
+          <button 
+            v-if="avatarUrl" 
+            @click="removeAvatar" 
+            class="btn-avatar-remove"
+          >
+            Удалить фото
+          </button>
+        </div>
+
+        <!-- Личные данные -->
+        <div class="data-section personal-data">
+          <h2>Личные данные</h2>
+          <div class="data-item" v-for="(value, key) in userData" :key="key">
+            <label>{{ formatLabel(key) }}:</label>
+            <span>{{ formatValue(key, value) }}</span>
+          </div>
+          <div class="actions">
+            <button @click="editData" class="btn-login">Редактировать данные</button>
+          </div>
         </div>
       </div>
-      <div class="actions">
-        <button @click="editData" class="btn-login">Редактировать данные</button>
-</div>
+
       <!-- Данные о водительском удостоверении -->
       <div class="data-section">
         <h2>Данные о водительском удостоверении</h2>
@@ -33,7 +60,6 @@
           <button @click="openEditModal" class="btn-login">Редактировать</button>
         </div>
       </div>
-
 
       <!-- Данные о транспортных средствах -->
       <div v-for="(car, index) in carData" :key="index" class="car-item">
@@ -74,7 +100,7 @@
 </template>
 
 <script>
-  import AppNavbar from "@/components/AppNavbar.vue";
+import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -85,6 +111,7 @@ export default {
   data() {
     return {
       userData: {},
+      avatarUrl: null,
       driverLicense: {
         licenseNumber: "",
         licenseIssueDate: "",
@@ -95,80 +122,138 @@ export default {
       },
       carData: [
         {
-          carBrand: '', // Марка авто
-          carModel: '', // Модель авто
-          carNumber: '', // Госномер
-          carSTS: '', // Свидетельство о регистрации (СТС)
-          color: '' // Цвет (если нужно)
+          carBrand: '',
+          carModel: '',
+          carNumber: '',
+          carSTS: '',
+          color: ''
         }
-      ], // Данные о транспортных средствах
-      //showMessage: false, // Видимость сообщения
-      //messageText: "", // Текст сообщения
-      //messageType: "error", // Тип сообщения (error или success)
-      isEditing: false, // Режим редактирования
+      ],
+      isEditing: false,
     };
   },
   computed: {
-    // Проверка, заполнены ли данные о водительском удостоверении
     isLicenseDataFilled() {
       return this.driverLicense.licenseNumber && this.driverLicense.licenseIssueDate;
     },
   },
   async created() {
-    // Загрузка личных данных и данных о транспортных средствах при создании компонента
     await this.fetchUserData();
     await this.fetchCarData();
     await this.fetchDriverLicense();
+    await this.fetchAvatar();
   },
   methods: {
-    // Форматирование ключей данных для отображения
     formatLabel(key) {
-    const labels = {
-      phone_number: "Номер телефона",
-      email: "Email",
-      birthday: "Дата рождения",
-      gender: "Пол",
-      surname: "Фамилия",
-      name: "Имя",
-      middlename: "Отчество",
-      department: "Отдел",
-      position: "Должность",
-    };
-    return labels[key] || key; // Возвращаем читаемое название или оригинальный ключ, если название не найдено
-  },
-  formatValue(key, value) {
-    if (key === "gender") {
-      return value ? "Мужской" : "Женский"; // Преобразуем boolean в читаемый формат
-    }
-    if (key === "birthday") {
-      return new Date(value).toLocaleDateString(); // Форматируем дату
-    }
-    return value; // Возвращаем значение как есть
-  },
+      const labels = {
+        phone_number: "Номер телефона",
+        email: "Email",
+        birthday: "Дата рождения",
+        gender: "Пол",
+        surname: "Фамилия",
+        name: "Имя",
+        middlename: "Отчество",
+        department: "Отдел",
+        position: "Должность",
+      };
+      return labels[key] || key;
+    },
+    formatValue(key, value) {
+      if (key === "gender") {
+        return value ? "Мужской" : "Женский";
+      }
+      if (key === "birthday") {
+        return new Date(value).toLocaleDateString();
+      }
+      return value;
+    },
 
-    // Остальные методы компонента
+    // Методы для работы с аватаром
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    
+    async handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Размер файла не должен превышать 2MB");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.post('http://localhost:5000/api/user/upload-avatar', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        if (response.data.success) {
+          this.avatarUrl = response.data.avatarUrl + '?' + new Date().getTime(); // Добавляем параметр для избежания кеширования
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке аватара:", error);
+        alert("Не удалось загрузить аватар");
+      }
+    },
+    
+    async removeAvatar() {
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.delete('http://localhost:5000/api/user/remove-avatar', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.success) {
+          this.avatarUrl = null;
+        }
+      } catch (error) {
+        console.error("Ошибка при удалении аватара:", error);
+        alert("Не удалось удалить аватар");
+      }
+    },
+    
+    async fetchAvatar() {
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get('http://localhost:5000/api/user/get-avatar', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.success && response.data.avatarUrl) {
+          this.avatarUrl = response.data.avatarUrl + '?' + new Date().getTime();
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке аватара:", error);
+      }
+    },
+
     async fetchUserData() {
       try {
         const token = Cookies.get('token');
-        console.log("try user data");
         const response = await axios.get('http://localhost:5000/api/user/getUser', {
           headers: {
-            Authorization: `Bearer ${token}`, // Передаем токен в заголовке
+            Authorization: `Bearer ${token}`,
           },
         });
-        console.log("checking");
         if (response.data.success) {
-          console.log('Данные пользователя:', response.data.user);
-          this.userData = response.data.user; // Сохраняем данные пользователя в this.userData
+          this.userData = response.data.user;
         }
       } catch (error) {
         console.error("Ошибка при загрузке личных данных:", error);
-        //this.showMessage = true;
-        //this.messageText = "Не удалось загрузить личные данные.";
-        //this.messageType = "error";
       }
     },
-    // Загрузка данных о транспортных средствах из базы данных
+    
     async fetchCarData() {
       try {
         const token = Cookies.get('token');
@@ -177,20 +262,18 @@ export default {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("Car DATA/n", response.data.car);
         this.carData = response.data.car.map(car => ({
-          carBrand: car.mark, // Марка авто
-          carModel: car.brand, // Модель авто
-          carNumber: car.car_number, // Госномер
-          carSTS: car.sts_number, // Свидетельство о регистрации (СТС)
-          color: car.color // Цвет (если нужно)
+          carBrand: car.mark,
+          carModel: car.brand,
+          carNumber: car.car_number,
+          carSTS: car.sts_number,
+          color: car.color
         }));
       } catch (error) {
         console.error("Ошибка при загрузке данных о транспортных средствах:", error);
-        //this.showMessage = true;
-        //this.messageType = "error";
       }
     },
+    
     async fetchDriverLicense() {
       try {
         const token = Cookies.get('token');
@@ -200,154 +283,54 @@ export default {
           },
         });
         if (response.data.success) {
-          console.log("response.data.user/n", response.data.user);
-
-          // Преобразуем данные из серверного формата в формат компонента
           this.driverLicense = {
             licenseNumber: response.data.user.license_number,
-            licenseIssueDate: response.data.user.license_issue_date.split('T')[0], // Убираем время, оставляем только дату
+            licenseIssueDate: response.data.user.license_issue_date.split('T')[0],
           };
-
-          console.log("Преобразованные данные:", this.driverLicense); // Для отладки
         }
       } catch (error) {
         console.error("Ошибка при загрузке данных о водительском удостоверении:", error);
       }
     },
+    
     openEditModal() {
       this.$router.push("/edit-driver-license");
     },
-    async saveDriverLicense() {
-      if (!this.validateDriverLicense()) {
-        return;
-      }
-      try {
-        const token = Cookies.get('token');
-        await axios.post('http://localhost:5000/api/driver-license', this.editDriverLicense, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        this.driverLicense = { ...this.editDriverLicense };
-        this.closeEditModal();
-        ///this.showMessage = true;
-        //this.messageText = "Данные о водительском удостоверении успешно сохранены!";
-        //this.messageType = "success";
-      } catch (error) {
-        console.error("Ошибка при сохранении данных о водительском удостоверении:", error);
-        //this.showMessage = true;
-        //this.messageText = "Не удалось сохранить данные о водительском удостоверении.";
-        //this.messageType = "error";
-      }
-    },
-    validateDriverLicense() {
-      let isValid = true;
-      const licenseNumberPattern = /^\d{10}$/;
-      if (!licenseNumberPattern.test(this.editDriverLicense.licenseNumber)) {
-        //this.showMessage = true;
-        //this.messageText = "Серия и номер прав должны состоять из 10 цифр.";
-        //this.messageType = "error";
-        isValid = false;
-      }
-      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-      if (!datePattern.test(this.editDriverLicense.licenseIssueDate)) {
-        //this.showMessage = true;
-        //this.messageText = "Дата выдачи прав должна быть в формате ГГГГ-ММ-ДД.";
-        //this.messageType = "error";
-        isValid = false;
-      }
-      const today = new Date().toISOString().split("T")[0];
-      if (this.editDriverLicense.licenseIssueDate > today) {
-        //this.showMessage = true;
-        //this.messageText = "Дата выдачи прав не может быть в будущем.";
-        //this.messageType = "error";
-        isValid = false;
-      }
-      return isValid;
-    },
-
-    // Удаление транспортного средства
-   
-   async deleteVehicle(index) {
-    const carNumber = this.carData[index].carNumber; // Получаем госномер
-    if (confirm("Вы уверены, что хотите удалить это транспортное средство?")) {
+    
+    async deleteVehicle(index) {
+      const carNumber = this.carData[index].carNumber;
+      if (confirm("Вы уверены, что хотите удалить это транспортное средство?")) {
         try {
-            const token = Cookies.get('token'); // Получаем токен из куки
-            await axios.delete(`http://localhost:5000/api/car/deleteByNumber/${carNumber}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`, // Передаем токен в заголовке
-                },
-            });
-            this.carData.splice(index, 1); // Удаляем транспортное средство из списка
-            //this.showMessage = true;
-            //this.messageText = "Транспортное средство успешно удалено.";
-            //this.messageType = "success";
+          const token = Cookies.get('token');
+          await axios.delete(`http://localhost:5000/api/car/deleteByNumber/${carNumber}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          this.carData.splice(index, 1);
         } catch (error) {
-            console.error("Ошибка при удалении транспортного средства:", error);
-            //this.showMessage = true;
-            //this.messageText = "Не удалось удалить транспортное средство.";
-            //this.messageType = "error";
+          console.error("Ошибка при удалении транспортного средства:", error);
         }
-    }
-},
-
-    async addVehicle() {
-      if (!this.isLicenseDataFilled) {
-        //this.showMessage = true;
-        //this.messageText = "Для добавления транспортного средства необходимо заполнить данные о водительском удостоверении!";
-        return;
-      }
-      try {
-        this.$router.push("/select-car-manufacturer");
-      } catch (error) {
-        // Обработка ошибки
       }
     },
+    
+    addVehicle() {
+      if (!this.isLicenseDataFilled) return;
+      this.$router.push("/select-car-manufacturer");
+    },
+    
     editData() {
       this.$router.push("/edit-data");
     },
+    
     saveAndContinue() {
       this.$router.push("/");
     },
-    
-    // Переключение режима редактирования
-    handleEdit() {
-      if (this.isEditing) {
-        this.saveDriverLicense();
-      }
-      this.isEditing = !this.isEditing;
-    },
-    
   },
 };
 </script>
 
 <style scoped>
-/* Стили для сообщений */
-.message {
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 14px;
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #c62828;
-  z-index: 1000;
-  white-space: nowrap;
-  position: absolute;
-}
-
-.message.error {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #c62828;
-}
-
-.message.success {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #2e7d32;
-}
-
 .display-data-container {
   text-align: left;
   padding: 50px 20px;
@@ -357,6 +340,67 @@ export default {
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   position: relative;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
+.avatar-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #004281;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.avatar-image:hover {
+  transform: scale(1.05);
+}
+
+.btn-avatar-change, .btn-avatar-remove {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-avatar-change {
+  background-color: #004281;
+  color: white;
+}
+
+.btn-avatar-change:hover {
+  background-color: #003365;
+}
+
+.btn-avatar-remove {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.btn-avatar-remove:hover {
+  background-color: #cc0000;
+}
+
+.personal-data {
+  flex-grow: 1;
 }
 
 .section-title {
@@ -391,6 +435,7 @@ export default {
   background-color: rgba(240, 240, 240, 0.9);
   border-radius: 5px;
   font-size: 16px;
+  margin-bottom: 10px;
 }
 
 .data-item label {
@@ -405,76 +450,36 @@ export default {
   text-align: right;
 }
 
-/* Стили для формы ввода данных о водительском удостоверении */
-.input-group {
-  margin-bottom: 15px;
+.car-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.input-group label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-  color: #2c3e50;
-}
-
-.input-field {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border 0.3s ease-in-out;
-  background-color: #f9f9f9;
-  max-width: 300px; /* Уменьшаем ширину поля ввода */
-}
-
-.input-field:focus {
-  border-color: #004281;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 66, 129, 0.3);
-}
-
-.input-field::placeholder {
-  color: #999;
-}
-
-/* Ошибки */
-.error-text {
-  color: #d9534f;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.input-error {
-  border-color: #d9534f !important;
-  background-color: rgba(217, 83, 79, 0.1);
-}
-
-/* Кнопки */
 .actions {
   display: flex;
-  justify-content: center; /* Центрирование кнопок */
+  justify-content: center;
   gap: 12px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .btn-login {
-  padding: 12px;
-  font-size: 18px;
+  padding: 12px 20px;
+  font-size: 16px;
   background-color: #004281;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
+  transition: background-color 0.3s ease;
+  min-width: 200px;
 }
 
 .btn-login:hover {
   background-color: #003365;
-}
-
-.btn-login:active {
-  background-color: #002549;
 }
 
 .btn-login:disabled {
@@ -484,7 +489,7 @@ export default {
 
 .btn-delete {
   padding: 12px;
-  font-size: 18px;
+  font-size: 16px;
   background-color: #ff4d4d;
   color: white;
   border: none;
@@ -499,104 +504,70 @@ export default {
   background-color: #cc0000;
 }
 
-.btn-delete:active {
-  background-color: #990000;
-}
-
-/* Картинка машины */
 .car-image {
   max-width: 20%;
   height: auto;
   position: absolute;
-  left: 75%;
+  right: 5%;
   bottom: 15%;
   z-index: 3;
 }
 
-.data-item {
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  background-color: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
+/* Адаптивные стили */
+@media (max-width: 992px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .car-image {
+    display: none;
+  }
 }
 
-.data-item label {
-  font-weight: bold;
-  color: #333;
-  flex: 1;
+@media (max-width: 768px) {
+  .display-data-container {
+    margin-top: 80px;
+    padding: 20px 15px;
+  }
+  
+  .data-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .data-item span {
+    text-align: left;
+    width: 100%;
+    margin-top: 5px;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .btn-login {
+    width: 100%;
+  }
 }
 
-.data-item span {
-  color: #666;
-  flex: 2;
-  text-align: right;
-}
-
-.car-item {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: rgba(250, 250, 250, 0.9);
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-login {
-  padding: 12px;
-  font-size: 18px;
-  background-color: #004281;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-login:hover {
-  background-color: #003365;
-}
-
-.btn-login:active {
-  background-color: #002549;
-}
-
-.btn-delete {
-  padding: 12px;
-  font-size: 18px;
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.btn-delete:hover {
-  background-color: #cc0000;
-}
-
-.btn-delete:active {
-  background-color: #990000;
-}
-
-/* Стиль для картинки с машиной */
-.car-image {
-  max-width: 30%;
-  height: auto;
-  position: absolute;
-  right: 0;
-  bottom: 20%; /* Позиционируем ниже контейнера */
-  z-index: 2; /* Картинка не должна закрывать форму */
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 20px;
+  }
+  
+  .data-section h2 {
+    font-size: 18px;
+  }
+  
+  .data-item {
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  .btn-login, .btn-delete {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
 </style>

@@ -65,8 +65,8 @@ export default {
         const token = Cookies.get("token");
         if (!token) throw new Error("Токен не найден.");
 
-        console.log("что-то не то")
-        console.log(tripData.from,tripData.to)
+        console.log("вы охуели")
+        console.log(tripData)
         
         // Создаем маршрут
         const routeResponse = await axios.post("http://localhost:5000/api/route/route", {
@@ -75,14 +75,17 @@ export default {
         });
         const routeId = routeResponse.data.routeId;
 
+        console.log("вы охуели")
+        console.log(Cookies.get("from_route"),Cookies.get("to_route"))
+
         // Создаем поездку
         console.log("check 2")
         const tripResponse = await axios.post("http://localhost:5000/api/trip/trip", {
           route_id: routeId,
           departureDate: tripData.date,
           departureTime: tripData.pickUpTime,
-          arrivalDate: tripData.arrivalDate,
-          arrivalTime: tripData.arrivalTime,
+          //arrivalDate: tripData.arrivalDate,
+          arrivalTime: Cookies.get("trip_time"),
           passengersCount: tripData.passengerCount,
           car: tripData.selectedCar,
           price: tripData.price,

@@ -35,7 +35,7 @@ import EditDriverLicense from "@/views/EditDriverLicense.vue";
 import NotificationsPage from '@/views/NotificationsPage.vue'; // Импортируйте ваш компонент
 import UserVerification from "@/views/UserVerification.vue";
 import CarVerification from "@/views/CarVerification.vue"; // Страница проверки автомобилей
-  
+import DriverProfile from '@/views/DriverProfile.vue'; 
 
 const routes = [
   { path: "/", name: "HomePage", component: HomePage }, // Главная страница
@@ -53,6 +53,12 @@ const routes = [
     path: "/arrival-date",  // путь для страницы выбора даты прибытия
     name: "ArrivalDate",  // имя маршрута
     component: ArrivalDate,  // компонент для страницы
+  },
+  {
+    path: '/driver/:id',
+    name: 'DriverProfile',
+    component: DriverProfile,
+    props: true
   },
   {
     path: "/edit-driver-license",

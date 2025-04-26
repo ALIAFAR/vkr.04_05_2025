@@ -114,7 +114,7 @@
 
 <script>
 import AppNavbar from "@/components/AppNavbar.vue";
-import Cookies from 'js-cookie'; // Импорт библиотеки для работы с cookies
+import Cookies from 'js-cookie';
 
 const API_TOKEN = "72a0f8ef0a9e1bd454cf61b1d040c7b875965ed6";
 const SUGGESTIONS_URL =
@@ -135,18 +135,17 @@ export default {
       notificationVisible: false,
       notificationMessage: "",
       notificationType: "",
-      isFromAddressValid: false, // Флаг для проверки валидности адреса "Откуда"
-      isToAddressValid: false, // Флаг для проверки валидности адреса "Куда"
+      isFromAddressValid: true, // Изменено на true по умолчанию
+      isToAddressValid: true,    // Изменено на true по умолчанию
     };
   },
   computed: {
-    // Проверка валидности всей формы
     isFormValid() {
-      return this.isFromAddressValid && this.isToAddressValid && this.drivingDate;
+      return this.fromLocation && this.toLocation && this.drivingDate;
     },
   },
+  
   methods: {
-    // Увеличение количества пассажиров
     incrementPassenger() {
       if (this.passengerCount < 4) {
         this.passengerCount++;
@@ -158,30 +157,36 @@ export default {
       }
     },
 
-    // Переход на страницу поиска
     goToSearch() {
       if (!this.isFormValid) {
         this.showNotification(
-          "Пожалуйста, укажите все данные для поиска и выберите адреса из списка.",
+          "Пожалуйста, укажите все данные для поиска.",
           "error"
         );
         return;
       }
 
-      // Сохраняем параметры поиска в cookies
       const searchParams = {
         from: this.fromLocation,
         to: this.toLocation,
         date: this.drivingDate,
         passengers: this.passengerCount,
       };
-      Cookies.set("searchParams", JSON.stringify(searchParams), { expires: 1 }); // Сохраняем на 1 день
+      Cookies.set("searchParams", JSON.stringify(searchParams), { expires: 1 });
 
-      // Переход на страницу поиска
       this.$router.push({ name: "search-results" });
     },
+    data() {
+  return {
+    mobileMenuVisible: false
+  };
+},
+methods: {
+  toggleMobileMenu() {
+    this.mobileMenuVisible = !this.mobileMenuVisible;
+  }
+},
 
-    // Показать уведомление
     showNotification(message, type) {
       if (!message || !type) return;
       this.notificationMessage = message;
@@ -192,48 +197,49 @@ export default {
       }, 3000);
     },
 
-    // Получение подсказок для адресов
     async getSuggestions(query) {
       if (!query || query.length < 2) return [];
-      const response = await fetch(SUGGESTIONS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${API_TOKEN}`,
-        },
-        body: JSON.stringify({ query }),
-      });
-      if (!response.ok) {
-        console.error("Ошибка при получении подсказок");
+      try {
+        const response = await fetch(SUGGESTIONS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${API_TOKEN}`,
+          },
+          body: JSON.stringify({ query }),
+        });
+        if (!response.ok) {
+          console.error("Ошибка при получении подсказок");
+          return [];
+        }
+        const data = await response.json();
+        return data.suggestions.map((suggestion) => suggestion.value);
+      } catch (error) {
+        console.error("Ошибка при запросе подсказок:", error);
         return [];
       }
-      const data = await response.json();
-      return data.suggestions.map((suggestion) => suggestion.value);
     },
 
-    // Обработка изменения поля "Откуда"
     async onFromLocationChange() {
       this.fromAddressSuggestions = await this.getSuggestions(this.fromLocation);
-      this.isFromAddressValid = this.fromAddressSuggestions.includes(this.fromLocation); // Проверка, что адрес выбран из списка
+      this.isFromAddressValid = !this.fromLocation || this.fromAddressSuggestions.includes(this.fromLocation);
     },
 
-    // Обработка изменения поля "Куда"
     async onToLocationChange() {
       this.toAddressSuggestions = await this.getSuggestions(this.toLocation);
-      this.isToAddressValid = this.toAddressSuggestions.includes(this.toLocation); // Проверка, что адрес выбран из списка
+      this.isToAddressValid = !this.toLocation || this.toAddressSuggestions.includes(this.toLocation);
     },
 
-    // Выбор адреса из подсказок
     selectLocation(field, suggestion) {
       if (field === "from") {
         this.fromLocation = suggestion;
-        this.isFromAddressValid = true; // Адрес выбран из списка
+        this.isFromAddressValid = true;
+        this.fromAddressSuggestions = [];
       } else if (field === "to") {
         this.toLocation = suggestion;
-        this.isToAddressValid = true; // Адрес выбран из списка
+        this.isToAddressValid = true;
+        this.toAddressSuggestions = [];
       }
-      this.fromAddressSuggestions = [];
-      this.toAddressSuggestions = [];
     },
   },
 };
@@ -241,7 +247,7 @@ export default {
 
 <style scoped>
 .background {
-  background-image: url("/public/logo.png"); /* Используйте относительный путь */
+  background-image: url("/public/фон.jpg"); /* Используйте относительный путь */
 }
 
 /* Основные стили для страницы */
@@ -573,4 +579,390 @@ footer {
   font-size: 12px;
   color: #555;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+    background-image: url("/public/фон.jpg") no-repeat center center fixed;
+  }
+
+  .navbar {
+    height: 60px;
+    padding: 10px 15px;
+  }
+
+  .logo {
+    font-size: 24px;
+    margin-right: 20px;
+  }
+
+  .logo-img {
+    width: 60px;
+  }
+
+  .menu {
+    display: none; /* Скрываем обычное меню */
+  }
+
+  /* Добавляем кнопку гамбургер-меню */
+  .mobile-menu-btn {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: rgba(0, 66, 129, 0.8);
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 15px;
+  }
+
+  .profile-photo {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Стили для мобильного меню */
+  .mobile-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: none;
+  }
+
+  .mobile-menu.show {
+    display: block;
+  }
+
+  .mobile-menu-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    color: rgba(0, 66, 129, 0.8);
+  }
+
+  /* Адаптация контейнера поиска */
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    margin: 100px auto 20px; /* Добавлен отступ сверху для навигации */
+    width: 90%;
+    max-width: 400px; /* Ограничиваем максимальную ширину */
+  }
+
+  /* Поля ввода */
+  .input-container {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .search-container input,
+  .search-container button {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 0;
+    font-size: 16px;
+    box-sizing: border-box; /* Важно для правильного расчета ширины */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Специально для поля даты */
+  .input-container input[type="date"] {
+    padding: 11px 15px; /* Выравнивание с другими полями */
+  }
+
+  /* Контейнер кнопок пассажиров и поиска */
+  .passenger-btn-container {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px; /* Отступ от полей ввода */
+  }
+
+  /* Кнопки */
+  .search-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  /* Выпадающий список подсказок */
+  .suggestions-list {
+    width: 100%;
+    left: 0;
+    top: 100%;
+  }
+
+  /* Информационные блоки */
+  .info-section {
+    margin-top: 0px; /* Увеличиваем отступ от формы поиска */
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .search-container {
+    margin-top: 80px;
+    width: 95%;
+    padding: 12px;
+  }
+
+  .search-container input,
+  .search-container button {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+
+  .passenger-btn-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Адаптация информационных блоков */
+  .info-section {
+    flex-direction: column;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    gap: 15px;
+  }
+
+  .info-block {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .info-block img {
+    width: 60px;
+  }
+
+  /* Адаптация подвала */
+  .footer {
+    padding: 15px;
+  }
+
+  .contact-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Улучшенные уведомления для мобильных */
+  .notification {
+    width: 90%;
+    font-size: 14px;
+    padding: 12px;
+  }
+}
+
+/* Дополнительные адаптации для очень маленьких экранов */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 20px;
+  }
+
+  .logo-img {
+    width: 50px;
+  }
+
+  .search-container input,
+  .search-btn {
+    font-size: 14px;
+  }
+
+  .info-block h3 {
+    font-size: 16px;
+  }
+
+  .info-block p {
+    font-size: 13px;
+  }
+}
+
+/* Анимация для мобильного меню */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+  }
+
+  .navbar {
+    height: 60px;
+    padding: 10px 15px;
+  }
+
+  .logo {
+    font-size: 24px;
+    margin-right: 20px;
+  }
+
+  .logo-img {
+    width: 60px;
+  }
+
+  .menu {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: rgba(0, 66, 129, 0.8);
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 15px;
+  }
+
+  .profile-photo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: none;
+  }
+
+  .mobile-menu.show {
+    display: block;
+  }
+
+  .mobile-menu-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    color: rgba(0, 66, 129, 0.8);
+  }
+
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    margin: 100px auto 20px;
+    width: 90%;
+    max-width: 400px;
+  }
+
+  .input-container {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .search-container input,
+  .search-container button {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 0;
+    font-size: 16px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  .input-container input[type="date"] {
+    padding: 11px 15px;
+  }
+
+  .passenger-btn-container {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .search-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .suggestions-list {
+    width: 100%;
+    left: 0;
+    top: 100%;
+  }
+
+  .info-section {
+    flex-direction: column;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    gap: 15px;
+  }
+
+  .info-block {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .info-block img {
+    width: 60px;
+  }
+
+  .footer {
+    padding: 15px;
+  }
+
+  .contact-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .notification {
+    width: 90%;
+    font-size: 14px;
+    padding: 12px;
+  }
+}
+
+/* Дополнительные адаптации для очень маленьких экранов */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 20px;
+  }
+
+  .logo-img {
+    width: 50px;
+  }
+
+  .search-container input,
+  .search-btn {
+    font-size: 14px;
+  }
+
+  .info-block h3 {
+    font-size: 16px;
+  }
+
+  .info-block p {
+    font-size: 13px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+};
+
 </style>

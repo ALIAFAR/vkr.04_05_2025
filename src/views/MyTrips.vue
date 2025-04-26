@@ -123,314 +123,181 @@ export default {
 };
 </script>
 
+
 <style scoped>
+/* Основные стили для всех устройств */
 .trip-details {
-  padding: 20px;
+  padding: 2rem;
   max-width: 800px;
-  margin: 100px auto;
+  margin: 6rem auto;
   text-align: center;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 66, 129, 0.1);
 }
 
 .details-header h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
   color: #004281;
+  font-weight: 600;
 }
 
 .trip-list {
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .trip-item {
-  padding: 20px;
-  margin-bottom: 20px;
-  background: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 66, 129, 0.1);
 }
 
 .trip-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 66, 129, 0.15);
 }
 
 .detail-item {
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
   text-align: left;
+  display: flex;
+  justify-content: space-between;
 }
 
 .detail-item p {
   margin: 0;
-  font-weight: bold;
+  font-weight: 600;
   color: #004281;
+  font-size: 0.95rem;
 }
 
 .detail-item span {
-  font-size: 14px;
-  color: #555;
+  font-size: 0.95rem;
+  color: #4a5568;
+  text-align: right;
 }
 
 .no-trips {
-  font-size: 18px;
-  color: #555;
-  padding: 20px;
-  background: #fff;
+  font-size: 1.1rem;
+  color: #4a5568;
+  padding: 1.5rem;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  border: 1px dashed rgba(0, 66, 129, 0.2);
 }
 
 .back-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 16px;
-  color: #fff;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #ffffff;
   background-color: #004281;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 66, 129, 0.2);
 }
 
 .back-button:hover {
-  background-color: #003365;
-}
-</style>
-
-<style scoped>
-.trip-details {
-  padding: 20px;
-  max-width: 800px;
-  margin: 100px auto;
-  text-align: center;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #003366;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 66, 129, 0.25);
 }
 
-.details-header h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #004281;
+/* Адаптация для планшетов */
+@media (max-width: 1024px) {
+  .trip-details {
+    margin: 5rem auto;
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+  
+  .details-header h1 {
+    font-size: 1.75rem;
+  }
 }
 
-.trip-list {
-  margin-top: 20px;
-}
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  .trip-details {
+    margin: 7rem auto 3rem;
+    padding: 1.25rem;
+    width: 95%;
+    border-radius: 12px;
+  }
 
-.trip-item {
-  padding: 20px;
-  margin-bottom: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+  .details-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
 
-.trip-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+  .trip-item {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-left: 4px solid #004281;
+  }
 
-.detail-item {
-  margin-bottom: 10px;
-  text-align: left;
-}
+  .detail-item {
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+  }
 
-.detail-item p {
-  margin: 0;
-  font-weight: bold;
-  color: #004281;
-}
+  .detail-item p,
+  .detail-item span {
+    width: 100%;
+    text-align: left;
+    font-size: 0.9rem;
+  }
 
-.detail-item span {
-  font-size: 14px;
-  color: #555;
-}
+  .detail-item span {
+    margin-top: 0.25rem;
+    color: #4a5568;
+  }
 
-.no-trips {
-  font-size: 18px;
-  color: #555;
-  padding: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+  .back-button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
 
-.back-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 16px;
-  color: #fff;
-  background-color: #004281;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
+  /* Особые стили для маленьких экранов */
+  @media (max-width: 480px) {
+    .trip-details {
+      margin: 6rem auto 2rem;
+      padding: 1rem;
+    }
 
-.back-button:hover {
-  background-color: #003365;
-}
-</style>
+    .details-header h1 {
+      font-size: 1.3rem;
+    }
 
-<style scoped>
-.trip-details {
-  padding: 20px;
-  max-width: 600px;
-  margin: 140px auto 0;
-  text-align: center;
-  background: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+    .trip-item {
+      padding: 1rem;
+    }
 
-.details-header h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #004281;
-}
+    .no-trips {
+      padding: 1rem;
+      font-size: 1rem;
+    }
+  }
 
-.filters {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.filter-item {
-  margin-bottom: 15px;
-}
-
-.filter-item label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #003365;
-}
-
-.filter-item input {
-  width: 100%;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.filter-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: #fff;
-  background-color: #004281;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.filter-button:hover {
-  background-color: #003365;
-}
-
-.trip-list {
-  margin-top: 20px;
-}
-
-.trip-item {
-  padding: 15px;
-  margin-bottom: 15px;
-  background: #fff;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.detail-item {
-  margin-bottom: 10px;
-  text-align: left;
-  font-size: 16px;
-}
-
-.detail-item p {
-  margin: 0;
-  color: #003365;
-}
-
-.detail-item span {
-  font-size: 14px;
-  color: #555;
-}
-
-.no-trips {
-  font-size: 18px;
-  color: #555;
-}
-
-.back-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: #fff;
-  background-color: #004281;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.back-button:hover {
-  background-color: #003365;
-}
-</style>
-
-<style scoped>
-.trip-details {
-  padding: 10px;
-  max-width: 500px;
-  margin: 140px auto 0;
-  text-align: center;
-  background: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.details-header h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #004281;
-}
-
-.details-container {
-  padding: 10px;
-}
-
-.detail-item {
-  margin-bottom: 15px;
-  text-align: left;
-  font-size: 18px;
-}
-
-.detail-item p {
-  margin: 0;
-  color: #003365;
-}
-
-.detail-item span {
-  font-size: 16px;
-  color: #555;
-}
-
-.back-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: #fff;
-  background-color: #004281;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.back-button:hover {
-  background-color: #003365;
+  /* Ориентация landscape */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .trip-details {
+      margin: 5rem auto 2rem;
+    }
+    
+    .detail-item {
+      flex-direction: row;
+    }
+  }
 }
 </style>

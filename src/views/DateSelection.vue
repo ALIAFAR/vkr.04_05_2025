@@ -1,10 +1,13 @@
 <template>
   <AppNavbar />
   <div class="date-selection-container">
-    <h1 class="section-title">Выберите дату поездки</h1>
+    <h1 class="section-title">Выберите дату и время поездки</h1>
 
     <!-- Поле выбора даты -->
     <input type="date" v-model="selectedDate" :min="minDate" />
+
+    <!-- Поле выбора времени -->
+    <input type="time" v-model="selectedTime" />
 
     <!-- Кнопка подтверждения -->
     <button @click="submitDate" :disabled="isSubmitting">
@@ -15,68 +18,41 @@
 
 <script>
 import AppNavbar from "@/components/AppNavbar.vue";
-import Cookies from 'js-cookie'; // Импорт библиотеки для работы с cookies
+import Cookies from 'js-cookie';
 
 export default {
   components: {
     AppNavbar,
   },
-  data() {
-    return {
-      selectedDate: "",
-      minDate: new Date().toISOString().split("T")[0], // Минимальная дата — сегодня
-      trip: {
-        from: "",
-        to: "",
-      },
-      isSubmitting: false, // Флаг для блокировки кнопки во время отправки
-    };
-  },
-  created() {
-    // Загружаем данные о поездке из cookies
-    const trips = Cookies.get("publishedTrips") ? JSON.parse(Cookies.get("publishedTrips")) : [];
-    
-    if (trips.length > 0) {
-      // Берем последнюю поездку
-      const lastTrip = trips[trips.length - 1];
-      this.trip.from = lastTrip.from;
-      this.trip.to = lastTrip.to;
-    } else {
-      // Если данных нет, перенаправляем на страницу публикации поездки
-      this.$router.push({ name: "publish-trip-page" });
-    }
-  },
   methods: {
-    // Подтверждение выбора даты
     submitDate() {
-      if (!this.selectedDate) {
-        alert("Пожалуйста, выберите дату!");
+      if (!this.selectedDate || !this.selectedTime) {
+        alert("Пожалуйста, выберите дату и время!");
         return;
       }
 
       this.isSubmitting = true;
 
-      // Обновляем данные о поездке с выбранной датой
       const updatedTrip = {
         ...this.trip,
         date: this.selectedDate,
+        pickUpTime: this.selectedTime,
       };
 
-      // Сохраняем обновленные данные в cookies
-      Cookies.set("tripData", JSON.stringify(updatedTrip), { expires: 7 }); // Сохраняем на 7 дней
+      const tripData = JSON.parse(Cookies.get("tripData")); // 👈 вот тут нужно распарсить!
 
-      // Имитация задержки для UX
+      Cookies.set("tripData", JSON.stringify(updatedTrip), { expires: 7 });
+    
+      console.log(tripData);
+
       setTimeout(() => {
         this.isSubmitting = false;
-
-        // Переход на страницу выбора времени
-        this.$router.push({ name: "PickUpTime" });
+        this.$router.push({ name: "PassengerCount" });
       }, 1000);
     },
   },
 };
 </script>
-
 
 <style scoped>
 .date-selection-container {
@@ -96,26 +72,8 @@ export default {
   color: #333;
 }
 
-.trip-details {
-  margin-bottom: 20px;
-  text-align: left;
-  padding: 15px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.trip-details p {
-  margin: 10px 0;
-  font-size: 16px;
-  color: #333;
-}
-
-.trip-details strong {
-  color: #004281;
-}
-
-input[type="date"] {
+input[type="date"],
+input[type="time"] {
   width: 80%;
   padding: 12px;
   font-size: 16px;
@@ -123,9 +81,13 @@ input[type="date"] {
   border-radius: 5px;
   margin-top: 10px;
   background-color: #f7f7f7;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-input[type="date"]:focus {
+input[type="date"]:focus,
+input[type="time"]:focus {
   outline: none;
   background-color: #e3e3e3;
   border-color: #004281;

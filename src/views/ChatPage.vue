@@ -32,8 +32,8 @@
         placeholder="Введите сообщение..."
       />
       <button @click="sendMessage">
-        <span>Отправить</span>
-        <i class="fas fa-paper-plane"></i>
+        <span class="send-text">Отправить</span>
+        <i class="fas fa-paper-plane send-icon"></i>
       </button>
     </div>
   </div>
@@ -49,181 +49,239 @@ export default {
   },
   data() {
     return {
-      chat: {}, // Данные о чате
-      messages: [], // Сообщения в чате
-      newMessage: "", // Новое сообщение
+      chat: {},
+      messages: [],
+      newMessage: "",
     };
   },
   created() {
-    // Получаем ID чата из параметров маршрута
     const chatId = this.$route.params.id;
-    // Загружаем данные о чате
     this.loadChat(chatId);
-    // Загружаем сообщения для конкретного чата
     this.loadMessages(chatId);
   },
   methods: {
     async loadChat(chatId) {
       try {
-        // Загружаем данные о чате с сервера
         const response = await axios.get(`/api/chats/${chatId}`);
-        this.chat = response.data; // Сохраняем данные о чате
+        this.chat = response.data;
       } catch (error) {
         console.error("Ошибка при загрузке данных о чате:", error);
       }
     },
     async loadMessages(chatId) {
       try {
-        // Загружаем сообщения для конкретного чата
         const response = await axios.get(`/api/chats/${chatId}/messages`);
-        this.messages = response.data; // Сохраняем сообщения
+        this.messages = response.data;
       } catch (error) {
         console.error("Ошибка при загрузке сообщений:", error);
       }
     },
     async sendMessage() {
-  if (this.newMessage.trim()) {
-    try {
-      // Отправляем новое сообщение на сервер
-      const chatId = this.$route.params.id;
-      const response = await axios.post(`/api/chats/${chatId}/messages`, {
-        text: this.newMessage,
-      });
+      if (this.newMessage.trim()) {
+        try {
+          const chatId = this.$route.params.id;
+          const response = await axios.post(`/api/chats/${chatId}/messages`, {
+            text: this.newMessage,
+          });
 
-      // Проверяем успешность ответа
-      if (response.data.success) {
-        // Добавляем новое сообщение в список
-        const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        this.messages.push({ sender: "Вы", text: this.newMessage, time: currentTime });
-
-        this.newMessage = ""; // Очищаем поле ввода
-      } else {
-        console.error("Ошибка при отправке сообщения:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Ошибка при отправке сообщения:", error);
-
-      // Если сервер возвращает ошибку, выводим её сообщение
-      if (error.response) {
-        console.error("Ответ сервера:", error.response.data);
+          if (response.data.success) {
+            const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            this.messages.push({ sender: "Вы", text: this.newMessage, time: currentTime });
+            this.newMessage = "";
+            
+            // Прокрутка вниз после отправки сообщения
+            this.$nextTick(() => {
+              const messagesContainer = document.querySelector('.chat-messages');
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+          } else {
+            console.error("Ошибка при отправке сообщения:", response.data.message);
+          }
+        } catch (error) {
+          console.error("Ошибка при отправке сообщения:", error);
+          if (error.response) {
+            console.error("Ответ сервера:", error.response.data);
+          }
+        }
       }
     }
   }
-}}
 };
 </script>
 
-  <style scoped>
+<style scoped>
+.chat-page {
+  max-width: 600px;
+  margin: 60px auto 0;
+  padding: 15px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  text-align: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.chat-header h2 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.chat-header p {
+  font-size: 14px;
+  color: #666;
+  margin: 3px 0;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  -webkit-overflow-scrolling: touch; /* Для плавной прокрутки на iOS */
+}
+
+.message {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.message-avatar img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-content {
+  margin-left: 8px;
+  max-width: 75%;
+}
+
+.message-sender {
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.message-text {
+  background-color: #e9ecef;
+  padding: 8px 12px;
+  border-radius: 12px;
+  display: inline-block;
+  font-size: 15px;
+  word-break: break-word;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #666;
+  display: block;
+  margin-top: 3px;
+}
+
+.message-you .message-content {
+  margin-left: auto;
+  text-align: right;
+}
+
+.message-you .message-text {
+  background-color: rgba(0, 66, 129, 1);
+  color: #fff;
+}
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 15px;
+}
+
+.chat-input button {
+  padding: 0 15px;
+  background-color: rgba(0, 66, 129, 1);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px; /* Минимальный размер для удобного нажатия */
+}
+
+.chat-input button:hover {
+  background-color: rgba(0, 66, 129, 0.9);
+}
+
+.send-text {
+  display: none;
+}
+
+.send-icon {
+  font-size: 18px;
+}
+
+/* Адаптация для экранов шире 480px */
+@media (min-width: 480px) {
   .chat-page {
-    max-width: 600px;
-    margin: 120px auto 0;
+    margin-top: 80px;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 80px);
   }
   
-  .chat-header {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .chat-header h2 {
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .chat-header p {
-    font-size: 16px;
-    color: #666;
-  }
-  
-  .chat-messages {
-    height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    background-color: #fff;
-    margin-bottom: 20px;
-  }
-  
-  .message {
-    display: flex;
-    margin-bottom: 15px;
+  .send-text {
+    display: inline;
+    margin-right: 5px;
   }
   
   .message-avatar img {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
   }
   
   .message-content {
-    margin-left: 10px;
     max-width: 70%;
   }
+}
+
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 360px) {
+  .chat-header h2 {
+    font-size: 18px;
+  }
   
-  .message-sender {
-    font-weight: bold;
-    color: #333;
-    display: block;
-    margin-bottom: 5px;
+  .chat-header p {
+    font-size: 13px;
   }
   
   .message-text {
-    background-color: #e9ecef;
-    padding: 10px;
-    border-radius: 10px;
-    display: inline-block;
-  }
-  
-  .message-time {
-    font-size: 12px;
-    color: #666;
-    display: block;
-    margin-top: 5px;
-  }
-  
-  .message-you .message-content {
-    margin-left: auto;
-    text-align: right;
-  }
-  
-  .message-you .message-text {
-    background-color: rgba(0, 66, 129, 1);
-    color: #fff;
-  }
-  
-  .chat-input {
-    display: flex;
-    gap: 10px;
+    padding: 6px 10px;
+    font-size: 14px;
   }
   
   .chat-input input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    padding: 8px 10px;
   }
-  
-  .chat-input button {
-    padding: 10px 20px;
-    background-color: rgba(0, 66, 129, 1);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .chat-input button:hover {
-    background-color: rgba(0, 66, 129, 1);
-  }
-  
-  .chat-input button i {
-    font-size: 16px;
-  }
-  </style>
+}
+</style>

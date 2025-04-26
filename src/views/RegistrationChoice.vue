@@ -149,8 +149,8 @@ export default {
 };
 </script>
 
-
 <style scoped>
+/* Базовые стили */
 body,
 html {
   margin: 0;
@@ -161,58 +161,44 @@ html {
   font-family: Arial, sans-serif;
 }
 
+/* Главный контейнер */
 .login-container {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Центрирование по вертикали */
-  align-items: center; /* Центрирование по горизонтали */
-  height: 100%; /* Растягиваем контейнер на всю высоту экрана */
-  background-color: rgba(244, 244, 249, 0.8); /* Прозрачный фон */
-  max-width: 500px;
-  margin: 120px auto 0 auto; /* Добавляем отступ сверху */
+  justify-content: center;
+  align-items: center;
+  min-height: auto; /* Изменено с 100vh */
+  background-color: rgba(244, 244, 249, 0.8);
+  width: auto;
+  max-width: 420px; /* Уменьшено с 480px */
+  margin: 100px auto 30px; /* Уменьшен нижний отступ */
+  padding: 25px 30px; /* Уменьшены отступы */
+  border-radius: 10px; /* Немного уменьшено скругление */
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08); /* Более легкая тень */
 }
 
+/* Форма */
 .form-container {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   padding: 20px;
-  margin-top: 30px;
+  box-sizing: border-box; /* Добавлено для правильного расчета ширины */
 }
 
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.616);
-}
-
-.notification.error {
-  background-color: rgba(255, 174, 0, 0.615);
-}
-
+/* Навбар */
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   background-color: white;
-  padding: 10px 20px;
+  padding: 12px 20px;
   display: flex;
-  justify-content: space-between; /* Добавляет пространство между элементами */
+  justify-content: space-between;
   align-items: center;
   z-index: 1000;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -224,22 +210,23 @@ html {
 }
 
 .logo-img {
-  height: 40px; /* Размер логотипа */
-  margin-right: 10px; /* Отступ справа от логотипа */
+  height: 40px;
+  margin-right: 10px;
 }
 
+/* Кнопка "Назад" */
 .back-button {
   background-color: #fff;
   color: #004281;
-  border: none;
-  padding: 10px 20px;
+  border: 1px solid #004281;
+  padding: 8px 16px;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: absolute;
-  left: 1400px; /* Устанавливает точное расстояние от левого края */
+  position: static;
+  margin-left: auto;
 }
 
 .back-button:hover {
@@ -249,96 +236,205 @@ html {
   box-shadow: 0 4px 8px rgba(0, 85, 165, 0.2);
 }
 
-.separator {
-  flex-grow: 1;
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.5);
-  margin: 0 20px;
+/* Элементы формы */
+.input-group {
+  margin-bottom: 18px;
+  width: 100%; /* Добавлено */
 }
 
-.menu {
-  display: flex;
-  gap: 10px;
+label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #555;
+  width: 100%; /* Добавлено */
 }
 
-.menu-item {
-  background-color: transparent;
-  border: none;
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  box-sizing: border-box; /* Добавлено */
+  display: block; /* Добавлено */
+}
+
+input:focus {
+  border-color: rgba(255, 174, 0, 0.615);
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 174, 0, 0.1);
+}
+
+/* Кнопка входа */
+.btn-login {
+  background-color: #004281;
   color: white;
-  font-size: 18px;
+  border: none;
+  padding: 13px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+  margin-top: 5px;
 }
 
+.btn-login:hover {
+  background-color: #003365;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Сообщения об ошибках */
+.error-text {
+  font-size: 12px;
+  color: red;
+  margin-top: 4px;
+  display: block;
+}
+
+.error-message {
+  color: red;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.loading-message {
+  color: #666;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.input-error {
+  border-color: red !important;
+}
+
+/* Ссылка на регистрацию */
 .register-link {
-  margin-top: 15px;
+  margin-top: 18px;
   text-align: center;
 }
 
 .register-text {
   color: #004281;
   text-decoration: none;
+  font-weight: bold;
+  transition: all 0.2s ease;
 }
 
 .register-text:hover {
   text-decoration: underline;
+  color: #003366;
 }
 
-.input-group {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
+/* Уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
   border-radius: 5px;
-  transition: border 0.3s ease;
-}
-
-input:focus {
-  border-color: rgba(255, 174, 0, 0.615);
-  outline: none;
-}
-
-.error-text {
-  font-size: 12px;
-  color: red;
-}
-
-.error-message {
-  color: red;
-  margin-top: 10px;
-}
-
-.loading-message {
-  color: #666;
-  margin-top: 10px;
-}
-
-.btn-login {
-  background-color: #004281;
   color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  width: 100%;
-  transition: background-color 0.3s ease;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 }
 
-.btn-login:hover {
-  background-color: #003365;
+.notification.show {
+  opacity: 1;
+  visibility: visible;
+  top: 30px;
 }
 
-.input-error {
-  border-color: red !important;
+.notification.success {
+  background-color: rgba(0, 128, 0, 0.8);
+}
+
+.notification.error {
+  background-color: rgba(255, 174, 0, 0.8);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .login-container {
+    max-width: 100%;
+    padding: 20px 15px;
+  }
+  
+  .form-container {
+    padding: 20px;
+  }
+  
+  .navbar {
+    padding: 10px 15px;
+  }
+  
+  .back-button {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Адаптивные стили для маленьких экранов */
+@media (max-width: 480px) {
+  .form-container {
+    padding: 18px;
+    width: calc(100% - 20px); /* Учитываем отступы */
+    max-width: none; /* Убираем ограничение максимальной ширины */
+  }
+  
+  .form-container {
+    padding: 18px;
+    margin-top: 15px;
+  }
+  input {
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .btn-login {
+    padding: 12px;
+    font-size: 15px;
+  }
+  
+  .logo-img {
+    height: 35px;
+  }
+}
+
+@media (max-width: 360px) {
+  .form-container {
+    padding: 15px;
+    width: calc(100% - 16px);
+  }
+  
+  .navbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  
+  .logo {
+    margin-bottom: 8px;
+  }
+  
+  .back-button {
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+  }
 }
 </style>

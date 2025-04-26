@@ -151,10 +151,8 @@ export default {
 };
 </script>
 
-
 <style scoped>
-@import "/public/css/registration.css";
-
+/* Базовые стили */
 body,
 html {
   margin: 0;
@@ -165,58 +163,43 @@ html {
   font-family: Arial, sans-serif;
 }
 
+/* Главный контейнер */
 .login-container {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Центрирование по вертикали */
-  align-items: center; /* Центрирование по горизонтали */
-  height: 100%; /* Растягиваем контейнер на всю высоту экрана */
-  background-color: rgba(244, 244, 249, 0.8); /* Прозрачный фон */
-  max-width: 500px;
-  margin: 130px auto 0 auto;
+  justify-content: center;
+  align-items: center;
+  min-height: auto;
+  background-color: rgba(244, 244, 249, 0.8);
+  width: 90%;
+  max-width: 420px;
+  margin: 80px auto 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
 }
 
+/* Форма */
 .form-container {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   padding: 20px;
-  margin-top: 30px;
+  box-sizing: border-box;
 }
 
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.616);
-}
-
-.notification.error {
-  background-color: rgba(255, 174, 0, 0.615);
-}
-
+/* Навбар */
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   background-color: white;
-  padding: 10px 20px;
+  padding: 10px 15px;
   display: flex;
-  justify-content: space-between; /* Добавляет пространство между элементами */
+  justify-content: space-between;
   align-items: center;
   z-index: 1000;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -228,124 +211,202 @@ html {
 }
 
 .logo-img {
-  height: 40px; /* Размер логотипа */
-  margin-right: 10px; /* Отступ справа от логотипа */
+  height: 35px;
+  margin-right: 8px;
 }
 
+/* Кнопка "Назад" */
 .back-button {
   background-color: #fff;
   color: #004281;
-  border: none;
-  padding: 10px 20px;
+  border: 1px solid #004281;
+  padding: 6px 12px;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: absolute;
-  left: 1400px; /* Устанавливает точное расстояние от левого края */
 }
 
 .back-button:hover {
   background-color: #004281;
   color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 85, 165, 0.2);
 }
 
-.separator {
-  flex-grow: 1;
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.5);
-  margin: 0 20px;
-}
-
-.menu {
-  display: flex;
-  gap: 10px;
-}
-
-.menu-item {
-  background-color: transparent;
-  border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-h1 {
-  font-size: 24px;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
+/* Элементы формы */
 .input-group {
   margin-bottom: 15px;
+  width: 100%;
 }
 
 label {
   display: block;
   font-size: 14px;
   margin-bottom: 5px;
+  color: #555;
 }
 
 input {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
+  font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  transition: border 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
 }
 
 input:focus {
   border-color: rgba(255, 174, 0, 0.615);
   outline: none;
+  background-color: #fff;
 }
 
-.input-error {
-  border-color: rgba(255, 174, 0, 0.615);
-}
-
-.error-text {
-  color: rgba(255, 174, 0, 0.615);
-  font-size: 12px;
+/* Кнопка входа */
+.btn-login {
+  background-color: #004281;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
   margin-top: 5px;
 }
 
-.btn-login {
-  background-color: rgba(0, 66, 129, 0.8);
-  color: white;
-  padding: 12px 0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  width: 100%;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
-}
-
 .btn-login:hover {
-  background-color: rgba(0, 66, 129, 0.8);
+  background-color: #003365;
 }
 
-.btn-login:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+/* Сообщения об ошибках */
+.error-text {
+  font-size: 12px;
+  color: red;
+  margin-top: 4px;
+  display: block;
 }
 
 .error-message {
-  color: rgba(255, 174, 0, 0.615);
-  font-weight: bold;
-  margin-top: 10px;
+  color: red;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 13px;
 }
 
 .loading-message {
-  color: #888;
-  font-style: italic;
-  font-size: 14px;
+  color: #666;
+  margin: 10px 0;
   text-align: center;
-  margin-top: 20px;
+  font-size: 13px;
+}
+
+.input-error {
+  border-color: red !important;
+}
+
+/* Уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  max-width: 90%;
+}
+
+.notification.success {
+  background-color: rgba(0, 128, 0, 0.8);
+}
+
+.notification.error {
+  background-color: rgba(255, 174, 0, 0.8);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .login-container {
+    margin-top: 70px;
+    width: 85%;
+    padding: 15px;
+  }
+  
+  .navbar {
+    padding: 8px 12px;
+  }
+  
+  .logo-img {
+    height: 30px;
+  }
+  
+  .back-button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    margin-top: 60px;
+    width: 90%;
+    padding: 15px;
+    border-radius: 6px;
+  }
+  
+  .form-container {
+    padding: 15px;
+    box-shadow: none;
+  }
+  
+  input {
+    padding: 10px;
+    font-size: 15px;
+  }
+  
+  .btn-login {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-container {
+    margin-top: 60px;
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .navbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  
+  .logo {
+    margin-bottom: 5px;
+  }
+  
+  .back-button {
+    width: 100%;
+    margin-top: 5px;
+    text-align: center;
+  }
+  
+  .form-container {
+    padding: 22px;
+  }
+  
+  input, .btn-login {
+    font-size: 14px;
+  }
 }
 </style>
