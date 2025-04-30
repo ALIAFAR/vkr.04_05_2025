@@ -8,11 +8,11 @@
       <div class="profile-header">
         <div class="avatar-container">
           <img 
-            :src="avatarUrl || '/default-avatar.png'" 
+            :src="avatarUrl || 'placeholder-image.jpg'" 
             alt="Аватар" 
-            class="avatar-image"
+            class="avatar-image" 
             @click="triggerFileInput"
-          />
+        />
           <input 
             type="file" 
             ref="fileInput" 
@@ -104,6 +104,7 @@ import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+
 export default {
   components: {
     AppNavbar,
@@ -184,16 +185,16 @@ export default {
       
       const formData = new FormData();
       formData.append('avatar', file);
+      console.log("formData", file)
       
       try {
         const token = Cookies.get('token');
-        const response = await axios.post('http://localhost:5000/api/user/upload-avatar', formData, {
+        const response = await axios.put('http://localhost:5000/api/user/create-img', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
-        });
-        
+        });       
         if (response.data.success) {
           this.avatarUrl = response.data.avatarUrl + '?' + new Date().getTime(); // Добавляем параметр для избежания кеширования
         }
@@ -206,7 +207,7 @@ export default {
     async removeAvatar() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.delete('http://localhost:5000/api/user/remove-avatar', {
+        const response = await axios.delete('http://localhost:5000/api/user/delete-img', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -224,17 +225,17 @@ export default {
     async fetchAvatar() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/user/get-avatar', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const response = await axios.get('http://localhost:5000/api/user/get-img', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
         
         if (response.data.success && response.data.avatarUrl) {
-          this.avatarUrl = response.data.avatarUrl + '?' + new Date().getTime();
+            this.avatarUrl = response.data.avatarUrl;
         }
       } catch (error) {
-        console.error("Ошибка при загрузке аватара:", error);
+          console.error("Ошибка при загрузке аватара:", error);
       }
     },
 

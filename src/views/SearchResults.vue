@@ -412,7 +412,8 @@ export default {
           }
         });
         
-        this.trips = response.data.trips || [];
+        this.trips = response.data || [];
+        console.log("trips", this.trips)
         this.sortedTrips = [...this.trips];
         this.filteredTrips = [...this.trips];
         
