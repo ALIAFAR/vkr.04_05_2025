@@ -87,9 +87,9 @@
               <div class="driver-info">
                 <router-link :to="`/driver/${trip.driver_id}`" class="driver-avatar-link">
                   <img 
-                    :src="trip.driver_avatar || '/default-avatar.jpg'" 
-                    alt="Аватар водителя" 
-                    class="driver-avatar"
+                    :src="avatarUrl || 'placeholder-image.jpg'" 
+                    alt="Аватар" 
+                    class="driver-avatar" 
                     @error="handleImageError"
                   >
                 </router-link>
@@ -399,6 +399,21 @@ export default {
       this.loading = true;
       this.error = null;
       
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get('http://localhost:5000/api/user/get-img', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.data.success && response.data.avatarUrl) {
+            this.avatarUrl = response.data.avatarUrl;
+        }
+      } catch (error) {
+          console.error("Ошибка при загрузке аватара:", error);
+      }
+
       try {
         const response = await axios.get(`http://localhost:5000/api/trip/searchResult`, {
           params: {
