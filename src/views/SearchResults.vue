@@ -87,7 +87,7 @@
               <div class="driver-info">
                 <router-link :to="`/driver/${trip.driver_id}`" class="driver-avatar-link">
                   <img 
-                    :src="avatarUrl || 'placeholder-image.jpg'" 
+                    :src="trip.avatarUrl || 'placeholder-image.jpg'" 
                     alt="Аватар" 
                     class="driver-avatar" 
                     @error="handleImageError"
@@ -95,11 +95,11 @@
                 </router-link>
                 <div class="driver-text-info">
                   <div class="driver-name">
-                    {{ trip.driver_name }} {{ trip.driver_surname }}
+                    {{ trip.name }} {{ trip.surname }}
                   </div>
                   <div class="driver-rating">
                     <span class="star">★</span>
-                    <span class="rating-value">{{ trip.driver_rating || 'Нет оценки' }}</span>
+                    <span class="rating-value">{{ trip.rating || 'Нет оценки' }}</span>
                     <span class="driver-experience">
                       • {{ calculateDrivingExperience(trip.license_issue_date) }}
                     </span>
@@ -109,7 +109,7 @@
               
               <div class="car-info">
                 <span class="car-icon">🚗</span>
-                {{ trip.car_brand }} {{ trip.car_model }}
+                {{ trip.brand }} {{ trip.mark }}
                 <span class="car-year" v-if="trip.car_year">({{ trip.car_year }})</span>
               </div>
             </div>
@@ -263,7 +263,7 @@
         <div v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
           <router-link :to="`/profile/${passenger.user_id}`" class="passenger-avatar-link">
             <img 
-              :src="passenger.avatar || '/default-avatar.jpg'" 
+              :src="passenger.avatarUrl || '/default-avatar.jpg'" 
               alt="Аватар пассажира" 
               class="passenger-avatar"
               @error="handleImageError"
@@ -275,14 +275,14 @@
               <span class="passenger-gender" :class="passenger.gender">
                 {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
               </span>
-              <span class="passenger-age">{{ calculateAge(passenger.birth_date) }} лет</span>
-              <span v-if="passenger.rating" class="passenger-rating">
-                ★ {{ passenger.rating.toFixed(1) }}
+              <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
+              <span v-if="passenger.passenger_rating " class="passenger-rating">
+                ★ {{ passenger.passenger_rating .toFixed(1) }}
               </span>
             </div>
             <div class="passenger-details">
-              <span class="passenger-seats">Мест: {{ passenger.seats_booked }}</span>
-              <span class="passenger-price">{{ passenger.price }} ₽</span>
+              <span class="passenger-seats">Мест: {{ passenger.department }}</span>
+              <span class="passenger-price">{{ passenger.position }} ₽</span>
             </div>
             <div v-if="passenger.comment" class="passenger-comment">
               "{{ passenger.comment }}"
@@ -398,21 +398,6 @@ export default {
     async fetchTrips() {
       this.loading = true;
       this.error = null;
-      
-      try {
-        const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/user/get-img', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.data.success && response.data.avatarUrl) {
-            this.avatarUrl = response.data.avatarUrl;
-        }
-      } catch (error) {
-          console.error("Ошибка при загрузке аватара:", error);
-      }
 
       try {
         const response = await axios.get(`http://localhost:5000/api/trip/searchResult`, {
@@ -426,32 +411,50 @@ export default {
             'Authorization': `Bearer ${Cookies.get('token')}`
           }
         });
+
+        console.log('Ответ сервера:', response.data.trips[0]);
         
-        this.trips = response.data || [];
-        console.log("trips", this.trips)
-        this.sortedTrips = [...this.trips];
-        this.filteredTrips = [...this.trips];
-        
-        if (this.trips.length === 0) {
-          this.error = 'Не найдено поездок по вашему запросу. Попробуйте изменить параметры поиска.';
+        // Обрабатываем новую структуру ответа
+        if (response.data && response.data.success) {
+          this.trips = response.data.trips || [];
+          this.sortedTrips = [...this.trips];
+          this.filteredTrips = [...this.trips];
+          
+          if (this.trips.length === 0) {
+            this.error = 'Не найдено поездок по вашему запросу. Попробуйте изменить параметры поиска.';
+          }
+        } else {
+          this.error = 'Неверный формат ответа от сервера';
+          this.trips = [];
         }
       } catch (error) {
         console.error('Ошибка при загрузке поездок:', error);
         
         if (error.response) {
-          if (error.response.status === 401) {
-            this.error = 'Для просмотра результатов необходимо авторизоваться';
-            this.$router.push('/login');
-          } else if (error.response.status === 400) {
-            this.error = 'Некорректные параметры поиска';
-          } else {
-            this.error = 'Ошибка сервера при загрузке данных';
+          switch (error.response.status) {
+            case 401:
+              this.error = 'Для просмотра результатов необходимо авторизоваться';
+              this.$router.push('/login');
+              break;
+            case 400:
+              this.error = error.response.data?.message || 'Некорректные параметры поиска';
+              break;
+            case 404:
+              this.error = 'Сервис поиска временно недоступен';
+              break;
+            case 500:
+              this.error = error.response.data?.message || 'Ошибка сервера при обработке запроса';
+              break;
+            default:
+              this.error = 'Ошибка сервера';
           }
         } else if (error.request) {
-          this.error = 'Не удалось подключиться к серверу';
+          this.error = 'Не удалось подключиться к серверу. Проверьте интернет-соединение';
         } else {
           this.error = 'Произошла ошибка при выполнении запроса';
         }
+        
+        this.trips = [];
       } finally {
         this.loading = false;
       }
@@ -572,9 +575,9 @@ export default {
           this.$router.push('/login');
           return;
         }
-
+        console.log("1")
         // Запрашиваем подтверждение для поездок с подтверждением
-        if (trip.requires_confirmation) {
+        /*if (!trip.instant_booking) {
           const confirm = await this.$confirm(
             `Эта поездка требует подтверждения водителя. После бронирования вы будете перенаправлены в чат с водителем для уточнения деталей. Продолжить?`,
             'Подтверждение бронирования',
@@ -586,14 +589,30 @@ export default {
           );
           
           if (!confirm) return;
-        }
+        }*/
 
-        const response = await axios.post(
-          `${API_BASE_URL}/api/trips/${trip.id}/book`,
+        const response1 = await axios.post(
+          `http://localhost:5000/api/chat/create`,
           {
-            seats: this.searchParams.passengers,
-            departure_location: trip.departure_location,
-            arrival_location: trip.arrival_location
+            trip_id: trip.trip_id
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        console.log("2")
+         // Получаем chat_id из ответа сервера
+        const chat_id = response1.data.chatId; // Предполагая, что сервер возвращает { chatId: ... }
+        console.log("3")
+        const response = await axios.post(
+          `http://localhost:5000/api/booking/create`,
+          {
+            trip_id: trip.trip_id,
+            chat_id: chat_id,
+            seats_booked: this.searchParams.passengers
+            // остальные поля не обязательны (будут установлены по умолчанию)
           },
           {
             headers: {
@@ -602,10 +621,10 @@ export default {
           }
         );
 
+        // Обновляем локальное состояние
         const booking = response.data.booking;
-        
-        // Обновляем список поездок
         const updatedTrip = response.data.trip;
+
         const index = this.trips.findIndex(t => t.id === updatedTrip.id);
         if (index !== -1) {
           this.trips.splice(index, 1, updatedTrip);
@@ -613,7 +632,7 @@ export default {
         }
         
         // Отправка уведомлений водителю
-        if (trip.requires_confirmation) {
+        if (trip.instant_booking) {
           try {
             // Уведомление в приложении
             await axios.post(
@@ -662,14 +681,14 @@ export default {
         // Уведомление пользователю
         this.$notify({
           title: 'Успешно!',
-          text: trip.requires_confirmation 
+          text: trip.instant_booking 
             ? 'Запрос на бронирование отправлен водителю' 
             : `Вы забронировали ${this.searchParams.passengers} мест в поездке`,
           type: 'success'
         });
         
         // Перенаправление
-        if (trip.requires_confirmation) {
+        if (trip.instant_booking) {
           // Открываем чат с водителем
           this.$router.push(`/chat/${trip.driver_id}`);
         } else {
@@ -706,22 +725,30 @@ export default {
       
       try {
         const token = Cookies.get('token');
+
         const response = await axios.get(
-          `${API_BASE_URL}/api/trips/${trip.id}/passengers`,
+          'http://localhost:5000/api/user/get-all',
           {
-            params: { location_type: locationType },
-            headers: { 'Authorization': `Bearer ${token}` }
+            params: { // ✅ GET-параметры
+              trip_id: trip.trip_id 
+            },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
         );
+
         
         this.passengers = (response.data.passengers || []).map(passenger => ({
           ...passenger,
           name: passenger.name || 'Не указано',
           surname: passenger.surname || '',
           gender: passenger.gender || 'unknown',
-          rating: passenger.rating ? parseFloat(passenger.rating) : null,
-          seats_booked: passenger.seats_booked || 1,
-          price: passenger.price || '?'
+          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
+          seats_booked: passenger.seats_booked,
+          department: passenger.department,
+          birthday:passenger.birthday,
+          position: passenger.position || '?'
         }));
         
         this.showPassengersModal = true;
@@ -746,7 +773,7 @@ export default {
         const trip = this.currentBookingTrip;
 
         // Запрашиваем подтверждение для поездок с подтверждением
-        if (trip.requires_confirmation) {
+        if (trip.instant_booking) {
           const confirm = await this.$confirm(
             `Эта поездка требует подтверждения водителя. После бронирования вы будете перенаправлены в чат с водителем для уточнения деталей. Продолжить?`,
             'Подтверждение бронирования',
@@ -761,7 +788,7 @@ export default {
         }
 
         const response = await axios.post(
-          `${API_BASE_URL}/api/trips/${trip.id}/book`,
+          `${API_BASE_URL}/api/trips/${trip.trip_id}/book`,
           {
             seats: this.searchParams.passengers,
             departure_location: trip.departure_location,
@@ -785,7 +812,7 @@ export default {
         }
         
         // Отправка уведомлений водителю
-        if (trip.requires_confirmation) {
+        if (trip.instant_booking) {
           try {
             // Уведомление в приложении
             await axios.post(
@@ -834,7 +861,7 @@ export default {
         // Уведомление пользователю
         this.$notify({
           title: 'Успешно!',
-          text: trip.requires_confirmation 
+          text: trip.instant_booking 
             ? 'Запрос на бронирование отправлен водителю' 
             : `Вы забронировали ${this.searchParams.passengers} мест в поездке`,
           type: 'success'
@@ -844,7 +871,7 @@ export default {
         this.closeBookingModal();
         
         // Перенаправление
-        if (trip.requires_confirmation) {
+        if (trip.instant_booking) {
           // Открываем чат с водителем
           this.$router.push(`/chat/${trip.driver_id}`);
         } else {
@@ -879,7 +906,7 @@ export default {
     },
     
     showTripDetails(trip) {
-      this.$router.push(`/trip/${trip.id}`);
+      this.$router.push(`/trip/${trip.trip_id}`);
     },
     
     closeModal() {

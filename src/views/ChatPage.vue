@@ -6,22 +6,22 @@
       <p>Поездка: {{ chat.trip }}</p>
       <p>Дата: {{ chat.date }}</p>
     </div>
-    <div class="chat-messages">
+    <div class="chat-messages" ref="messagesContainer">
       <div
         v-for="(message, index) in messages"
         :key="index"
-        :class="['message', message.sender === 'Вы' ? 'message-you' : 'message-other']"
+        :class="['message', message.isCurrentUser ? 'message-you' : 'message-other']"
       >
         <div class="message-avatar">
           <img
-            :src="message.sender === 'Вы' ? '/pngwing.com (5).png' : '/pngwing.com (5).png'"
+            :src="message.isCurrentUser ? userAvatar : companionAvatar"
             alt="Avatar"
           />
         </div>
         <div class="message-content">
-          <span class="message-sender">{{ message.sender }}</span>
-          <span class="message-text">{{ message.text }}</span>
-          <span class="message-time">{{ message.time }}</span>
+          <span class="message-sender">{{ message.senderName }}</span>
+          <span class="message-text">{{ message.content }}</span>
+          <span class="message-time">{{ formatTime(message.sent_at) }}</span>
         </div>
       </div>
     </div>
@@ -42,6 +42,7 @@
 <script>
 import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
+import Cookies from 'js-cookie';
 
 export default {
   components: {
@@ -52,62 +53,149 @@ export default {
       chat: {},
       messages: [],
       newMessage: "",
+      socket: null,
+      userAvatar: '/pngwing.com (5).png',
+      companionAvatar: '/pngwing.com (5).png',
+      currentUserId: null, // ID текущего пользователя из хранилища/Vuex
+      companionId: null // ID собеседника
     };
   },
-  created() {
+  async created() {
+    this.currentUserId = parseInt(Cookies.get('userId') || 1); // сначала получаем ID
     const chatId = this.$route.params.id;
-    this.loadChat(chatId);
-    this.loadMessages(chatId);
+    await this.loadChat(chatId);
+    await this.loadMessages(chatId);
+    this.initWebSocket(chatId);
+  },
+  beforeUnmount() {
+    if (this.socket) {
+      this.socket.close();
+    }
   },
   methods: {
     async loadChat(chatId) {
       try {
-        const response = await axios.get(`/api/chats/${chatId}`);
+        const response = await axios.get(
+          `http://localhost:5000/api/chat/${chatId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${Cookies.get("token")}`
+            }
+          }
+        )
         this.chat = response.data;
+        console.log("this.chat.driver_id",this.chat.driver_id)
+        console.log("this.chat.passenger_id",this.chat.passenger_id)
+        // Определяем ID собеседника
+        this.companionId = this.chat.passenger_id === this.currentUserId 
+          ? this.chat.driver_id 
+          : this.chat.passenger_id;
       } catch (error) {
         console.error("Ошибка при загрузке данных о чате:", error);
       }
     },
     async loadMessages(chatId) {
       try {
-        const response = await axios.get(`/api/chats/${chatId}/messages`);
-        this.messages = response.data;
+        const response = await axios.get(`http://localhost:5000/api/chat/${chatId}/messages`);
+        this.messages = response.data.map(msg => ({
+          ...msg,
+          isCurrentUser: msg.sender_id === this.currentUserId,
+          senderName: msg.sender_id === this.currentUserId ? 'Вы' : 'Собеседник'
+        }));
+        this.scrollToBottom();
       } catch (error) {
         console.error("Ошибка при загрузке сообщений:", error);
       }
     },
-    async sendMessage() {
-      if (this.newMessage.trim()) {
-        try {
-          const chatId = this.$route.params.id;
-          const response = await axios.post(`/api/chats/${chatId}/messages`, {
-            text: this.newMessage,
-          });
+    initWebSocket() {
+      // Определяем протокол (ws или wss)
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      
+      // Формируем URL для WebSocket соединения
+      const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
+      
+      this.socket = new WebSocket(wsUrl);
 
-          if (response.data.success) {
-            const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            this.messages.push({ sender: "Вы", text: this.newMessage, time: currentTime });
-            this.newMessage = "";
-            
-            // Прокрутка вниз после отправки сообщения
-            this.$nextTick(() => {
-              const messagesContainer = document.querySelector('.chat-messages');
-              messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
-          } else {
-            console.error("Ошибка при отправке сообщения:", response.data.message);
-          }
+      this.socket.onopen = () => {
+        console.log('WebSocket соединение установлено');
+        // Авторизуемся (отправляем user_id)
+        this.socket.send(JSON.stringify({
+          type: 'auth',
+          user_id: this.currentUserId
+        }));
+      };
+
+      this.socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        
+        if (message.type === 'message') {
+          this.handleNewMessage(message);
+        }
+      };
+
+      this.socket.onclose = () => {
+        console.log('WebSocket соединение закрыто');
+      };
+
+      this.socket.onerror = (error) => {
+        console.error('WebSocket ошибка:', error);
+      };
+    },
+    handleNewMessage(message) {
+      this.messages.push({
+        ...message,
+        isCurrentUser: message.sender_id === this.currentUserId,
+        senderName: message.sender_id === this.currentUserId ? 'Вы' : 'Собеседник'
+      });
+      this.scrollToBottom();
+    },
+    async sendMessage() {
+      if (this.newMessage.trim() && this.socket && this.socket.readyState === WebSocket.OPEN) {
+        try {
+          const messageData = {
+            type: 'message',
+            chat_id: this.$route.params.id,
+            sender_id: this.currentUserId,
+            content: this.newMessage
+          };
+
+          this.socket.send(JSON.stringify(messageData));
+          
+          // Оптимистичное обновление UI
+          this.messages.push({
+            content: this.newMessage,
+            sender_id: this.currentUserId,
+            isCurrentUser: true,
+            senderName: 'Вы',
+            sent_at: new Date().toISOString()
+          });
+          
+          this.newMessage = "";
+          this.scrollToBottom();
         } catch (error) {
           console.error("Ошибка при отправке сообщения:", error);
-          if (error.response) {
-            console.error("Ответ сервера:", error.response.data);
-          }
         }
       }
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const container = this.$refs.messagesContainer;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
+    },
+    formatTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
     }
   }
 };
 </script>
+
+<!-- Стили остаются без изменений -->
 
 <style scoped>
 .chat-page {

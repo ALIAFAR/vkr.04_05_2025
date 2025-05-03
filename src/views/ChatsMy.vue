@@ -1,17 +1,21 @@
 <template>
   <AppNavbar />
   <div class="chat-container">
-    <h1 class="section-title">Чаты</h1>
+    <h1 class="section-title">Мои чаты</h1>
     <div class="chat-list">
       <div
-        v-for="(chat, index) in chats"
-        :key="index"
+        v-for="chat in chats"
+        :key="chat.id"
         class="chat-item"
         @click="selectChat(chat)"
       >
-        <span class="chat-name">{{ chat.name }}</span>
-        <span class="chat-trip">Поездка: {{ chat.trip }}</span>
-        <span class="chat-date">Дата: {{ chat.date }}</span>
+        <div class="chat-route">
+          <span class="route">{{ chat.departure_location }} → {{ chat.arrival_location }}</span>
+        </div>
+        <div class="chat-details">
+          <span class="departure-time">{{ formatDate(chat.departure_time) }}</span>
+          <span class="trip-id">Поездка #{{ chat.trip_id }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -20,7 +24,7 @@
 <script>
 import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
-import VueCookies from "vue-cookies";
+import Cookies from 'js-cookie';
 
 export default {
   components: {
@@ -28,101 +32,118 @@ export default {
   },
   data() {
     return {
-      chats: [], // Список чатов
+      chats: [],
+      token: Cookies.get('token') || ''
     };
   },
   created() {
-    // Загружаем список чатов при создании компонента
     this.loadChats();
   },
   methods: {
     async loadChats() {
       try {
-        // Загружаем список чатов с сервера
-        const response = await axios.get('/api/chats');
-        this.chats = response.data; // Сохраняем список чатов
+        const response = await axios.get(
+          'http://localhost:5000/api/chat/get',
+          {
+            headers: {
+              'Authorization': `Bearer ${this.token}`
+            }
+          }
+        );
+
+        this.chats = response.data.map(chat => ({
+          ...chat,
+          departure_time: new Date(chat.departure_time)
+        }));
+
+        console.log("chat.passenger_id",response.data[0].passenger_id)
+        const response1 = await axios.get(
+          'http://localhost:5000/api/user/get-id',
+          {
+            headers: {
+              'Authorization': `Bearer ${Cookies.get('token')}`
+            }
+          }
+        );
+        
+        const userId = response1.data.user_id;
+        console.log("My id",userId)
+        Cookies.set('userId', userId)
+
       } catch (error) {
-        console.error("Ошибка при загрузке списка чатов:", error);
+        console.error("Ошибка при загрузке чатов:", error);
       }
     },
-    async selectChat(chat) {
-      try {
-        // Сохраняем выбранный чат в куки
-        VueCookies.set("selectedChat", chat.id, "1h"); // Кука действительна 1 час
-
-        // Опционально: отправляем запрос на сервер для сохранения выбранного чата
-        await axios.post(`/api/chats/${chat.id}/select`);
-
-        // Переходим к конкретному чату
-        this.$router.push(`/chat/${chat.id}`);
-      } catch (error) {
-        console.error("Ошибка при выборе чата:", error);
-      }
+    selectChat(chat) {
+      this.$router.push(`/chat/${chat.id}`);
     },
-  },
-  mounted() {
-    // Проверяем, есть ли сохранённый чат в куках
-    const selectedChatId = VueCookies.get("selectedChat");
-    if (selectedChatId) {
-      console.log("Сохранённый чат из куки:", selectedChatId);
+    formatDate(date) {
+      return date.toLocaleString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
-  },
+  }
 };
 </script>
 
 <style scoped>
 .chat-container {
-  text-align: center;
-  padding: 50px 20px;
-  max-width: 600px;
-  margin: 120px auto 0;
-  background-color: rgba(107, 151, 193, 0.299);
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .section-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 15px;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
   color: #333;
 }
 
 .chat-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
 .chat-item {
   padding: 15px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .chat-item:hover {
-  background-color: #f0f0f0;
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.chat-name {
-  font-size: 18px;
-  color: #333;
-  display: block;
+.chat-route {
+  font-weight: 500;
   margin-bottom: 5px;
+  color: #222;
 }
 
-.chat-trip {
-  font-size: 14px;
+.chat-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
   color: #666;
-  display: block;
-  margin-bottom: 5px;
 }
 
-.chat-date {
-  font-size: 14px;
-  color: #666;
+.departure-time {
+  color: #444;
+}
+
+.trip-id {
+  background: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
 }
 </style>
