@@ -52,6 +52,12 @@
               <span class="filter-icon">🧳</span>
               <span>С негабаритным багажом</span>
             </label>
+
+            <label class="filter-option">
+              <input type="checkbox" v-model="filters.big_size_luggage">
+              <span class="filter-icon">🧳</span>
+              <span>С крупно-габаритным багажом</span>
+            </label>
             
             <label class="filter-option">
               <input type="checkbox" v-model="filters.childSeat">
@@ -160,7 +166,7 @@
                 </div>
               </div>
 
-              <div class="trip-features" v-if="trip.pets || trip.luggage || trip.child_seat">
+              <div class="trip-features" v-if="trip.pets || trip.luggage || trip.child_seat||trip. big_size_luggage">
                 <div class="feature-tag" v-if="trip.pets">
                   <span class="feature-icon">🐾</span>
                   <span>С животными</span>
@@ -168,6 +174,10 @@
                 <div class="feature-tag" v-if="trip.luggage">
                   <span class="feature-icon">🧳</span>
                   <span>С багажом</span>
+                </div>
+                <div class="feature-tag" v-if="trip. big_size_luggage">
+                  <span class="feature-icon">🧳</span>
+                  <span>С крупно-габаритным багажом</span>
                 </div>
                 <div class="feature-tag" v-if="trip.child_seat">
                   <span class="feature-icon">👶</span>
@@ -464,6 +474,7 @@ export default {
       this.filteredTrips = this.sortedTrips.filter(trip => {
         if (this.filters.pets && !trip.pets) return false;
         if (this.filters.luggage && !trip.luggage) return false;
+        if (this.filters.big_size_luggage && !trip.big_size_luggage) return false;
         if (this.filters.childSeat && !trip.child_seat) return false;
         
         return trip.available_seats >= this.searchParams.passengers;
@@ -482,8 +493,8 @@ export default {
           
         case 'rating':
           this.sortedTrips.sort((a, b) => {
-            const aRating = a.driver_rating || 0;
-            const bRating = b.driver_rating || 0;
+            const aRating = a.rating || 0;
+            const bRating = b.rating || 0;
             return bRating - aRating;
           });
           break;
@@ -594,7 +605,7 @@ export default {
         const response1 = await axios.post(
           `http://localhost:5000/api/chat/create`,
           {
-            trip_id: trip.trip_id
+            trip_id: trip.id
           },
           {
             headers: {
@@ -609,7 +620,7 @@ export default {
         const response = await axios.post(
           `http://localhost:5000/api/booking/create`,
           {
-            trip_id: trip.trip_id,
+            trip_id: trip.id,
             chat_id: chat_id,
             seats_booked: this.searchParams.passengers
             // остальные поля не обязательны (будут установлены по умолчанию)
@@ -725,12 +736,13 @@ export default {
       
       try {
         const token = Cookies.get('token');
+        console.log("trip.trip_id",trip.id)
 
         const response = await axios.get(
           'http://localhost:5000/api/user/get-all',
           {
             params: { // ✅ GET-параметры
-              trip_id: trip.trip_id 
+              trip_id: trip.id 
             },
             headers: {
               'Authorization': `Bearer ${token}`
@@ -906,7 +918,7 @@ export default {
     },
     
     showTripDetails(trip) {
-      this.$router.push(`/trip/${trip.trip_id}`);
+      this.$router.push(`/trip/${trip.id}`);
     },
     
     closeModal() {
