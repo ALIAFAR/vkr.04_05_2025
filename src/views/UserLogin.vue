@@ -1,55 +1,87 @@
 <template>
-  <div class="login-container">
+  <div class="login-page">
     <AppNavbar />
 
-    <!-- Основной контент -->
-    <div class="form-container">
-      <h1>Вход</h1>
-      <form @submit.prevent="handleLogin">
-        <div class="input-group">
-          <label for="emailOrPhone">Логин</label>
-          <input
-            type="text"
-            id="emailOrPhone"
-            v-model="emailOrPhone"
-            required
-            placeholder="Введите ваш логин"
-            :class="{ 'input-error': emailOrPhone && !isValidEmailOrPhone }"
-          />
-          <p v-if="emailOrPhone && !isValidEmailOrPhone" class="error-text">
-            Неверный формат логина (email или телефон)
-          </p>
+    <div class="login-wrapper">
+      <div class="login-card">
+        <h1 class="login-title">Вход в систему</h1>
+        
+        <form @submit.prevent="handleLogin" class="login-form">
+          <div class="form-group">
+            <label for="emailOrPhone" class="input-label">Логин</label>
+            <input
+              type="text"
+              id="emailOrPhone"
+              v-model="emailOrPhone"
+              required
+              placeholder="Email или телефон"
+              :class="['form-input', { 'input-error': emailOrPhone && !isValidEmailOrPhone }]"
+              @input="clearError"
+            />
+            <transition name="fade">
+              <p v-if="emailOrPhone && !isValidEmailOrPhone" class="error-message">
+                Неверный формат логина (email или телефон)
+              </p>
+            </transition>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="input-label">Пароль</label>
+            <div class="password-input-container">
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                id="password"
+                v-model="password"
+                required
+                placeholder="Введите пароль"
+                :class="['form-input', { 'input-error': password && !isValidPassword }]"
+                @input="clearError"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                @click="toggleShowPassword"
+                aria-label="Показать пароль"
+              >
+                <font-awesome-icon :icon="showPassword ? 'eye-slash' : 'eye'" />
+              </button>
+            </div>
+            <transition name="fade">
+              <p v-if="password && !isValidPassword" class="error-message">
+                Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы
+              </p>
+            </transition>
+          </div>
+
+          <div class="form-actions">
+            <router-link to="/forgot-password" class="forgot-password-link">
+              Забыли пароль?
+            </router-link>
+          </div>
+
+          <button
+            type="submit"
+            class="submit-button"
+            :disabled="isLoading || !isFormValid"
+            :class="{ 'button-loading': isLoading }"
+          >
+            <span v-if="!isLoading">Войти</span>
+            <span v-else class="loading-spinner"></span>
+          </button>
+
+          <transition name="fade">
+            <div v-if="error" class="form-error-message">
+              {{ error }}
+            </div>
+          </transition>
+        </form>
+
+        <div class="register-section">
+          <p class="register-text">Ещё не с нами?</p>
+          <router-link to="/registration" class="register-link">
+            Создать аккаунт
+          </router-link>
         </div>
-
-        <div class="input-group">
-          <label for="password">Пароль</label>
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            required
-            placeholder="Введите ваш пароль"
-            :class="{ 'input-error': password && !isValidPassword }"
-          />
-          <p v-if="password && !isValidPassword" class="error-text">
-            Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы.
-          </p>
-        </div>
-
-        <button type="submit" :disabled="isLoading || !isFormValid" class="btn-login">
-          {{ isLoading ? 'Загрузка...' : 'Войти' }}
-        </button>
-
-        <!-- Сообщение об ошибке -->
-        <div v-if="error" class="error-message">{{ error }}</div>
-      </form>
-
-      <!-- Ссылка на регистрацию -->
-      <div class="register-link">
-        <span>Еще не с нами? </span>
-        <router-link to="/registration" class="register-text"
-          >Зарегистрироваться</router-link
-        >
       </div>
     </div>
   </div>
@@ -58,42 +90,50 @@
 <script>
 import axios from "axios";
 import AppNavbar from "@/components/AppNavbar.vue";
-import { notify } from "@kyvg/vue3-notification"; // Библиотека для уведомлений
-import Cookies from "js-cookie"; // Импорт библиотеки для работы с cookies
+import { notify } from "@kyvg/vue3-notification";
+import Cookies from "js-cookie";
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+library.add(faEye, faEyeSlash);
 
 export default {
+  name: 'LoginPage',
   components: {
     AppNavbar,
+    FontAwesomeIcon
   },
   data() {
     return {
       emailOrPhone: "",
       password: "",
-      error: "", // Для отображения ошибок
-      isLoading: false, // Для отслеживания состояния загрузки
+      error: "",
+      isLoading: false,
+      showPassword: false,
     };
   },
   computed: {
-    // Проверка на корректный формат email или телефона
     isValidEmailOrPhone() {
-      const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      const phonePattern = /^\+?\d{10,15}$/; // Подходит для телефонных номеров в международном формате
-      return (
-        emailPattern.test(this.emailOrPhone) ||
-        phonePattern.test(this.emailOrPhone)
-      );
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phonePattern = /^\+?\d{10,15}$/;
+      return emailPattern.test(this.emailOrPhone) || phonePattern.test(this.emailOrPhone);
     },
-    // Проверка на корректный формат пароля
     isValidPassword() {
-      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
       return passwordPattern.test(this.password);
     },
-    // Проверка валидности всей формы
     isFormValid() {
       return this.isValidEmailOrPhone && this.isValidPassword;
     },
   },
   methods: {
+    toggleShowPassword() {
+      this.showPassword = !this.showPassword;
+    },
+    clearError() {
+      this.error = "";
+    },
     async handleLogin() {
       if (!this.isFormValid) {
         this.error = "Пожалуйста, проверьте введенные данные.";
@@ -104,309 +144,261 @@ export default {
       this.error = "";
 
       try {
-        const response = await axios.post("http://localhost:5000/api/user/login",
-          {
-            login: this.emailOrPhone,
-            password: this.password,
-          }
-        );
+        const response = await axios.post("http://localhost:5000/api/user/login", {
+          login: this.emailOrPhone,
+          password: this.password,
+        });
 
-        // Сохраняем токен в cookies
-        Cookies.set("token", response.data.token, { expires: 12 / 24 }); // Токен сохраняется на 7 дней
+        Cookies.set("token", response.data.token, { expires: 12 / 24, secure: true });
 
-        // Уведомление об успешной авторизации
         notify({
-          title: "Успех",
-          text: "Вы успешно вошли в систему!",
+          title: "Успешный вход",
+          text: "Добро пожаловать!",
           type: "success",
         });
 
-        // Переход на главную страницу после успешного входа
         this.$router.push("/");
       } catch (error) {
-        console.error("Ошибка при входе:", error);
-
-        if (error.response) {
-          // Ошибка от сервера
-          this.error =
-            error.response.data.message || "Неверная почта, номер или пароль";
-        } else if (error.request) {
-          // Ошибка сети (нет ответа от сервера)
-          this.error = "Ошибка сети. Пожалуйста, проверьте подключение к интернету.";
-        } else {
-          // Другие ошибки
-          this.error = "Произошла ошибка. Пожалуйста, попробуйте еще раз.";
-        }
+        this.handleLoginError(error);
       } finally {
         this.isLoading = false;
       }
     },
+    handleLoginError(error) {
+      console.error("Ошибка входа:", error);
+      
+      if (error.response) {
+        this.error = error.response.data.message || "Неверные учетные данные";
+      } else if (error.request) {
+        this.error = "Не удалось подключиться к серверу. Проверьте интернет-соединение.";
+      } else {
+        this.error = "Произошла ошибка. Пожалуйста, попробуйте снова.";
+      }
+    },
   },
   created() {
-    // Проверка на наличие токена при заходе на страницу входа
-    if (Cookies.get("authToken")) {
-      this.$router.push("/"); // Если пользователь уже авторизован, перенаправляем на главную
+    if (Cookies.get("token")) {
+      this.$router.push("/");
     }
   },
 };
 </script>
 
 <style scoped>
-/* Базовые стили */
-body,
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: url("/public/фон.jpg") no-repeat center center fixed;
-  background-size: cover;
-  font-family: Arial, sans-serif;
-}
-
-/* Главный контейнер */
-.login-container {
+.login-page {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #f5f7fa;
+}
+
+.login-wrapper {
+  display: flex;
   justify-content: center;
   align-items: center;
-  min-height: auto;
-  background-color: rgba(244, 244, 249, 0.8);
-  width: 90%;
+  flex-grow: 1;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
   max-width: 420px;
-  margin: 80px auto 20px;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+  padding: 2.5rem;
+  margin: 1rem;
 }
 
-/* Форма */
-.form-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 350px;
-  padding: 20px;
-  box-sizing: border-box;
+.login-title {
+  color: #1a1a1a;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.75rem;
+  text-align: center;
 }
 
-/* Навбар */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: white;
-  padding: 10px 15px;
+.login-form {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.logo {
+.form-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.logo-img {
-  height: 35px;
-  margin-right: 8px;
+.input-label {
+  font-size: 0.875rem;
+  color: #4a5568;
+  font-weight: 500;
 }
 
-/* Кнопка "Назад" */
-.back-button {
-  background-color: #fff;
-  color: #004281;
-  border: 1px solid #004281;
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.back-button:hover {
-  background-color: #004281;
-  color: #fff;
-}
-
-/* Элементы формы */
-.input-group {
-  margin-bottom: 15px;
+.form-input {
   width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  background-color: #f8fafc;
 }
 
-label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
-  color: #555;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-  background-color: #f9f9f9;
-  box-sizing: border-box;
-}
-
-input:focus {
-  border-color: rgba(255, 174, 0, 0.615);
+.form-input:focus {
   outline: none;
-  background-color: #fff;
-}
-
-/* Кнопка входа */
-.btn-login {
-  background-color: #004281;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 5px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.3s ease;
-  margin-top: 5px;
-}
-
-.btn-login:hover {
-  background-color: #003365;
-}
-
-/* Сообщения об ошибках */
-.error-text {
-  font-size: 12px;
-  color: red;
-  margin-top: 4px;
-  display: block;
-}
-
-.error-message {
-  color: red;
-  margin: 10px 0;
-  text-align: center;
-  font-size: 13px;
-}
-
-.loading-message {
-  color: #666;
-  margin: 10px 0;
-  text-align: center;
-  font-size: 13px;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+  background-color: white;
 }
 
 .input-error {
-  border-color: red !important;
+  border-color: #e53e3e;
 }
 
-/* Уведомления */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  border-radius: 5px;
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+}
+
+.password-input-container {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #2d3748;
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.5rem;
+}
+
+.forgot-password-link {
+  color: #3182ce;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgot-password-link:hover {
+  color: #2c5282;
+  text-decoration: underline;
+}
+
+.submit-button {
+  background-color: #3182ce;
   color: white;
-  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1100;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  max-width: 90%;
+  height: 3rem;
 }
 
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.8);
+.submit-button:hover:not(:disabled) {
+  background-color: #2c5282;
 }
 
-.notification.error {
-  background-color: rgba(255, 174, 0, 0.8);
+.submit-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.button-loading {
+  position: relative;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.form-error-message {
+  color: #e53e3e;
+  background-color: #fff5f5;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.register-section {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.register-text {
+  margin-bottom: 0.5rem;
+}
+
+.register-link {
+  color: #3182ce;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.register-link:hover {
+  color: #2c5282;
+  text-decoration: underline;
+}
+
+/* Анимации */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 /* Адаптивность */
-@media (max-width: 768px) {
-  .login-container {
-    margin-top: 70px;
-    width: 85%;
-    padding: 15px;
-  }
-  
-  .navbar {
-    padding: 8px 12px;
-  }
-  
-  .logo-img {
-    height: 30px;
-  }
-  
-  .back-button {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-}
-
 @media (max-width: 480px) {
-  .login-container {
-    margin-top: 60px;
-    width: 90%;
-    padding: 15px;
-    border-radius: 6px;
+  .login-card {
+    padding: 1.75rem 1.5rem;
   }
   
-  .form-container {
-    padding: 15px;
-    box-shadow: none;
-  }
-  
-  input {
-    padding: 10px;
-    font-size: 15px;
-  }
-  
-  .btn-login {
-    padding: 12px;
-  }
-}
-
-@media (max-width: 360px) {
-  .login-container {
-    margin-top: 60px;
-    width: 95%;
-    padding: 20px;
-  }
-  
-  .navbar {
-    flex-wrap: wrap;
-    padding: 8px 10px;
-  }
-  
-  .logo {
-    margin-bottom: 5px;
-  }
-  
-  .back-button {
-    width: 100%;
-    margin-top: 5px;
-    text-align: center;
-  }
-  
-  .form-container {
-    padding: 22px;
-  }
-  
-  input, .btn-login {
-    font-size: 14px;
+  .login-title {
+    font-size: 1.5rem;
   }
 }
 </style>
