@@ -402,7 +402,7 @@ input:focus {
   }
   
   .form-container {
-    padding: 22px;
+    padding: 23px;
   }
   
   input, .btn-login {
