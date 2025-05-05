@@ -22,19 +22,25 @@
         </div>
 
         <div class="input-group">
-          <label for="password">Пароль</label>
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            required
-            placeholder="Введите ваш пароль"
-            :class="{ 'input-error': password && !isValidPassword }"
-          />
-          <p v-if="password && !isValidPassword" class="error-text">
-            Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы.
-          </p>
-        </div>
+  <label for="password">Пароль</label>
+  <div class="password-input-container">
+    <input
+      type="password"
+      id="password"
+      v-model="password"
+      required
+      placeholder="Введите ваш пароль"
+      :class="{ 'input-error': password && !isValidPassword }"
+      ref="passwordInput"
+    />
+    <span class="toggle-password" @click="togglePasswordVisibility">
+      <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+    </span>
+  </div>
+  <p v-if="password && !isValidPassword" class="error-text">
+    Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы.
+  </p>
+</div>
 
         <button type="submit" :disabled="isLoading || !isFormValid" class="btn-login">
           {{ isLoading ? 'Загрузка...' : 'Войти' }}
@@ -71,6 +77,7 @@ export default {
       password: "",
       error: "", // Для отображения ошибок
       isLoading: false, // Для отслеживания состояния загрузки
+      showPassword: false,
     };
   },
   computed: {
@@ -94,6 +101,13 @@ export default {
     },
   },
   methods: {
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+    const input = this.$refs.passwordInput;
+    if (input) {
+      input.type = this.showPassword ? 'text' : 'password';
+    }
+  },
     async handleLogin() {
       if (!this.isFormValid) {
         this.error = "Пожалуйста, проверьте введенные данные.";
@@ -408,5 +422,21 @@ input:focus {
   input, .btn-login {
     font-size: 14px;
   }
+  .password-input-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+}
+
+.toggle-password:hover {
+  color: #333;
+}
 }
 </style>
