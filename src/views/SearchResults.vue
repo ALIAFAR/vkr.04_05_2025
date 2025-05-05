@@ -204,44 +204,44 @@
             </div>
           </div>
             <!-- Модальное окно подтверждения бронирования с уведомлением о безопасности -->
-  <div v-if="showBookingConfirmation" class="modal-overlay" @click.self="closeBookingModal">
-    <div class="modal-content booking-modal">
-      <button class="modal-close" @click="closeBookingModal">×</button>
-      <h3>Подтверждение бронирования</h3>
-      
-      <div class="safety-notification">
-        <div class="safety-icon">⚠️</div>
-        <div class="safety-content">
-          <h4>Ваша безопасность важна!</h4>
-          <ul class="safety-checklist">
-            <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
-            <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
-            <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
-            <li>Не садитесь в машину, если что-то вызывает подозрения</li>
-          </ul>
-          <p class="safety-warning">
-            Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
-          </p>
-        </div>
-      </div>
+          <div v-if="showBookingConfirmation" class="modal-overlay" @click.self="closeBookingModal">
+            <div class="modal-content booking-modal">
+              <button class="modal-close" @click="closeBookingModal">×</button>
+              <h3>Подтверждение бронирования</h3>
+              
+              <div class="safety-notification">
+                <div class="safety-icon">⚠️</div>
+                <div class="safety-content">
+                  <h4>Ваша безопасность важна!</h4>
+                  <ul class="safety-checklist">
+                    <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
+                    <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
+                    <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
+                    <li>Не садитесь в машину, если что-то вызывает подозрения</li>
+                  </ul>
+                  <p class="safety-warning">
+                    Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
+                  </p>
+                </div>
+              </div>
 
-      <div class="booking-details">
-        <h4>Детали поездки:</h4>
-        <p><strong>Маршрут:</strong> {{ currentBookingTrip.departure_location }} → {{ currentBookingTrip.arrival_location }}</p>
-        <p><strong>Дата:</strong> {{ formatDateTime(currentBookingTrip.departure_time) }}</p>
-        <p><strong>Мест:</strong> {{ searchParams.passengers }}</p>
-        <p><strong>Цена:</strong> {{ currentBookingTrip.cost }} ₽</p>
-        <p><strong>Водитель:</strong> {{ currentBookingTrip.driver_name }} {{ currentBookingTrip.driver_surname }}</p>
-        <p><strong>Автомобиль:</strong> {{ currentBookingTrip.car_brand }} {{ currentBookingTrip.car_model }} ({{ currentBookingTrip.car_year }})</p>
-        <p><strong>Номер авто:</strong> {{ currentBookingTrip.car_number || 'не указан' }}</p>
-      </div>
+              <div class="booking-details">
+                <h4>Детали поездки:</h4>
+                <p><strong>Маршрут:</strong> {{ currentBookingTrip.departure_location }} → {{ currentBookingTrip.arrival_location }}</p>
+                <p><strong>Дата:</strong> {{ formatDateTime(currentBookingTrip.departure_time) }}</p>
+                <p><strong>Мест:</strong> {{ searchParams.passengers }}</p>
+                <p><strong>Цена:</strong> {{ currentBookingTrip.cost }} ₽</p>
+                <p><strong>Водитель:</strong> {{ currentBookingTrip.driver_name }} {{ currentBookingTrip.driver_surname }}</p>
+                <p><strong>Автомобиль:</strong> {{ currentBookingTrip.car_brand }} {{ currentBookingTrip.car_model }} ({{ currentBookingTrip.car_year }})</p>
+                <p><strong>Номер авто:</strong> {{ currentBookingTrip.car_number || 'не указан' }}</p>
+              </div>
 
-      <div class="booking-actions">
-        <button class="btn-secondary" @click="closeBookingModal">Отменить</button>
-        <button class="btn-primary" @click="confirmBooking">Подтвердить бронирование</button>
-      </div>
-    </div>
-  </div>
+              <div class="booking-actions">
+                <button class="btn-secondary" @click="closeBookingModal">Отменить</button>
+                <button class="btn-primary" @click="confirmBooking">Подтвердить бронирование</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

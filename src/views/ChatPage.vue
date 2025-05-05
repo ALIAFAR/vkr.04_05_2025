@@ -109,12 +109,12 @@ export default {
     },
     initWebSocket() {
       // Определяем протокол (ws или wss)
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      //const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       
       // Формируем URL для WebSocket соединения
-      const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
+      //const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
       
-      this.socket = new WebSocket(wsUrl);
+      this.socket = new WebSocket('wss://unigo-server.onrender.com');
 
       this.socket.onopen = () => {
         console.log('WebSocket соединение установлено');
