@@ -164,7 +164,6 @@ export default {
 </script>
 
 <style scoped>
-/* Базовые стили */
 body,
 html {
   margin: 0;
@@ -450,8 +449,14 @@ input:focus {
     margin-top: 8px;
     text-align: center;
   }
+}
+/* Элементы формы */
+.input-group {
+  margin-bottom: 18px;
+  width: 100%;
+}
 
-  .password-input-container {
+.password-input-container {
   position: relative;
 }
 
@@ -468,5 +473,38 @@ input:focus {
 .toggle-password:hover {
   color: #333;
 }
+
+/* ... остальные стили без изменений ... */
+
+@media (max-width: 360px) {
+  .login-container {
+    margin-top: 60px;
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .navbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  
+  .logo {
+    margin-bottom: 8px;
+  }
+  
+  .back-button {
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+  }
+  
+  .form-container {
+    padding: 15px;
+    width: calc(100% - 16px);
+  }
+  
+  input, .btn-login {
+    font-size: 14px;
+  }
 }
 </style>
