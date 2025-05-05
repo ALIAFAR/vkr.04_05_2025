@@ -95,7 +95,7 @@ export default {
           return false;
         }
 
-        const response = await axios.get("http://localhost:5000/api/user/auth", {
+        const response = await axios.get("https://unigo.onrender.com/api/user/auth", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

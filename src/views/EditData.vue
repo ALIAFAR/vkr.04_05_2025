@@ -87,7 +87,7 @@ export default {
         console.log("Отправляемые данные:", payload);
 
         // Отправляем данные на сервер
-        await axios.post('http://localhost:5000/api/user/update-profile', payload, {
+        await axios.post('https://unigo.onrender.com/api/user/update-profile', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

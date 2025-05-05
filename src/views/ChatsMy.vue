@@ -43,7 +43,7 @@ export default {
     async loadChats() {
       try {
         const response = await axios.get(
-          'http://localhost:5000/api/chat/get',
+          'https://unigo.onrender.com/api/chat/get',
           {
             headers: {
               'Authorization': `Bearer ${this.token}`
@@ -58,7 +58,7 @@ export default {
 
         console.log("chat.passenger_id",response.data[0].passenger_id)
         const response1 = await axios.get(
-          'http://localhost:5000/api/user/get-id',
+          'https://unigo.onrender.com/api/user/get-id',
           {
             headers: {
               'Authorization': `Bearer ${Cookies.get('token')}`
