@@ -20,19 +20,25 @@
         </div>
 
         <div class="input-group">
-          <label for="temporaryPassword">Временный пароль</label>
-          <input
-            type="password"
-            id="temporaryPassword"
-            v-model="temporaryPassword"
-            required
-            placeholder="Введите временный пароль"
-            :class="{ 'input-error': temporaryPassword && !isValidPassword }"
-          />
-          <p v-if="temporaryPassword && !isValidPassword" class="error-text">
-            Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы (!@#$%^&*).
-          </p>
-        </div>
+  <label for="temporaryPassword">Временный пароль</label>
+  <div class="password-input-container">
+    <input
+      type="password"
+      id="temporaryPassword"
+      v-model="temporaryPassword"
+      required
+      placeholder="Введите временный пароль"
+      :class="{ 'input-error': temporaryPassword && !isValidPassword }"
+      ref="passwordInput"
+    />
+    <span class="toggle-password" @click="togglePasswordVisibility">
+      <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+    </span>
+  </div>
+  <p v-if="temporaryPassword && !isValidPassword" class="error-text">
+    Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы (!@#$%^&*).
+  </p>
+</div>
 
         <button type="submit" :disabled="isLoading || isSubmitting" class="btn-login">
           {{ isLoading ? 'Загрузка...' : 'Продолжить' }}
@@ -66,6 +72,7 @@ export default {
       error: "",
       isLoading: false,
       isSubmitting: false,
+      showPassword: false,
     };
   },
   computed: {
@@ -79,6 +86,13 @@ export default {
     },
   },
   methods: {
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+    const input = this.$refs.passwordInput;
+    if (input) {
+      input.type = this.showPassword ? 'text' : 'password';
+    }
+  },
     async handleLogin() {
       if (this.isSubmitting) return;
 
@@ -436,5 +450,23 @@ input:focus {
     margin-top: 8px;
     text-align: center;
   }
+
+  .password-input-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  z-index: 2;
+}
+
+.toggle-password:hover {
+  color: #333;
+}
 }
 </style>
