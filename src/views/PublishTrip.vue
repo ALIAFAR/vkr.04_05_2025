@@ -299,25 +299,32 @@ function goToDateSelection() {
 
 <style scoped>
 .publish-trip {
-  padding: 100px 20px 20px;
-  max-width: 800px;
-  margin: 0 auto;
+  padding: 80px 20px 40px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
 .route-points {
-  margin-bottom: 20px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 25px;
 }
 
 .point-wrapper {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  gap: 10px;
+  margin-bottom: 15px;
+  gap: 15px;
+  position: relative;
 }
 
 .point-label {
-  min-width: 150px;
-  font-weight: bold;
+  min-width: 140px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 15px;
 }
 
 .input-wrapper {
@@ -327,75 +334,198 @@ function goToDateSelection() {
 
 input {
   width: 100%;
-  padding: 8px;
-  font-size: 16px;
+  padding: 12px 15px;
+  font-size: 15px;
+  border: 2px solid #e1e5eb;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  outline: none;
+  background-color: white;
 }
 
 .suggestions {
   position: absolute;
-  z-index: 10;
+  z-index: 100;
   background: white;
-  border: 1px solid #ccc;
-  width: 100%;
-  max-height: 150px;
+  border: 2px solid #e1e5eb;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  width: calc(100% - 4px);
+  max-height: 200px;
   overflow-y: auto;
   list-style: none;
   margin: 0;
   padding: 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .suggestions li {
-  padding: 8px;
+  padding: 10px 15px;
   cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.suggestions li:last-child {
+  border-bottom: none;
 }
 
 .suggestions li:hover {
-  background-color: #f0f0f0;
+  background-color: #3b82f6;
+  color: white;
 }
 
 .controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 25px;
 }
 
 button {
-  padding: 8px 16px;
-  font-size: 16px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 .add-point {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.add-point:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+button:not(.add-point):not(.remove-point):not(:disabled):hover {
+  transform: translateY(-1px);
 }
 
 .remove-point {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: red;
-  cursor: pointer;
-  padding: 0 10px;
+  background: transparent;
+  color: #ef4444;
+  font-size: 22px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.remove-point:hover {
+  background-color: #fee2e2;
 }
 
 .map {
-  width: 70%;
-  height: 350px;
-  margin: 0 auto;
-  border: 1px solid #ccc;
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  border: 2px solid #e1e5eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 20px 0;
 }
 
 .info {
-  margin-top: 10px;
-  font-size: 16px;
-  padding: 10px;
-  background-color: #f8f8f8;
-  border-radius: 4px;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Кнопка построения маршрута */
+button:not(.add-point):not(.remove-point) {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Кнопка перехода к дате */
+button:last-child:not(.remove-point) {
+  background-color: #10b981;
+}
+
+/* Адаптация под мобильные устройства */
+@media (max-width: 768px) {
+  .publish-trip {
+    padding: 70px 15px 30px;
+  }
+  
+  .route-points {
+    padding: 20px;
+  }
+  
+  .point-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .point-label {
+    min-width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  .controls button {
+    width: 100%;
+  }
+  
+  .map {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .publish-trip {
+    padding: 60px 10px 20px;
+  }
+  
+  input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  button {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+  
+  .point-label {
+    font-size: 14px;
+  }
+  
+  .info {
+    font-size: 14px;
+    padding: 12px;
+  }
 }
 </style>
