@@ -357,12 +357,29 @@ export default {
           }
         );
 
-        if (response.data && response.data.success) {
+        try {
+          this.showPassengersModal = true;
+          this.currentTripPassengers=(response.data.passengers || []).map(passenger => ({
+          ...passenger,
+          name: passenger.name || 'Не указано',
+          surname: passenger.surname || '',
+          gender: passenger.gender || 'unknown',
+          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
+          seats_booked: passenger.seats_booked,
+          department: passenger.department,
+          birthday:passenger.birthday,
+          position: passenger.position || '?'
+        }));
+        } catch (error) {
+          throw new Error('Неверный формат ответа сервера');
+        }
+
+        /*if (response.data && response.data.success) {
           this.currentTripPassengers = response.data.passengers || [];
           this.showPassengersModal = true;
         } else {
           throw new Error('Неверный формат ответа сервера');
-        }
+        }*/
       } catch (error) {
         console.error("Ошибка при загрузке пассажиров:", error);
         this.errorLoadingPassengers = true;
