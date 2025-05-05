@@ -11,7 +11,12 @@
       <div v-if="activeTrips.length > 0">
         <h2 class="trip-section-title">Активные поездки</h2>
         <div class="trip-list">
-          <div v-for="(trip, index) in activeTrips" :key="'active-' + index" class="trip-item">
+          <div 
+            v-for="(trip, index) in activeTrips" 
+            :key="'active-' + index" 
+            class="trip-item"
+            @click="showPassengers(trip.id)"
+          >
             <div class="trip-content">
               <div class="detail-item">
                 <p><strong>Откуда:</strong></p>
@@ -40,13 +45,13 @@
             </div>
             
             <div class="trip-actions">
-              <button class="action-button edit" @click="openEditModal(trip)">
+              <button class="action-button edit" @click.stop="openEditModal(trip)">
                 Редактировать
               </button>
-              <button class="action-button reschedule" @click="openRescheduleModal(trip)">
+              <button class="action-button reschedule" @click.stop="openRescheduleModal(trip)">
                 Перенести
               </button>
-              <button class="action-button cancel" @click="confirmCancel(trip)">
+              <button class="action-button cancel" @click.stop="confirmCancel(trip)">
                 Отменить
               </button>
             </div>
@@ -93,7 +98,6 @@
         У вас нет опубликованных поездок.
       </div>
 
-      <!-- Кнопка для возврата на главную страницу -->
       <button class="back-button" @click="goToHome">
         Вернуться на главную
       </button>
@@ -160,6 +164,30 @@
           </form>
         </div>
       </div>
+
+      <!-- Модальное окно пассажиров -->
+      <div v-if="showPassengersModal" class="modal-overlay">
+        <div class="modal">
+          <h3>Пассажиры поездки</h3>
+          <div v-if="currentTripPassengers.length > 0">
+            <div v-for="(passenger, index) in currentTripPassengers" :key="index" class="passenger-item">
+              <div class="passenger-info">
+                <p><strong>Имя:</strong> {{ passenger.name }}</p>
+                <p><strong>Телефон:</strong> {{ passenger.phone }}</p>
+                <p><strong>Email:</strong> {{ passenger.email }}</p>
+                <p><strong>Место посадки:</strong> {{ passenger.boarding_point }}</p>
+                <p><strong>Место высадки:</strong> {{ passenger.dropoff_point }}</p>
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-passengers">
+            В этой поездке пока нет пассажиров
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="cancel-button" @click="showPassengersModal = false">Закрыть</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -178,6 +206,7 @@ export default {
       userTrips: [],
       showEditModal: false,
       showRescheduleModal: false,
+      showPassengersModal: false,
       editingTrip: {
         id: null,
         departure_location: '',
@@ -190,7 +219,9 @@ export default {
         newDate: '',
         newTime: ''
       },
-      newStop: ''
+      newStop: '',
+      currentTripPassengers: [],
+      selectedTripId: null
     };
   },
   computed: {
@@ -266,6 +297,25 @@ export default {
       this.showRescheduleModal = true;
     },
 
+    async showPassengers(tripId) {
+      try {
+        const token = Cookies.get('token');
+        this.selectedTripId = tripId;
+        
+        const response = await axios.get(`https://unigo.onrender.com/api/trip/${tripId}/passengers`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        this.currentTripPassengers = response.data.passengers;
+        this.showPassengersModal = true;
+      } catch (error) {
+        console.error("Ошибка при загрузке пассажиров:", error);
+        this.$toast.error('Не удалось загрузить информацию о пассажирах');
+      }
+    },
+
     closeModal() {
       this.showEditModal = false;
       this.showRescheduleModal = false;
@@ -297,7 +347,6 @@ export default {
           },
         });
 
-        // Отправка уведомлений пассажирам
         await this.notifyPassengers(this.editingTrip.id, 'Поездка была отредактирована. Проверьте новые детали.');
 
         this.closeModal();
@@ -322,7 +371,6 @@ export default {
           },
         });
 
-        // Отправка уведомлений пассажирам
         await this.notifyPassengers(this.rescheduleData.tripId, 'Поездка была перенесена. Проверьте новые дату и время.');
 
         this.closeModal();
@@ -350,7 +398,6 @@ export default {
           },
         });
 
-        // Отправка уведомлений пассажирам
         await this.notifyPassengers(tripId, 'Поездка была отменена водителем.');
 
         this.loadUserTrips();
@@ -381,6 +428,33 @@ export default {
 </script>
 
 <style scoped>
+/* Существующие стили остаются без изменений */
+
+.passenger-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #004281;
+}
+
+.passenger-info p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.passenger-info strong {
+  color: #004281;
+}
+
+.no-passengers {
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+
 .trip-details {
   padding: 2rem;
   max-width: 800px;
