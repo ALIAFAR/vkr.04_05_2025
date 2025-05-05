@@ -762,6 +762,8 @@ export default {
           birthday:passenger.birthday,
           position: passenger.position || '?'
         }));
+
+        console.log("this.passengers",this.passengers)
         
         this.showPassengersModal = true;
       } catch (error) {
