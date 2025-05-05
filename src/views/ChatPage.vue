@@ -114,7 +114,7 @@ export default {
       // Формируем URL для WebSocket соединения
       //const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
       
-      this.socket = new WebSocket('wss://unigo-server.onrender.com');
+      this.socket = new WebSocket('wss://unigo.onrender.com');
 
       this.socket.onopen = () => {
         console.log('WebSocket соединение установлено');
