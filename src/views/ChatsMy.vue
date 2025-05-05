@@ -23,28 +23,19 @@
           :class="{ 'active-chat': activeChatId === chat.id }"
           @click="selectChat(chat)"
         >
-          <div class="chat-avatar">
-            <img 
-              :src="getChatAvatar(chat)" 
-              alt="Аватар чата" 
-              class="avatar-img"
-              @error="handleImageError"
-            >
-          </div>
-          
           <div class="chat-content">
-            <div class="chat-info">
+            <div class="route-info">
               <span class="route">
                 {{ chat.departure_location }} → {{ chat.arrival_location }}
               </span>
-              <span class="chat-time">
-                {{ formatDateTime(chat.departure_time) }}
+              <span class="trip-time">
+                Время поездки: {{ formatTime(chat.departure_time) }}
               </span>
             </div>
             
             <div class="chat-meta">
               <span class="last-message" v-if="chat.last_message">
-                {{ truncateMessage(chat.last_message.text, 30) }}
+                {{ truncateMessage(chat.last_message.text, 40) }}
               </span>
               <span 
                 v-if="chat.unread_count > 0" 
@@ -57,7 +48,7 @@
         </div>
 
         <div v-if="filteredChats.length === 0" class="empty-state">
-          <p>Чатов не найдено</p>
+          <p>У вас пока нет активных чатов</p>
           <button class="refresh-btn" @click="loadChats">
             Обновить список
           </button>
@@ -112,11 +103,13 @@ export default {
         this.chats = response.data.map(chat => ({
           ...chat,
           departure_time: new Date(chat.departure_time),
-          last_message: chat.last_message || null,
+          last_message: chat.last_message ? {
+            ...chat.last_message,
+            created_at: new Date(chat.last_message.created_at)
+          } : null,
           unread_count: chat.unread_count || 0
         }));
 
-        // Получаем ID пользователя
         const userResponse = await axios.get(
           'https://unigo.onrender.com/api/user/get-id',
           { headers: { 'Authorization': `Bearer ${this.token}` } }
@@ -136,33 +129,22 @@ export default {
       this.$router.push(`/chat/${chat.id}`);
     },
 
-    formatDateTime(date) {
-      if (!(date instanceof Date)) date = new Date(date);
-      
-      const now = new Date();
-      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) {
-        return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-      } else if (diffDays === 1) {
-        return `Вчера в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-      } else if (diffDays < 7) {
-        return date.toLocaleDateString('ru-RU', { weekday: 'long', hour: '2-digit', minute: '2-digit' });
-      } else {
-        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-      }
+    formatTime(date) {
+      if (!date) return '';
+      return new Date(date).toLocaleTimeString('ru-RU', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    },
+
+    formatDate(date) {
+      const options = { day: 'numeric', month: 'long' };
+      return new Date(date).toLocaleDateString('ru-RU', options);
     },
 
     truncateMessage(text, length) {
+      if (!text) return '';
       return text.length > length ? `${text.substring(0, length)}...` : text;
-    },
-
-    getChatAvatar(chat) {
-      return chat.avatar_url || '/default-avatar.png';
-    },
-
-    handleImageError(e) {
-      e.target.src = '/default-avatar.png';
     }
   }
 };
@@ -172,6 +154,7 @@ export default {
 .chat-page {
   background-color: #f5f7fa;
   min-height: 100vh;
+  padding-bottom: 30px;
 }
 
 .chat-container {
@@ -179,8 +162,8 @@ export default {
   margin: 0 auto;
   padding: 20px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-top: 80px;
 }
 
@@ -190,121 +173,114 @@ export default {
   gap: 15px;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .section-title {
   font-size: 1.8rem;
   color: #2c3e50;
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
+  text-align: center;
 }
 
 .search-box {
   position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 15px 10px 40px;
-  border: 1px solid #ddd;
-  border-radius: 25px;
-  font-size: 0.95rem;
+  padding: 12px 20px 12px 45px;
+  border: 1px solid #e0e0e0;
+  border-radius: 30px;
+  font-size: 1rem;
   transition: all 0.3s ease;
+  background-color: #f8f9fa;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background-color: white;
 }
 
 .search-icon {
   position: absolute;
-  left: 15px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #7f8c8d;
+  color: #95a5a6;
+  font-size: 1.1rem;
 }
 
 .chat-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .chat-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
+  padding: 16px;
   background: white;
-  border-radius: 10px;
-  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .chat-item:hover {
   background-color: #f8fafd;
   transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d0d0d0;
 }
 
 .active-chat {
   border-left: 4px solid #3498db;
-  background-color: #f0f7ff !important;
-}
-
-.chat-avatar {
-  flex-shrink: 0;
-}
-
-.avatar-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #e0e0e0;
+  background-color: #f5f9ff !important;
 }
 
 .chat-content {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.chat-info {
+.route-info {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .route {
   font-weight: 600;
   color: #2c3e50;
+  font-size: 1.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 1rem;
 }
 
-.chat-time {
-  font-size: 0.8rem;
+.trip-time {
+  font-size: 0.85rem;
   color: #7f8c8d;
-  white-space: nowrap;
-  margin-left: 10px;
+  font-weight: 500;
 }
 
 .chat-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 4px;
 }
 
 .last-message {
   color: #636e72;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -314,48 +290,58 @@ export default {
 .unread-badge {
   background-color: #e74c3c;
   color: white;
-  border-radius: 50%;
-  min-width: 20px;
-  height: 20px;
+  border-radius: 12px;
+  min-width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: bold;
-  padding: 0 5px;
+  padding: 0 6px;
+  margin-left: 8px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 50px 20px;
   color: #7f8c8d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 .empty-state p {
-  margin-bottom: 15px;
+  margin: 0;
   font-size: 1.1rem;
+  color: #95a5a6;
 }
 
 .refresh-btn {
   background-color: #3498db;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 24px;
+  border-radius: 24px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .refresh-btn:hover {
   background-color: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(41, 128, 185, 0.3);
 }
 
 @media (max-width: 768px) {
   .chat-container {
-    padding: 15px;
+    padding: 16px;
     margin-top: 70px;
     border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid #eee;
   }
   
   .section-title {
@@ -363,12 +349,49 @@ export default {
   }
   
   .chat-item {
+    padding: 14px;
+  }
+
+  .route {
+    font-size: 1rem;
+  }
+
+  .last-message {
+    font-size: 0.88rem;
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header {
+    gap: 12px;
+  }
+
+  .search-input {
+    padding: 10px 16px 10px 40px;
+    font-size: 0.95rem;
+  }
+
+  .chat-item {
     padding: 12px;
   }
-  
-  .avatar-img {
-    width: 45px;
-    height: 45px;
+
+  .route {
+    font-size: 0.95rem;
+  }
+
+  .trip-time {
+    font-size: 0.8rem;
+  }
+
+  .last-message {
+    font-size: 0.85rem;
+  }
+
+  .unread-badge {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
   }
 }
 </style>
