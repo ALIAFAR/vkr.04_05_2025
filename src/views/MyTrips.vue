@@ -339,35 +339,38 @@ export default {
 },
 
     async showPassengers(tripId) {
-  try {
-    const token = Cookies.get('token');
-    this.isLoadingPassengers = true;
-    this.errorLoadingPassengers = false;
-    
-    // Используем правильный эндпоинт для получения пассажиров
-    const response = await axios.get(
-      `https://unigo.onrender.com/api/trip/${tripId}/passengers`, 
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      }
-    );
+      try {
+        const token = Cookies.get('token');
+        this.isLoadingPassengers = true;
+        this.errorLoadingPassengers = false;
+        
+        // Используем правильный эндпоинт для получения пассажиров
+        const response = await axios.get(
+          'https://unigo.onrender.com/api/user/get-all',
+          {
+            params: { // ✅ GET-параметры
+              trip_id: tripId 
+            },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
 
-    if (response.data && response.data.success) {
-      this.currentTripPassengers = response.data.passengers || [];
-      this.showPassengersModal = true;
-    } else {
-      throw new Error('Неверный формат ответа сервера');
-    }
-  } catch (error) {
-    console.error("Ошибка при загрузке пассажиров:", error);
-    this.errorLoadingPassengers = true;
-    this.$toast.error('Не удалось загрузить информацию о пассажирах');
-  } finally {
-    this.isLoadingPassengers = false;
-  }
-},
+        if (response.data && response.data.success) {
+          this.currentTripPassengers = response.data.passengers || [];
+          this.showPassengersModal = true;
+        } else {
+          throw new Error('Неверный формат ответа сервера');
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке пассажиров:", error);
+        this.errorLoadingPassengers = true;
+        this.$toast.error('Не удалось загрузить информацию о пассажирах');
+      } finally {
+        this.isLoadingPassengers = false;
+      }
+    },
 
     closeModal() {
       this.showEditModal = false;
