@@ -17,9 +17,6 @@
           :class="{ 'has-unread': chat.unread_count > 0 }"
           @click="selectChat(chat)"
         >
-          <div class="chat-avatar">
-            <img :src="getAvatar(chat)" alt="Аватар" class="avatar-image">
-          </div>
           <div class="chat-content">
             <div class="chat-top-row">
               <span class="route">{{ formatRoute(chat) }}</span>
