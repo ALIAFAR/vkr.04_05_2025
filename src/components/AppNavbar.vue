@@ -212,6 +212,54 @@ body {
   padding-top: 60px;
 }
 
+/* Стили для уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 500px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  font-family: 'Lora', sans-serif;
+  background-color: #ff4444;
+  color: white;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.notification-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notification-message {
+  flex-grow: 1;
+  text-align: center;
+}
+
+/* Анимации для уведомления */
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.4s ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+}
+
 /* Навигационная панель */
 .navbar {
   position: fixed;
@@ -220,7 +268,7 @@ body {
   width: 100%;
   height: 60px;
   background-color: white;
-  padding: 0 20px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -228,7 +276,6 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Логотип */
 .logo {
   display: flex;
   align-items: center;
@@ -264,7 +311,7 @@ body {
   height: 20px;
   cursor: pointer;
   z-index: 1001;
-  padding: 5px;
+  padding: 25px;
 }
 
 .burger-line {
@@ -289,9 +336,10 @@ body {
 /* Основное меню */
 .menu {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   align-items: center;
   transition: all 0.3s ease;
+  margin-right: 30px;
 }
 
 .menu-item {
@@ -313,6 +361,11 @@ body {
   transform: translateY(-2px);
 }
 
+/* Кнопки авторизации для мобильных */
+.mobile-auth-btn {
+  display: none;
+}
+
 /* Профиль */
 .profile {
   position: relative;
@@ -328,6 +381,10 @@ body {
   object-fit: cover;
 }
 
+.profile-photo:hover {
+  transform: scale(1.1);
+}
+
 /* Выпадающее меню */
 .dropdown-menu {
   position: absolute;
@@ -339,6 +396,8 @@ body {
   min-width: 180px;
   overflow: hidden;
   z-index: 1002;
+  transform-origin: top right;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .dropdown-menu button {
@@ -355,6 +414,7 @@ body {
 
 .dropdown-menu button:hover {
   background-color: rgba(0, 66, 129, 0.1);
+  color: rgba(0, 66, 129, 1);
 }
 
 /* Модальное окно */
@@ -378,6 +438,7 @@ body {
   width: 90%;
   max-width: 350px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content p {
@@ -419,42 +480,6 @@ body {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Уведомление */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  width: 90%;
-  max-width: 500px;
-  padding: 15px 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  font-family: 'Lora', sans-serif;
-  background-color: #ff4444;
-  color: white;
-}
-
-.notification-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.notification-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.notification-message {
-  flex-grow: 1;
-  text-align: center;
-}
-
 /* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -464,22 +489,22 @@ body {
 @keyframes slideDown {
   from { 
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translate(-50%, -20px);
   }
   to { 
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
 }
 
-/* Адаптация для планшетов (768px - 992px) */
+/* Адаптивные стили */
 @media (max-width: 992px) {
   .logo-text {
     font-size: 20px;
   }
   
   .menu {
-    gap: 10px;
+    gap: 8px;
   }
   
   .menu-item {
@@ -488,15 +513,14 @@ body {
   }
 }
 
-/* Адаптация для мобильных (до 768px) */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 15px;
-    height: 60px;
+    padding: 10px 15px;
   }
   
   .burger-menu {
     display: flex;
+    margin-left: auto;
   }
   
   .menu {
@@ -507,16 +531,19 @@ body {
     background-color: white;
     flex-direction: column;
     align-items: stretch;
-    padding: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    padding: 10px 0;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    gap: 0;
+    margin-right: 0;
   }
   
   .menu.mobile-menu-active {
-    max-height: 100vh;
-    padding-bottom: 20px;
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
   }
   
   .menu-item {
@@ -525,51 +552,40 @@ body {
     text-align: left;
     border-radius: 0;
     border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
   }
   
-  /* Ключевые изменения для профиля */
+  /* Показываем кнопки авторизации в мобильном меню */
+  .mobile-auth-btn {
+    display: block;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
   .profile {
-    order: 100; /* Перемещаем в конец */
-    padding: 0;
+    order: -1;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
     margin-left: 0;
-    border-bottom: none;
-  }
-  
-  .profile-photo {
-    display: none; /* Скрываем аватар в мобильном меню */
   }
   
   .dropdown-menu {
     position: static;
-    display: block !important;
     box-shadow: none;
-    width: 100%;
-    margin-top: 0;
-    animation: none;
     border: none;
+    width: 100%;
+    margin-top: 8px;
+    animation: none;
   }
   
   .dropdown-menu button {
-    width: 100%;
-    padding: 14px 20px;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
-    display: block;
-  }
-  
-  .dropdown-menu button:last-child {
-    border-bottom: none;
-  }
-  
-  .mobile-auth-btn {
-    display: block;
+    padding: 12px 20px;
   }
 }
 
-/* Адаптация для маленьких мобильных (до 480px) */
 @media (max-width: 480px) {
   .navbar {
-    padding: 0 12px;
+    padding: 10px 12px;
   }
   
   .logo-img {
@@ -578,6 +594,15 @@ body {
   
   .logo-text {
     font-size: 18px;
+  }
+  
+  .modal-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-content button {
+    width: 100%;
   }
   
   .notification {
@@ -590,101 +615,16 @@ body {
     width: 36px;
     height: 36px;
   }
-  
-  .modal-content {
-    padding: 15px;
-  }
 }
 
-/* Адаптация для очень маленьких экранов (до 360px) */
-@media (max-width: 360px) {
-  .logo-text {
-    font-size: 16px;
-  }
-  
-  .logo-img {
-    width: 36px;
-    margin-right: 6px;
-  }
-  
-  .burger-menu {
-    width: 24px;
-    height: 18px;
-  }
-  
-  .menu-item {
-    padding: 12px 15px;
-    font-size: 14px;
-  }
+/* Анимации для уведомления */
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
-
-/* Портретная ориентация на мобильных */
-@media (max-width: 768px) and (orientation: portrait) {
-  .navbar {
-    height: 60px;
-  }
-  
-  .menu {
-    top: 60px;
-  }
-}
-
-/* Ландшафтная ориентация на мобильных */
-@media (max-width: 900px) and (orientation: landscape) {
-  .navbar {
-    height: 50px;
-  }
-  
-  .menu {
-    top: 50px;
-    max-height: calc(100vh - 50px);
-    overflow-y: auto;
-  }
-  
-  .logo-img {
-    width: 40px;
-  }
-}
-
-/* Поддержка темной темы */
-@media (prefers-color-scheme: dark) {
-  .navbar {
-    background-color: #1a1a1a;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
-  
-  .logo-text {
-    color: #e0e0e0;
-  }
-  
-  .menu-item {
-    color: #e0e0e0;
-  }
-  
-  .menu-item:hover {
-    background-color: rgba(0, 66, 129, 0.3);
-  }
-  
-  .burger-line {
-    background-color: #e0e0e0;
-  }
-  
-  .dropdown-menu {
-    background-color: #2a2a2a;
-  }
-  
-  .dropdown-menu button {
-    color: #e0e0e0;
-  }
-  
-  .modal-content {
-    background-color: #2a2a2a;
-    color: #e0e0e0;
-  }
-  
-  .modal-content button:last-child {
-    background-color: #3a3a3a;
-    color: #e0e0e0;
-  }
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
 }
 </style>
