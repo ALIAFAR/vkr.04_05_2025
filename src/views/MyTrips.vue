@@ -371,8 +371,10 @@ export default {
           position: passenger.position || '?'
         }));
         } catch (error) {
+          console.log("Aloi")
           throw new Error('Неверный формат ответа сервера');
         }
+        console.log("CHeck pass",this.currentTripPassengers)
 
         /*if (response.data && response.data.success) {
           this.currentTripPassengers = response.data.passengers || [];
