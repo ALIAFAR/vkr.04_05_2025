@@ -241,6 +241,8 @@ export default {
       showEditModal: false,
       showRescheduleModal: false,
       showPassengersModal: false,
+      isLoadingPassengers: false,
+    errorLoadingPassengers: false,
       editingTrip: {
         id: null,
         departure_location: '',
@@ -330,46 +332,42 @@ export default {
       };
       this.showRescheduleModal = true;
     },
+    closePassengersModal() {
+  this.showPassengersModal = false;
+  this.currentTripPassengers = [];
+  this.errorLoadingPassengers = false;
+},
 
     async showPassengers(tripId) {
-      try {
-        const token = Cookies.get('token');
-
-        const response = await axios.get(
-          'https://unigo.onrender.com/api/user/get-all',
-          {
-            params: { // ✅ GET-параметры
-              trip_id: tripId
-            },
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-
-        
-        this.passengers = (response.data.passengers || []).map(passenger => ({
-          ...passenger,
-          name: passenger.name || 'Не указано',
-          surname: passenger.surname || '',
-          gender: passenger.gender || 'unknown',
-          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
-          seats_booked: passenger.seats_booked,
-          department: passenger.department,
-          birthday:passenger.birthday,
-          position: passenger.position || '?'
-        }));
-        
-        this.showPassengersModal = true;
-      } catch (error) {
-        console.error('Ошибка при загрузке пассажиров:', error);
-        this.$notify({
-          title: 'Ошибка',
-          text: 'Не удалось загрузить информацию о пассажирах',
-          type: 'error'
-        });
+  try {
+    const token = Cookies.get('token');
+    this.isLoadingPassengers = true;
+    this.errorLoadingPassengers = false;
+    
+    // Используем правильный эндпоинт для получения пассажиров
+    const response = await axios.get(
+      `https://unigo.onrender.com/api/trip/${tripId}/passengers`, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
       }
-    },
+    );
+
+    if (response.data && response.data.success) {
+      this.currentTripPassengers = response.data.passengers || [];
+      this.showPassengersModal = true;
+    } else {
+      throw new Error('Неверный формат ответа сервера');
+    }
+  } catch (error) {
+    console.error("Ошибка при загрузке пассажиров:", error);
+    this.errorLoadingPassengers = true;
+    this.$toast.error('Не удалось загрузить информацию о пассажирах');
+  } finally {
+    this.isLoadingPassengers = false;
+  }
+},
 
     closeModal() {
       this.showEditModal = false;
@@ -802,5 +800,32 @@ export default {
   .modal {
     padding: 1.5rem;
   }
+  .loading-message, .error-message {
+  padding: 1rem;
+  text-align: center;
 }
+
+.passengers-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.passenger-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+}
+
 </style>
