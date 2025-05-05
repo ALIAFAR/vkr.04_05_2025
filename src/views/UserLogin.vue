@@ -392,6 +392,53 @@ input:focus {
     padding: 12px;
   }
 }
+  .navbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  
+  .logo {
+    margin-bottom: 5px;
+  }
+  
+  .back-button {
+    width: 100%;
+    margin-top: 5px;
+    text-align: center;
+  }
+  
+  .form-container {
+    padding: 22px;
+  }
+  
+  input, .btn-login {
+    font-size: 14px;
+  }
+
+/* Элементы формы */
+.input-group {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.password-input-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  z-index: 2; /* Добавлено для уверенности, что иконка будет поверх поля ввода */
+}
+
+.toggle-password:hover {
+  color: #333;
+}
+
 
 @media (max-width: 360px) {
   .login-container {
@@ -422,21 +469,5 @@ input:focus {
   input, .btn-login {
     font-size: 14px;
   }
-  .password-input-container {
-  position: relative;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #666;
-}
-
-.toggle-password:hover {
-  color: #333;
-}
 }
 </style>
