@@ -365,7 +365,7 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        await axios.post(`http://localhost:5000/api/trip/${tripId}/notify`, {
+        await axios.post("https://unigo.onrender.com/api/trip/search", {
           message: message
         }, {
           headers: {
