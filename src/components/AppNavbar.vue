@@ -580,3 +580,203 @@ body {
   }
 }
 </style>
+<style scoped>
+/* Базовые стили */
+body {
+  font-family: 'Lora', Arial, sans-serif;
+  margin: 0;
+  padding-top: 60px;
+}
+
+/* Навигационная панель */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: white;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Логотип */
+.logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.logo-img {
+  width: 50px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  color: rgba(0, 66, 129, 1);
+  white-space: nowrap;
+}
+
+/* Бургер-меню */
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 5px;
+}
+
+.burger-line {
+  width: 100%;
+  height: 3px;
+  background-color: rgba(0, 66, 129, 1);
+  transition: all 0.3s ease;
+}
+
+.burger-line-1 {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.burger-line-2 {
+  opacity: 0;
+}
+
+.burger-line-3 {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Основное меню */
+.menu {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.menu-item {
+  background-color: transparent;
+  border: none;
+  color: rgba(0, 66, 129, 0.9);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-family: 'Lora', sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Профиль - важное изменение! */
+.profile {
+  position: relative;
+}
+
+.profile-photo {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  object-fit: cover;
+}
+
+/* Выпадающее меню - важные изменения */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  overflow: hidden;
+  z-index: 1002;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  font-family: 'Lora', sans-serif;
+  font-size: 14px;
+}
+
+/* Мобильное меню - важные изменения */
+@media (max-width: 768px) {
+  .burger-menu {
+    display: flex;
+  }
+  
+  .menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .menu.mobile-menu-active {
+    max-height: 100vh;
+    padding-bottom: 20px;
+  }
+  
+  .menu-item {
+    width: 100%;
+    padding: 14px 20px;
+    text-align: left;
+    border-radius: 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  /* Ключевое изменение - перемещаем профиль в конец меню */
+  .profile {
+    order: 100;
+    padding: 14px 20px;
+    border-bottom: none;
+  }
+  
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    margin-top: 0;
+    animation: none;
+  }
+  
+  .dropdown-menu button {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .dropdown-menu button:last-child {
+    border-bottom: none;
+  }
+  
+  .mobile-auth-btn {
+    display: block;
+  }
+}
+
+/* Остальные медиа-запросы и стили остаются без изменений */
+/* ... */
+</style>
