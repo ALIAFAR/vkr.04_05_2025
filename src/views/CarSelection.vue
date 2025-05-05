@@ -57,7 +57,7 @@ export default {
     async fetchCarData() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/car/profileCar', {
+        const response = await axios.get('https://unigo.onrender.com/api/car/profileCar', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

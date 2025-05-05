@@ -141,7 +141,7 @@ export default {
   try {
     // Отправка данных на сервер
     const response = await axios.post(
-      "http://localhost:5000/api/car/create", // Замените на ваш URL
+      "https://unigo.onrender.com/api/car/create", // Замените на ваш URL
       vehicleData,
       {
         headers: {

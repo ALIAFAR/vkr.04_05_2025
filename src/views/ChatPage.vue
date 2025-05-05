@@ -76,7 +76,7 @@ export default {
     async loadChat(chatId) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/chat/${chatId}`,
+          `https://unigo.onrender.com/api/chat/${chatId}`,
           {
             headers: {
               'Authorization': `Bearer ${Cookies.get("token")}`
@@ -96,7 +96,7 @@ export default {
     },
     async loadMessages(chatId) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/chat/${chatId}/messages`);
+        const response = await axios.get(`https://unigo.onrender.com/api/chat/${chatId}/messages`);
         this.messages = response.data.map(msg => ({
           ...msg,
           isCurrentUser: msg.sender_id === this.currentUserId,
@@ -109,12 +109,12 @@ export default {
     },
     initWebSocket() {
       // Определяем протокол (ws или wss)
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      //const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       
       // Формируем URL для WebSocket соединения
-      const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
+      //const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
       
-      this.socket = new WebSocket(wsUrl);
+      this.socket = new WebSocket('wss://unigo.onrender.com');
 
       this.socket.onopen = () => {
         console.log('WebSocket соединение установлено');

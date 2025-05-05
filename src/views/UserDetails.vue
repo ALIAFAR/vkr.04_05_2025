@@ -187,7 +187,7 @@ export default {
           return;
         }
 
-        const response = await axios.get("http://localhost:5000/api/user/get_byFormId", {
+        const response = await axios.get("https://unigo.onrender.com/api/user/get_byFormId", {
           params: { user_id },
         });
 
@@ -248,7 +248,7 @@ export default {
       };
 
       try {
-        const response = await axios.post("http://localhost:5000/api/user/registration", payload);
+        const response = await axios.post("https://unigo.onrender.com/api/user/registration", payload);
         const expirationDate = new Date();
         expirationDate.setTime(expirationDate.getTime() + 12 * 60 * 60 * 1000);
         Cookies.set("token", response.data.token, { expires: expirationDate });

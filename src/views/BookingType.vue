@@ -69,7 +69,7 @@ export default {
         console.log(tripData)
         
         // Создаем маршрут
-        const routeResponse = await axios.post("http://localhost:5000/api/route/route", {
+        const routeResponse = await axios.post("https://unigo.onrender.com/api/route/route", {
           from: Cookies.get("from_route"),
           to: Cookies.get("to_route"),
         });
@@ -80,7 +80,7 @@ export default {
 
         // Создаем поездку
         console.log("check 2")
-        const tripResponse = await axios.post("http://localhost:5000/api/trip/trip", {
+        const tripResponse = await axios.post("https://unigo.onrender.com/api/trip/trip", {
           route_id: routeId,
           departureDate: tripData.date,
           departureTime: tripData.pickUpTime,
@@ -105,7 +105,7 @@ export default {
 
         // Создаем остановки
         for (const stop of stops) {
-          await axios.post("http://localhost:5000/api/stop/stop", {
+          await axios.post("https://unigo.onrender.com/api/stop/stop", {
             arrival_location: stop,
             trip_id: tripId,
           });

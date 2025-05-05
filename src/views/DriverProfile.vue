@@ -169,7 +169,7 @@
         
         try {
           const driverId = this.$route.params.id;
-          const response = await axios.get(`http://localhost:5000/api/drivers/${driverId}`, {
+          const response = await axios.get(`https://unigo.onrender.com/api/drivers/${driverId}`, {
             headers: {
               'Authorization': `Bearer ${Cookies.get('token')}`
             }

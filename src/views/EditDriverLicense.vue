@@ -83,7 +83,7 @@ export default {
       try {
         const token = Cookies.get('token');
         console.log("this.editDriverLicense",this.editDriverLicense)
-        await axios.post('http://localhost:5000/api/user/upd_profile_license', this.editDriverLicense, {
+        await axios.post('https://unigo.onrender.com/api/user/upd_profile_license', this.editDriverLicense, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

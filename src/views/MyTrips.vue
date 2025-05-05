@@ -88,7 +88,7 @@ export default {
         }
 
         // Делаем запрос на сервер с использованием axios
-        const response = await axios.get("http://localhost:5000/api/trip/search", {
+        const response = await axios.get("https://unigo.onrender.com/api/trip/search", {
           headers: {
             Authorization: `Bearer ${token}`, // Передаем токен в заголовке
           },

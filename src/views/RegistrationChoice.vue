@@ -128,7 +128,7 @@ export default {
     // Метод для проверки временного пароля через axios
     async checkTemporaryPassword(password) {
       try {
-        const response = await axios.get("http://localhost:5000/api/user/password_check", {
+        const response = await axios.get("https://unigo.onrender.com/api/user/password_check", {
           params: {
             password: password, // Передаем временный пароль как параметр
           },

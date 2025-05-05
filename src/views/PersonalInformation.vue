@@ -189,7 +189,7 @@ export default {
       
       try {
         const token = Cookies.get('token');
-        const response = await axios.put('http://localhost:5000/api/user/create-img', formData, {
+        const response = await axios.put('https://unigo.onrender.com/api/user/create-img', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -207,7 +207,7 @@ export default {
     async removeAvatar() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.delete('http://localhost:5000/api/user/delete-img', {
+        const response = await axios.delete('https://unigo.onrender.com/api/user/delete-img', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -225,7 +225,7 @@ export default {
     async fetchAvatar() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/user/get-img', {
+        const response = await axios.get('https://unigo.onrender.com/api/user/get-img', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -242,7 +242,7 @@ export default {
     async fetchUserData() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/user/getUser', {
+        const response = await axios.get('https://unigo.onrender.com/api/user/getUser', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -258,7 +258,7 @@ export default {
     async fetchCarData() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/car/profileCar', {
+        const response = await axios.get('https://unigo.onrender.com/api/car/profileCar', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -278,7 +278,7 @@ export default {
     async fetchDriverLicense() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('http://localhost:5000/api/user/license_profile', {
+        const response = await axios.get('https://unigo.onrender.com/api/user/license_profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -303,7 +303,7 @@ export default {
       if (confirm("Вы уверены, что хотите удалить это транспортное средство?")) {
         try {
           const token = Cookies.get('token');
-          await axios.delete(`http://localhost:5000/api/car/deleteByNumber/${carNumber}`, {
+          await axios.delete(`https://unigo.onrender.com/api/car/deleteByNumber/${carNumber}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
