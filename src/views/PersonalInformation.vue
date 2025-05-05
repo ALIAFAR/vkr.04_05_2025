@@ -233,6 +233,7 @@ export default {
         
         if (response.data.success && response.data.avatarUrl) {
             this.avatarUrl = response.data.avatarUrl;
+            console.log("check avatarUrl",this.avatarUrl)
         }
       } catch (error) {
           console.error("Ошибка при загрузке аватара:", error);
