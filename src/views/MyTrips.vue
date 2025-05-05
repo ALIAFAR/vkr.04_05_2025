@@ -165,26 +165,60 @@
         </div>
       </div>
 
-      <!-- Модальное окно пассажиров -->
-      <div v-if="showPassengersModal" class="modal-overlay">
-        <div class="modal">
-          <h3>Пассажиры поездки</h3>
-          <div v-if="currentTripPassengers.length > 0">
-            <div v-for="(passenger, index) in currentTripPassengers" :key="index" class="passenger-item">
-              <div class="passenger-info">
-                <p><strong>Имя:</strong> {{ passenger.name }}</p>
-                <p><strong>Телефон:</strong> {{ passenger.phone }}</p>
-                <p><strong>Email:</strong> {{ passenger.email }}</p>
-                <p><strong>Место посадки:</strong> {{ passenger.boarding_point }}</p>
-                <p><strong>Место высадки:</strong> {{ passenger.dropoff_point }}</p>
+
+      <!-- Модальное окно с пассажирами -->
+      <div v-if="showPassengersModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+          <button class="modal-close" @click="closeModal">×</button>
+          <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
+          <p class="location-info">{{ currentLocation }}</p>
+          
+          <div class="passengers-filter">
+            <label>
+              <input type="checkbox" v-model="showOnlyMyBookings"> Показать только мои бронирования
+            </label>
+          </div>
+          
+          <div class="passengers-list">
+            <div v-if="filteredPassengers.length === 0" class="no-passengers">
+              <p>Нет забронировавших пассажиров</p>
+            </div>
+            <div v-else>
+              <div v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
+                <router-link :to="`/profile/${passenger.user_id}`" class="passenger-avatar-link">
+                  <img 
+                    :src="passenger.avatarUrl || '/default-avatar.jpg'" 
+                    alt="Аватар пассажира" 
+                    class="passenger-avatar"
+                    @error="handleImageError"
+                  >
+                </router-link>
+                <div class="passenger-info">
+                  <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
+                  <div class="passenger-meta">
+                    <span class="passenger-gender" :class="passenger.gender">
+                      {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
+                    </span>
+                    <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
+                    <span v-if="passenger.passenger_rating" class="passenger-rating">
+                      ★ {{ passenger.passenger_rating.toFixed(1) }}
+                    </span>
+                  </div>
+                  <div class="passenger-details">
+                    <span class="passenger-seats">Мест: {{ passenger.department }}</span>
+                    <span class="passenger-price">{{ passenger.position }} ₽</span>
+                  </div>
+                  <div v-if="passenger.comment" class="passenger-comment">
+                    "{{ passenger.comment }}"
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div v-else class="no-passengers">
-            В этой поездке пока нет пассажиров
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="cancel-button" @click="showPassengersModal = false">Закрыть</button>
+          
+          <div class="passengers-summary">
+            <p>Всего пассажиров: {{ filteredPassengers.length }}</p>
+            <p>Общее количество мест: {{ totalBookedSeats }}</p>
           </div>
         </div>
       </div>
@@ -300,19 +334,40 @@ export default {
     async showPassengers(tripId) {
       try {
         const token = Cookies.get('token');
-        this.selectedTripId = tripId;
-        
-        const response = await axios.get(`https://unigo.onrender.com/api/trip/${tripId}/passengers`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
 
-        this.currentTripPassengers = response.data.passengers;
+        const response = await axios.get(
+          'https://unigo.onrender.com/api/user/get-all',
+          {
+            params: { // ✅ GET-параметры
+              trip_id: tripId
+            },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        
+        this.passengers = (response.data.passengers || []).map(passenger => ({
+          ...passenger,
+          name: passenger.name || 'Не указано',
+          surname: passenger.surname || '',
+          gender: passenger.gender || 'unknown',
+          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
+          seats_booked: passenger.seats_booked,
+          department: passenger.department,
+          birthday:passenger.birthday,
+          position: passenger.position || '?'
+        }));
+        
         this.showPassengersModal = true;
       } catch (error) {
-        console.error("Ошибка при загрузке пассажиров:", error);
-        this.$toast.error('Не удалось загрузить информацию о пассажирах');
+        console.error('Ошибка при загрузке пассажиров:', error);
+        this.$notify({
+          title: 'Ошибка',
+          text: 'Не удалось загрузить информацию о пассажирах',
+          type: 'error'
+        });
       }
     },
 
@@ -341,7 +396,7 @@ export default {
           stops: this.editingTrip.stops.filter(stop => stop.trim() !== '')
         };
 
-        await axios.put(`http://localhost:5000/api/trip/${this.editingTrip.id}`, updatedTrip, {
+        await axios.put(`https://unigo.onrender.com/api/trip/${this.editingTrip.id}`, updatedTrip, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -363,7 +418,7 @@ export default {
         const token = Cookies.get('token');
         const newDateTime = new Date(`${this.rescheduleData.newDate}T${this.rescheduleData.newTime}`);
         
-        await axios.patch(`http://localhost:5000/api/trip/${this.rescheduleData.tripId}/reschedule`, {
+        await axios.patch(`https://unigo.onrender.com/api/trip/${this.rescheduleData.tripId}/reschedule`, {
           new_departure_time: newDateTime.toISOString()
         }, {
           headers: {
@@ -392,7 +447,7 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        await axios.delete(`http://localhost:5000/api/trip/${tripId}`, {
+        await axios.delete(`https://unigo.onrender.com/api/trip/${tripId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
