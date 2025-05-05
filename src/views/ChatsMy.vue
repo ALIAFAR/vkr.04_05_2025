@@ -28,8 +28,8 @@
               <span class="route">
                 {{ chat.departure_location }} → {{ chat.arrival_location }}
               </span>
-              <span class="trip-time">
-                Время поездки: {{ formatTime(chat.departure_time) }}
+              <span class="trip-datetime">
+                {{ formatDate(chat.departure_time) }} в {{ formatTime(chat.departure_time) }}
               </span>
             </div>
             
@@ -265,7 +265,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.trip-time {
+.trip-datetime {
   font-size: 0.85rem;
   color: #7f8c8d;
   font-weight: 500;
@@ -356,6 +356,10 @@ export default {
     font-size: 1rem;
   }
 
+  .trip-datetime {
+    font-size: 0.8rem;
+  }
+
   .last-message {
     font-size: 0.88rem;
     max-width: 70%;
@@ -380,8 +384,8 @@ export default {
     font-size: 0.95rem;
   }
 
-  .trip-time {
-    font-size: 0.8rem;
+  .trip-datetime {
+    font-size: 0.75rem;
   }
 
   .last-message {
