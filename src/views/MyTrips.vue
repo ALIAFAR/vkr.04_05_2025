@@ -213,7 +213,7 @@ export default {
           return;
         }
 
-        const response = await axios.get("http://localhost:5000/api/trip/search", {
+        const response = await axios.get("https://unigo.onrender.com/api/trip/search", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
