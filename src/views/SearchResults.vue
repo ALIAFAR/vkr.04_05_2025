@@ -16,74 +16,113 @@
       </div>
 
       <div v-if="showBookingConfirmation1" class="modal-overlay" @click.self="closeBookingModal">
-  <div class="modal-content safety-modal">
-    <button class="modal-close" @click="closeBookingModal">×</button>
-    <h3>Подтверждение бронирования</h3>
-    
-    <div class="safety-notification">
-      <div class="safety-icon">⚠️</div>
-      <div class="safety-content">
-        <h4>Ваша безопасность важна!</h4>
-        <ul class="safety-checklist">
-          <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
-          <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
-          <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
-          <li>Не садитесь в машину, если что-то вызывает подозрения</li>
-        </ul>
-        <p class="safety-warning">
-          Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
-        </p>
-      </div>
-    </div>
+        <div class="modal-content safety-modal">
+          <button class="modal-close" @click="closeBookingModal">×</button>
+          
+          <template v-if="!showConfirmation">
+            <h3>Подтверждение бронирования</h3>
+            
+            <div class="safety-notification">
+              <div class="safety-icon">⚠️</div>
+              <div class="safety-content">
+                <h4>Ваша безопасность важна!</h4>
+                <ul class="safety-checklist">
+                  <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
+                  <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
+                  <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
+                  <li>Не садитесь в машину, если что-то вызывает подозрения</li>
+                </ul>
+              </div>
+            </div>
 
-    <!-- Поля для ввода данных карты -->
-    <div class="payment-form">
-      <div class="form-group">
-        <label for="card-number">Номер карты</label>
-        <input 
-          id="card-number" 
-          type="text" 
-          placeholder="1234 5678 9012 3456" 
-          class="card-input"
-          v-model="cardNumber"
-          maxlength="19"
-          @input="formatCardNumber"
-        >
-      </div>
+            <!-- QR-код для оплаты -->
+            <div class="qr-payment-section">
+              <h4>Оплата через QR-код</h4>
+              <div class="qr-code-placeholder">
+                <!-- Имитация QR-кода -->
+                <div class="qr-code"></div>
+                <p class="qr-hint">Отсканируйте QR-код для оплаты</p>
+              </div>
+              
+              <div class="or-divider">
+                <span>или</span>
+              </div>
+            </div>
 
-      <div class="form-row">
-        <div class="form-group half-width">
-          <label for="expiry-date">Срок действия</label>
-          <input 
-            id="expiry-date" 
-            type="text" 
-            placeholder="MM/ГГ" 
-            class="card-input"
-            v-model="expiryDate"
-            maxlength="5"
-            @input="formatExpiryDate"
-          >
+            <!-- Поля для ввода данных карты -->
+            <div class="payment-form">
+              <div class="form-group">
+                <label for="card-number">Номер карты</label>
+                <input 
+                  id="card-number" 
+                  type="text" 
+                  placeholder="1234 5678 9012 3456" 
+                  class="card-input"
+                  v-model="cardNumber"
+                  maxlength="19"
+                  @input="formatCardNumber"
+                >
+              </div>
+
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <label for="expiry-date">Срок действия</label>
+                  <input 
+                    id="expiry-date" 
+                    type="text" 
+                    placeholder="MM/ГГ" 
+                    class="card-input"
+                    v-model="expiryDate"
+                    maxlength="5"
+                    @input="formatExpiryDate"
+                  >
+                </div>
+
+                <div class="form-group half-width">
+                  <label for="cvv">CVV/CVC</label>
+                  <input 
+                    id="cvv" 
+                    type="password" 
+                    placeholder="•••" 
+                    class="card-input"
+                    v-model="cvv"
+                    maxlength="3"
+                  >
+                </div>
+              </div>
+
+              <button class="btn-pay" @click="startPayment">
+                Оплатить
+              </button>
+            </div>
+          </template>
+
+          <!-- Экран подтверждения оплаты -->
+          <div v-if="showConfirmation" class="confirmation-screen">
+            <div class="confirmation-icon">✓</div>
+            <h3>Оплата прошла успешно!</h3>
+            <p class="confirmation-text">Спасибо за использование нашего сервиса</p>
+            
+            <div v-if="showCodeInput" class="code-confirmation">
+              <p>Введите код подтверждения из SMS:</p>
+              <input 
+                type="text" 
+                v-model="confirmationCode"
+                class="code-input"
+                placeholder="1234"
+                maxlength="4"
+              >
+              <button class="btn-confirm" @click="completePayment">
+                Подтвердить
+              </button>
+            </div>
+            
+            <button class="btn-close" @click="closeBookingModal">
+              Закрыть
+            </button>
+          </div>
         </div>
-
-        <div class="form-group half-width">
-          <label for="cvv">CVV/CVC</label>
-          <input 
-            id="cvv" 
-            type="password" 
-            placeholder="•••" 
-            class="card-input"
-            v-model="cvv"
-            maxlength="3"
-          >
-        </div>
       </div>
-
-      <button class="btn-pay" @click="processPayment">
-        Оплатить
-      </button>
-    </div>
-  </div>
-</div>
 
       <!-- Сортировка и фильтры -->
       <div class="sort-filter-container">
@@ -398,6 +437,9 @@ export default {
       cardNumber: '',
       expiryDate: '',
       cvv: '',
+      showConfirmation: false,
+      showCodeInput: false,
+      confirmationCode: '',
       searchParams: {
         from: '',
         to: '',
@@ -460,6 +502,26 @@ export default {
     await this.fetchTrips();
   },
   methods: {
+
+    startPayment() {
+    // Имитация процесса оплаты
+    this.showCodeInput = true;
+    
+    // Через 1 секунду показываем экран подтверждения
+    setTimeout(() => {
+      this.showConfirmation = true;
+    }, 1000);
+  },
+  
+  completePayment() {
+    // Имитация успешного подтверждения
+    this.showCodeInput = false;
+    
+    // Можно добавить дополнительную логику здесь
+    setTimeout(() => {
+      this.closeBookingModal();
+    }, 1500);
+  },
 
     formatCardNumber() {
     // Форматирование номера карты (добавляем пробелы через каждые 4 цифры)
@@ -1044,6 +1106,114 @@ export default {
 </script>
 
 <style scoped>
+/* Стили для QR-кода */
+.qr-payment-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.qr-code-placeholder {
+  margin: 15px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.qr-code {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  background: 
+    linear-gradient(45deg, #333 25%, transparent 25%) -50px 0,
+    linear-gradient(-45deg, #333 25%, transparent 25%) -50px 0,
+    linear-gradient(45deg, transparent 75%, #333 75%),
+    linear-gradient(-45deg, transparent 75%, #333 75%);
+  background-size: 100px 100px;
+  background-color: #fff;
+}
+
+.qr-hint {
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #999;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+  padding: 0 10px;
+}
+
+/* Стили для экрана подтверждения */
+.confirmation-screen {
+  text-align: center;
+  padding: 20px;
+}
+
+.confirmation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background-color: #2ecc71;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.confirmation-text {
+  color: #666;
+  margin: 15px 0 25px;
+}
+
+.code-confirmation {
+  margin: 25px 0;
+}
+
+.code-input {
+  padding: 12px;
+  width: 100px;
+  text-align: center;
+  font-size: 18px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.btn-confirm {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-close {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* Стили для формы оплаты */
 .payment-form {
   margin-top: 25px;
@@ -2262,6 +2432,114 @@ label {
 
 .btn-pay:active {
   transform: translateY(1px);
+}
+
+/* Стили для QR-кода */
+.qr-payment-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.qr-code-placeholder {
+  margin: 15px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.qr-code {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  background: 
+    linear-gradient(45deg, #333 25%, transparent 25%) -50px 0,
+    linear-gradient(-45deg, #333 25%, transparent 25%) -50px 0,
+    linear-gradient(45deg, transparent 75%, #333 75%),
+    linear-gradient(-45deg, transparent 75%, #333 75%);
+  background-size: 100px 100px;
+  background-color: #fff;
+}
+
+.qr-hint {
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #999;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+  padding: 0 10px;
+}
+
+/* Стили для экрана подтверждения */
+.confirmation-screen {
+  text-align: center;
+  padding: 20px;
+}
+
+.confirmation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background-color: #2ecc71;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.confirmation-text {
+  color: #666;
+  margin: 15px 0 25px;
+}
+
+.code-confirmation {
+  margin: 25px 0;
+}
+
+.code-input {
+  padding: 12px;
+  width: 100px;
+  text-align: center;
+  font-size: 18px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.btn-confirm {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-close {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 
