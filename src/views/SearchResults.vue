@@ -589,8 +589,7 @@ export default {
         console.log("1")
         
         if (!trip.instant_booking) {
-          this.showPassengersModal=true
-          
+          this.showBookingConfirmation=true          
         }
 
         const response1 = await axios.post(
