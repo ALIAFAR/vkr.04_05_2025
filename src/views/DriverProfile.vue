@@ -6,14 +6,14 @@
         
         <div class="driver-main-info">
           <img 
-            :src="driver.avatar || '/default-avatar.jpg'" 
+            :src="driver.avatarurl || '/default-avatar.jpg'" 
             alt="Аватар водителя" 
             class="driver-avatar"
             @error="handleImageError"
           >
           
           <div class="driver-text-info">
-            <h1>{{ driver.name }} {{ driver.surname }}</h1>
+            <h1>{{ driver.driver_name }} {{ driver.driver_surname }}</h1>
             <div class="driver-rating">
               <span class="star">★</span>
               <span class="rating-value">{{ driver.rating || 'Нет оценки' }}</span>
@@ -141,9 +141,9 @@
     data() {
       return {
         driver: {
-          name: '',
-          surname: '',
-          avatar: '',
+          driver_name: '',
+          driver_surname: '',
+          avatarurl: '',
           birth_date: '',
           license_issue_date: '',
           registration_date: '',
@@ -152,7 +152,8 @@
           total_trips: 0,
           canceled_trips: 0,
           rescheduled_trips: 0,
-          car: null,
+          mark: '',
+          brand: '',
           reviews: []
         },
         loading: true,
