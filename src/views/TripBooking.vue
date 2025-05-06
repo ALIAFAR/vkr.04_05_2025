@@ -276,37 +276,20 @@ export default {
 
     async cancelBooking(trip) {
       try {
-        const confirm = await this.$confirm(
-          'Вы уверены, что хотите отменить бронирование?',
-          'Подтверждение отмены',
-          {
-            confirmButtonText: 'Да, отменить',
-            cancelButtonText: 'Нет',
-            type: 'warning'
-          }
-        );
+        const confirm = window.confirm('Вы уверены, что хотите отменить бронирование?');
         
         if (confirm) {
           const token = Cookies.get('token');
-          await axios.put(`https://unigo.onrender.com/api/booking/cancell/${trip.booking_id}`, {
+          await axios.put(`https://unigo.onrender.com/api/booking/cancell/${trip.booking_id}`, {}, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          
-          this.$notify({
-            title: 'Успешно',
-            text: 'Бронирование отменено',
-            type: 'success'
-          });
-          
+
+          alert('Бронирование отменено');
           await this.loadBookedTrips();
         }
       } catch (error) {
         console.error('Ошибка при отмене бронирования:', error);
-        this.$notify({
-          title: 'Ошибка',
-          text: 'Не удалось отменить бронирование',
-          type: 'error'
-        });
+        alert('Не удалось отменить бронирование');
       }
     },
 
