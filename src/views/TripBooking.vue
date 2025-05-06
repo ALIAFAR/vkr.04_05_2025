@@ -29,19 +29,11 @@
               </div>
               <div class="detail-item">
                 <p><strong>Дата отбытия:</strong></p>
-                <span>{{ (trip.departuredate).toLocaleDateString('ru-RU', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                          }) }}</span>
+                <span>{{ formatDate(trip.departuredate) }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Время отбытия:</strong></p>
-                <span>{{ (trip.departuretime).toLocaleDateString('ru-RU', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                          }) }}</span>
+                <span>{{ formatDate(trip.departuretime)}}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Цена:</strong></p>
@@ -205,6 +197,10 @@ export default {
     this.loadBookedTrips();
   },
   methods: {
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    },
     async loadBookedTrips() {
       this.loading = true;
       try {
