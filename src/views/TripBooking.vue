@@ -108,85 +108,220 @@ export default {
 };
 </script>
 
+
 <style scoped>
-/* Основные стили для всех устройств */
+/* Основные стили */
 .booking-container {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 6rem auto;
+  padding: 2rem 1.5rem;
+  max-width: 1200px;
+  margin: 6rem auto 3rem;
   text-align: center;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 66, 129, 0.1);
+}
+
+.booking-header {
+  margin-bottom: 2.5rem;
 }
 
 .booking-header h1 {
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-size: 2.25rem;
   color: #004281;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.booking-list {
-  margin-top: 1.5rem;
+.subtitle {
+  color: #6B7280;
+  font-size: 1.1rem;
+  margin-bottom: 0;
 }
 
-.trip-item {
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  background: #ffffff;
+/* Список поездок */
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.trip-card {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
   transition: all 0.3s ease;
-  border: 1px solid rgba(0, 66, 129, 0.1);
+  border: 1px solid #E5E7EB;
 }
 
-.trip-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 66, 129, 0.15);
+.trip-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 66, 129, 0.15);
 }
 
-.detail-item {
-  margin-bottom: 0.75rem;
-  text-align: left;
+.trip-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #F3F4F6;
 }
 
-.detail-item p {
-  margin: 0;
+.route {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.city {
   font-weight: 600;
-  color: #004281;
-  font-size: 0.95rem;
-}
-
-.detail-item span {
-  font-size: 0.95rem;
-  color: #4a5568;
-  text-align: right;
-}
-
-.no-trips {
   font-size: 1.1rem;
-  color: #4a5568;
-  padding: 1.5rem;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
-  border: 1px dashed rgba(0, 66, 129, 0.2);
+  color: #111827;
 }
 
-.back-button {
+.arrow {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.status-badge.active {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.trip-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6B7280;
+  font-size: 0.9rem;
+}
+
+.detail-label svg {
+  width: 18px;
+  height: 18px;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: #111827;
+}
+
+.trip-actions {
+  display: flex;
+  gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.action-btn.details {
+  background: white;
+  color: #004281;
+  border-color: #004281;
+}
+
+.action-btn.details:hover {
+  background: #F5F5F5;
+}
+
+.action-btn.cancel {
+  background: white;
+  color: #DC2626;
+  border-color: #DC2626;
+}
+
+.action-btn.cancel:hover {
+  background: #FEF2F2;
+}
+
+/* Состояние "нет поездок" */
+.no-trips {
+  background: white;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.no-trips h3 {
+  font-size: 1.5rem;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.no-trips p {
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+}
+
+.cta-button {
+  background: #004281;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cta-button:hover {
+  background: #003366;
+  transform: translateY(-2px);
+}
+
+/* Кнопка назад */
+.back-button {
+  margin-top: 3rem;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  color: #ffffff;
+  color: white;
   background-color: #004281;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 66, 129, 0.2);
 }
 
@@ -196,92 +331,77 @@ export default {
   box-shadow: 0 6px 12px rgba(0, 66, 129, 0.25);
 }
 
+.back-button svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* Адаптация для планшетов */
 @media (max-width: 1024px) {
   .booking-container {
-    margin: 5rem auto;
     padding: 1.5rem;
-    max-width: 90%;
+    margin: 5rem auto;
   }
   
   .booking-header h1 {
-    font-size: 1.75rem;
+    font-size: 2rem;
+  }
+  
+  .trips-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 
 /* Адаптация для мобильных устройств */
 @media (max-width: 768px) {
   .booking-container {
-    margin: 7rem auto 3rem;
-    padding: 1.25rem;
-    width: 95%;
-    border-radius: 12px;
+    margin: 7rem auto 2rem;
+    padding: 1rem;
   }
 
   .booking-header h1 {
-    font-size: 1.5rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.75rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
   }
 
-  .trip-item {
-    padding: 1.25rem;
-    margin-bottom: 1.25rem;
-    border-left: 4px solid #004281;
+  .trips-grid {
+    grid-template-columns: 1fr;
   }
-
-  .detail-item {
+  
+  .trip-actions {
     flex-direction: column;
-    margin-bottom: 0.5rem;
   }
-
-  .detail-item p,
-  .detail-item span {
-    width: 100%;
-    text-align: left;
-    font-size: 0.9rem;
+  
+  .no-trips {
+    padding: 2rem 1.5rem;
   }
-
-  .detail-item span {
-    margin-top: 0.25rem;
-    color: #4a5568;
-  }
-
-  .back-button {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 0.95rem;
+  
+  .empty-icon {
+    width: 100px;
+    height: 100px;
   }
 }
 
 /* Особые стили для маленьких экранов */
 @media (max-width: 480px) {
-  .booking-container {
-    margin: 6rem auto 2rem;
-    padding: 1rem;
-  }
-
   .booking-header h1 {
-    font-size: 1.3rem;
-  }
-
-  .trip-item {
-    padding: 1rem;
-  }
-
-  .no-trips {
-    padding: 1rem;
-    font-size: 1rem;
-  }
-}
-
-/* Ориентация landscape */
-@media (max-width: 768px) and (orientation: landscape) {
-  .booking-container {
-    margin: 5rem auto 2rem;
+    font-size: 1.5rem;
   }
   
-  .detail-item {
-    flex-direction: row;
+  .city {
+    font-size: 1rem;
+  }
+  
+  .detail-label span {
+    display: none;
+  }
+  
+  .back-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
