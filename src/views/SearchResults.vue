@@ -16,25 +16,27 @@
       </div>
 
       <div v-if="showBookingConfirmation1" class="modal-overlay" @click.self="closeBookingModal">
-            <button class="modal-close" @click="closeBookingModal">×</button>
-              <h3>Подтверждение бронирования</h3>
-              
-              <div class="safety-notification">
-                <div class="safety-icon">⚠️</div>
-                <div class="safety-content">
-                  <h4>Ваша безопасность важна!</h4>
-                  <ul class="safety-checklist">
-                    <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
-                    <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
-                    <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
-                    <li>Не садитесь в машину, если что-то вызывает подозрения</li>
-                  </ul>
-                  <p class="safety-warning">
-                    Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
-                  </p>
-                </div>
-              </div>
+        <div class="modal-content safety-modal"> <!-- Добавляем обертку и класс safety-modal -->
+          <button class="modal-close" @click="closeBookingModal">×</button>
+          <h3>Подтверждение бронирования</h3>
+          
+          <div class="safety-notification"> <!--важно -->
+            <div class="safety-icon">⚠️</div> <!--важно -->
+            <div class="safety-content">
+              <h4>Ваша безопасность важна!</h4>
+              <ul class="safety-checklist">
+                <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
+                <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
+                <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
+                <li>Не садитесь в машину, если что-то вызывает подозрения</li>
+              </ul>
+              <p class="safety-warning">
+                Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
 
       <!-- Сортировка и фильтры -->
       <div class="sort-filter-container">
@@ -967,6 +969,99 @@ export default {
 </script>
 
 <style scoped>
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Контейнер содержимого модального окна */
+.safety-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 25px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Кнопка закрытия */
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+/* Стили для блока безопасности - сохраняем ваши важные комментарии */
+.safety-notification { /*важно */
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  gap: 15px;
+}
+
+.safety-icon { /*важно */
+  font-size: 24px;
+  color: #ff9800;
+}
+
+.safety-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #e65100;
+}
+
+.safety-checklist {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.safety-checklist li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  position: relative;
+  padding-left: 15px;
+}
+
+.safety-checklist li::before {
+  content: "•";
+  color: #ff9800;
+  position: absolute;
+  left: 0;
+}
+
+.safety-warning {
+  font-size: 13px;
+  color: #d32f2f;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+
 /* Основные стили */
 .search-results {
   max-width: 1200px;
@@ -1483,7 +1578,7 @@ h1 {
   color: #777;
 }
 /* Модальное окно с пассажирами */
-.modal-overlay {
+.modal-overlay { /*важно */
   position: fixed;
   top: 0;
   left: 0;
@@ -1508,7 +1603,7 @@ h1 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.modal-close {
+.modal-close { /*важно */
   position: absolute;
   top: 15px;
   right: 15px;
@@ -1804,7 +1899,7 @@ h1 {
 }
 
 /* Стили для блока безопасности */
-.safety-notification {
+.safety-notification { /*важно */
   background-color: #fff8e1;
   border-left: 4px solid #ffc107;
   padding: 15px;
@@ -1814,7 +1909,7 @@ h1 {
   gap: 15px;
 }
 
-.safety-icon {
+.safety-icon { /*важно */
   font-size: 24px;
   color: #ff9800;
 }
@@ -1866,6 +1961,100 @@ h1 {
 .booking-details p {
   margin: 6px 0;
   font-size: 14px;
+}
+
+/*ппроьрпавапро */
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Контейнер содержимого модального окна */
+.safety-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 25px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Кнопка закрытия */
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+/* Стили для блока безопасности - сохраняем ваши важные комментарии */
+.safety-notification { /*важно */
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  gap: 15px;
+}
+
+.safety-icon { /*важно */
+  font-size: 24px;
+  color: #ff9800;
+}
+
+.safety-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #e65100;
+}
+
+.safety-checklist {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.safety-checklist li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  position: relative;
+  padding-left: 15px;
+}
+
+.safety-checklist li::before {
+  content: "•";
+  color: #ff9800;
+  position: absolute;
+  left: 0;
+}
+
+.safety-warning {
+  font-size: 13px;
+  color: #d32f2f;
+  margin-top: 10px;
+  font-weight: 500;
 }
 
 /* Адаптация для мобильных устройств */
