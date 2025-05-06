@@ -12,6 +12,7 @@
         <div v-if="bookedTrips.length === 0" class="no-trips">
           У вас нет забронированных поездок.
         </div>
+        
         <div v-else>
           <div v-for="(trip, index) in bookedTrips" :key="index" class="trip-item">
             <div class="detail-item">
