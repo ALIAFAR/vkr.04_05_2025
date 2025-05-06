@@ -1780,10 +1780,80 @@ h1 {
   gap: 10px;
 }
 
+/* Стили для блока безопасности */
+.safety-notification {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  gap: 15px;
+}
+
+.safety-icon {
+  font-size: 24px;
+  color: #ff9800;
+}
+
+.safety-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #e65100;
+}
+
+.safety-checklist {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.safety-checklist li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  position: relative;
+  padding-left: 15px;
+}
+
+.safety-checklist li::before {
+  content: "•";
+  color: #ff9800;
+  position: absolute;
+  left: 0;
+}
+
+.safety-warning {
+  font-size: 13px;
+  color: #d32f2f;
+  margin-top: 10px;
+}
+
+/* Стили для деталей брони */
+.booking-details {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.booking-details h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.booking-details p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
 /* Адаптация для мобильных устройств */
 @media (max-width: 768px) {
   .booking-modal {
     padding: 15px;
+  }
+
+  .safety-notification {
+    flex-direction: column;
+    gap: 10px;
   }
   
   .safety-notification {
