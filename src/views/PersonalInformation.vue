@@ -161,7 +161,7 @@ export default {
     },
     formatValue(key, value) {
       if (key === "gender") {
-        return value ? "Мужской" : "Женский";
+        return value ? "Женский" : "Мужской";
       }
       if (key === "birthday") {
         return new Date(value).toLocaleDateString();

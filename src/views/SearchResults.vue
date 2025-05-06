@@ -35,15 +35,16 @@
               </div>
             </div>
 
-            <!-- QR-код для оплаты -->
-            <div class="qr-payment-section">
-              <h4>Оплата через QR-код</h4>
-              <div class="qr-code-placeholder">
-                <!-- Имитация QR-кода -->
-                <div class="qr-code"></div>
-                <p class="qr-hint">Отсканируйте QR-код для оплаты</p>
-              </div>
-              
+              <!-- QR-код для оплаты -->
+              <div class="qr-payment-section">
+                <h4>Оплата через QR-код</h4>
+                <div class="qr-code-placeholder">
+                  <!-- Реальное изображение QR-кода с сохранением ваших стилей -->
+                  <img src="/qr-code.png" alt="QR-код для оплаты" class="qr-code">
+                  <p class="qr-hint">Отсканируйте QR-код для оплаты</p>
+                </div>
+      
+
               <div class="or-divider">
                 <span>или</span>
               </div>
@@ -100,9 +101,7 @@
           <!-- Экран подтверждения оплаты -->
           <div v-if="showConfirmation" class="confirmation-screen">
             <div class="confirmation-icon">✓</div>
-            <h3>Оплата прошла успешно!</h3>
             <p class="confirmation-text">Спасибо за использование нашего сервиса</p>
-            
             <div v-if="showCodeInput" class="code-confirmation">
               <p>Введите код подтверждения из SMS:</p>
               <input 
@@ -392,7 +391,7 @@
             <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
             <div class="passenger-meta">
               <span class="passenger-gender" :class="passenger.gender">
-                {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
+                {{ passenger.gender === 'male' ? 'Женщина' : 'Мужчина' }}
               </span>
               <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
               <span v-if="passenger.passenger_rating " class="passenger-rating">
@@ -2451,13 +2450,7 @@ label {
   width: 150px;
   height: 150px;
   margin: 0 auto;
-  background: 
-    linear-gradient(45deg, #333 25%, transparent 25%) -50px 0,
-    linear-gradient(-45deg, #333 25%, transparent 25%) -50px 0,
-    linear-gradient(45deg, transparent 75%, #333 75%),
-    linear-gradient(-45deg, transparent 75%, #333 75%);
-  background-size: 100px 100px;
-  background-color: #fff;
+  display: block; /* Добавляем, чтобы изображение правильно центрировалось */
 }
 
 .qr-hint {
