@@ -590,7 +590,9 @@ export default {
         
         if (trip.instant_booking) {
           console.log("inst book check")
-          this.showBookingConfirmation=true          
+          this.showBookingConfirmation=true 
+          this.currentBookingTrip = trip; // <-- Добавьте эту строку
+          this.showBookingConfirmation = true;         
         }
 
         const response1 = await axios.post(
