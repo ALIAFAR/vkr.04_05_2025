@@ -40,7 +40,7 @@
                 <h4>Оплата через QR-код</h4>
                 <div class="qr-code-placeholder">
                   <!-- Реальное изображение QR-кода с сохранением ваших стилей -->
-                  <img src="/qr-code.png" alt="QR-код для оплаты" class="qr-code">
+                  <img src="public/qr-code.png" alt="QR-код для оплаты" class="qr-code">
                   <p class="qr-hint">Отсканируйте QR-код для оплаты</p>
                 </div>
       
