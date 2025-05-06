@@ -29,11 +29,19 @@
               </div>
               <div class="detail-item">
                 <p><strong>Дата отбытия:</strong></p>
-                <span>{{ trip.departuredate }}</span>
+                <span>{{ (trip.departuredate).toLocaleDateString('ru-RU', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric'
+                                                                          }) }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Время отбытия:</strong></p>
-                <span>{{ trip.departuretime }}</span>
+                <span>{{ (trip.departuretime).toLocaleDateString('ru-RU', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric'
+                                                                          }) }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Цена:</strong></p>
