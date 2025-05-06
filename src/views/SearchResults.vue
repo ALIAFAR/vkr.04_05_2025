@@ -391,7 +391,7 @@
             <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
             <div class="passenger-meta">
               <span class="passenger-gender" :class="passenger.gender">
-                {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
+                {{ passenger.gender === 'male' ? 'Женщина' : 'Мужчина' }}
               </span>
               <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
               <span v-if="passenger.passenger_rating " class="passenger-rating">
