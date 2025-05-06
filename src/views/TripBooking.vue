@@ -274,7 +274,7 @@ export default {
         
         if (confirm) {
           const token = Cookies.get('token');
-          await axios.delete(`https://api.yourserver.com/bookings/${trip.id_trip}`, {
+          await axios.put(`https://unigo.onrender.com/api/booking/cancell/${trip.booking_id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           
