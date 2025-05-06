@@ -2,8 +2,8 @@
   <div>
     <AppNavbar />
 
-    <div class="booking-container">
-      <div class="booking-header">
+    <div class="booking-details">
+      <div class="details-header">
         <h1>Мои забронированные поездки</h1>
       </div>
 
@@ -12,48 +12,57 @@
         <div v-if="bookedTrips.length === 0" class="no-trips">
           У вас нет забронированных поездок.
         </div>
-        
         <div v-else>
-          <div v-for="(trip, index) in bookedTrips" :key="index" class="trip-item">
-            <div class="detail-item">
-              <p><strong>Откуда:</strong></p>
-              <span>{{ trip.from }}</span>
-            </div>
-            <div class="detail-item">
-              <p><strong>Куда:</strong></p>
-              <span>{{ trip.to }}</span>
-            </div>
-            <div class="detail-item">
-              <p><strong>Дата отбытия:</strong></p>
-              <span>{{ trip.departuredate }}</span>
-            </div>
-            <div class="detail-item">
-              <p><strong>Время отбытия:</strong></p>
-              <span>{{ trip.departuretime }}</span>
-            </div>
-            <div class="detail-item">
-              <p><strong>Цена:</strong></p>
-              <span>{{ trip.cost }}</span>
-            </div>
-            <div class="detail-item">
-              <p><strong>Остановки:</strong></p>
-              <span>{{ trip.stops }}</span>
+          <div 
+            v-for="(trip, index) in bookedTrips" 
+            :key="index" 
+            class="trip-item"
+          >
+            <div class="trip-content">
+              <div class="detail-item">
+                <p><strong>Откуда:</strong></p>
+                <span>{{ trip.from }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Куда:</strong></p>
+                <span>{{ trip.to }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Дата отбытия:</strong></p>
+                <span>{{ trip.departuredate }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Время отбытия:</strong></p>
+                <span>{{ trip.departuretime }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Цена:</strong></p>
+                <span>{{ trip.cost }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Остановки:</strong></p>
+                <span>{{ trip.stops }}</span>
+              </div>
             </div>
             
-            <!-- Кнопки действий -->
             <div class="trip-actions">
-              <button class="btn-view-passengers" @click="showPassengers(trip, 'departure')">
-                Посмотреть пассажиров
+              <button 
+                class="action-button view-passengers" 
+                @click="showPassengers(trip, 'departure')"
+              >
+                Пассажиры
               </button>
-              <button class="btn-cancel" @click="cancelBooking(trip)">
-                Отменить бронь
+              <button 
+                class="action-button cancel" 
+                @click="cancelBooking(trip)"
+              >
+                Отменить
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Кнопка для возврата на главную страницу -->
       <button class="back-button" @click="goToHome">
         Вернуться на главную
       </button>
@@ -340,46 +349,130 @@ export default {
 </script>
 
 <style scoped>
-/* Все предыдущие стили остаются без изменений */
+.booking-details {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 6rem auto;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 66, 129, 0.1);
+}
 
-/* Новые стили для кнопок действий */
+.details-header h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  color: #004281;
+  font-weight: 600;
+}
+
+.booking-list {
+  margin-top: 1.5rem;
+}
+
+.trip-item {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 66, 129, 0.1);
+}
+
+.trip-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 66, 129, 0.15);
+}
+
+.trip-content {
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  margin-bottom: 0.75rem;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-item p {
+  margin: 0;
+  font-weight: 600;
+  color: #004281;
+  font-size: 0.95rem;
+}
+
+.detail-item span {
+  font-size: 0.95rem;
+  color: #4a5568;
+  text-align: right;
+}
+
 .trip-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 0.5rem;
 }
 
-.btn-view-passengers, .btn-cancel {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
+.action-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-  flex-grow: 1;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+  flex: 1;
 }
 
-.btn-view-passengers {
+.action-button.view-passengers {
   background-color: #3498db;
   color: white;
+}
+
+.action-button.cancel {
+  background-color: #dc3545;
+  color: white;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.no-trips {
+  font-size: 1.1rem;
+  color: #4a5568;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 66, 129, 0.08);
+  border: 1px dashed rgba(0, 66, 129, 0.2);
+}
+
+.back-button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #004281;
   border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 66, 129, 0.2);
 }
 
-.btn-view-passengers:hover {
-  background-color: #2980b9;
+.back-button:hover {
+  background-color: #003366;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 66, 129, 0.25);
 }
 
-.btn-cancel {
-  background-color: #f1f1f1;
-  color: #d32f2f;
-  border: 1px solid #d32f2f;
-}
-
-.btn-cancel:hover {
-  background-color: #ffebee;
-}
-
-/* Стили для модального окна */
+/* Модальное окно */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -394,14 +487,15 @@ export default {
 }
 
 .modal-content {
-  background-color: white;
+  background: white;
+  padding: 2rem;
   border-radius: 12px;
-  padding: 25px;
-  max-width: 500px;
   width: 90%;
+  max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-close {
@@ -410,7 +504,7 @@ export default {
   right: 15px;
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 1.5rem;
   cursor: pointer;
   color: #777;
 }
@@ -443,6 +537,8 @@ export default {
 
 .passengers-list {
   margin: 15px 0;
+  max-height: 50vh;
+  overflow-y: auto;
 }
 
 .passenger-item {
@@ -519,14 +615,48 @@ export default {
   font-size: 14px;
 }
 
+.no-passengers {
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.passengers-filter {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.passengers-filter label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
+  .booking-details {
+    margin: 7rem auto 3rem;
+    padding: 1.25rem;
+    width: 95%;
+  }
+
+  .trip-item {
+    padding: 1.25rem;
+  }
+
   .trip-actions {
     flex-direction: column;
+    gap: 0.5rem;
   }
-  
+
+  .action-button {
+    width: 100%;
+  }
+
   .modal-content {
-    padding: 20px 15px;
+    padding: 1.5rem;
   }
   
   .driver-info-modal {
