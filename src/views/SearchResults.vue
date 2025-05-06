@@ -101,8 +101,6 @@
           <!-- Экран подтверждения оплаты -->
           <div v-if="showConfirmation" class="confirmation-screen">
             <div class="confirmation-icon">✓</div>
-            <h3>Оплата прошла успешно!</h3>
-            <p class="confirmation-text">Спасибо за использование нашего сервиса</p>
             
             <div v-if="showCodeInput" class="code-confirmation">
               <p>Введите код подтверждения из SMS:</p>
