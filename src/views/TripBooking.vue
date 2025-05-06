@@ -33,7 +33,7 @@
               </div>
               <div class="detail-item">
                 <p><strong>Время отбытия:</strong></p>
-                <span>{{ formatDate(trip.departuretime)}}</span>
+                <span>{{ trip.departuretime}}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Цена:</strong></p>
