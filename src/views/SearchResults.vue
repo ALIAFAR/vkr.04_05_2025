@@ -588,7 +588,8 @@ export default {
         }
         console.log("1")
         
-        if (!trip.instant_booking) {
+        if (trip.instant_booking) {
+          console.log("inst book check")
           this.showBookingConfirmation=true          
         }
 
