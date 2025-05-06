@@ -16,27 +16,74 @@
       </div>
 
       <div v-if="showBookingConfirmation1" class="modal-overlay" @click.self="closeBookingModal">
-        <div class="modal-content safety-modal"> <!-- Добавляем обертку и класс safety-modal -->
-          <button class="modal-close" @click="closeBookingModal">×</button>
-          <h3>Подтверждение бронирования</h3>
-          
-          <div class="safety-notification"> <!--важно -->
-            <div class="safety-icon">⚠️</div> <!--важно -->
-            <div class="safety-content">
-              <h4>Ваша безопасность важна!</h4>
-              <ul class="safety-checklist">
-                <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
-                <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
-                <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
-                <li>Не садитесь в машину, если что-то вызывает подозрения</li>
-              </ul>
-              <p class="safety-warning">
-                Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
-              </p>
-            </div>
-          </div>
+  <div class="modal-content safety-modal">
+    <button class="modal-close" @click="closeBookingModal">×</button>
+    <h3>Подтверждение бронирования</h3>
+    
+    <div class="safety-notification">
+      <div class="safety-icon">⚠️</div>
+      <div class="safety-content">
+        <h4>Ваша безопасность важна!</h4>
+        <ul class="safety-checklist">
+          <li>Проверьте номер автомобиля - он должен совпадать с указанным в приложении</li>
+          <li>Убедитесь, что марка и модель авто соответствуют данным в заказе</li>
+          <li>Подтвердите личность водителя - сверьте фото и имя в приложении</li>
+          <li>Не садитесь в машину, если что-то вызывает подозрения</li>
+        </ul>
+        <p class="safety-warning">
+          Вы несете ответственность за свою безопасность. Если данные не совпадают или водитель ведет себя подозрительно - отмените поездку и сообщите в поддержку.
+        </p>
+      </div>
+    </div>
+
+    <!-- Поля для ввода данных карты -->
+    <div class="payment-form">
+      <div class="form-group">
+        <label for="card-number">Номер карты</label>
+        <input 
+          id="card-number" 
+          type="text" 
+          placeholder="1234 5678 9012 3456" 
+          class="card-input"
+          v-model="cardNumber"
+          maxlength="19"
+          @input="formatCardNumber"
+        >
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label for="expiry-date">Срок действия</label>
+          <input 
+            id="expiry-date" 
+            type="text" 
+            placeholder="MM/ГГ" 
+            class="card-input"
+            v-model="expiryDate"
+            maxlength="5"
+            @input="formatExpiryDate"
+          >
+        </div>
+
+        <div class="form-group half-width">
+          <label for="cvv">CVV/CVC</label>
+          <input 
+            id="cvv" 
+            type="password" 
+            placeholder="•••" 
+            class="card-input"
+            v-model="cvv"
+            maxlength="3"
+          >
         </div>
       </div>
+
+      <button class="btn-pay" @click="processPayment">
+        Оплатить
+      </button>
+    </div>
+  </div>
+</div>
 
       <!-- Сортировка и фильтры -->
       <div class="sort-filter-container">
@@ -348,6 +395,9 @@ export default {
   },
   data() {
     return {
+      cardNumber: '',
+      expiryDate: '',
+      cvv: '',
       searchParams: {
         from: '',
         to: '',
@@ -410,6 +460,31 @@ export default {
     await this.fetchTrips();
   },
   methods: {
+
+    formatCardNumber() {
+    // Форматирование номера карты (добавляем пробелы через каждые 4 цифры)
+    this.cardNumber = this.cardNumber.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+  },
+  
+  formatExpiryDate() {
+    // Форматирование даты (добавляем / после 2 цифр)
+    this.expiryDate = this.expiryDate.replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '$1/$2')
+      .substring(0, 5);
+  },
+  
+  processPayment() {
+    // Здесь будет логика обработки платежа
+    // Пока просто закрываем модальное окно
+    this.closeBookingModal();
+    
+    // Можно добавить уведомление об успешной оплате
+    this.$notify({
+      title: 'Успешно!',
+      text: 'Оплата прошла успешно',
+      type: 'success'
+    });
+  },
     
     async loadSearchParams() {
       try {
@@ -969,6 +1044,72 @@ export default {
 </script>
 
 <style scoped>
+/* Стили для формы оплаты */
+.payment-form {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.card-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.card-input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Стили для кнопки оплаты */
+.btn-pay {
+  width: 100%;
+  padding: 14px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.btn-pay:hover {
+  background-color: #27ae60;
+}
+
+.btn-pay:active {
+  transform: translateY(1px);
+}
+
 /* Модальное окно */
 .modal-overlay {
   position: fixed;
@@ -2057,10 +2198,87 @@ h1 {
   font-weight: 500;
 }
 
+/* Стили для формы оплаты */
+.payment-form {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.card-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.card-input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Стили для кнопки оплаты */
+.btn-pay {
+  width: 100%;
+  padding: 14px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.btn-pay:hover {
+  background-color: #27ae60;
+}
+
+.btn-pay:active {
+  transform: translateY(1px);
+}
+
+
+
 /* Адаптация для мобильных устройств */
 @media (max-width: 768px) {
   .booking-modal {
     padding: 15px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .half-width {
+    width: 100%;
   }
 
   .safety-notification {
