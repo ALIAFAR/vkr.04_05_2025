@@ -316,6 +316,7 @@ import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from 'js-cookie';
 
+// Конфигурация API
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'https://unigo.onrender.com';
 
 export default {
@@ -329,6 +330,7 @@ export default {
         to: '',
         date: '',
         passengers: 1
+        
       },
       trips: [],
       sortedTrips: [],
@@ -339,7 +341,6 @@ export default {
       filters: {
         pets: false,
         luggage: false,
-        big_size_luggage: false,
         childSeat: false
       },
       showFilters: false,
@@ -351,7 +352,7 @@ export default {
       passengers: [],
       currentLocation: '',
       modalLocationType: 'departure',
-      currentUser: null
+      currentUser: null // Добавлено для хранения данных пользователя
     };
   },
   computed: {
@@ -385,6 +386,7 @@ export default {
     await this.fetchTrips();
   },
   methods: {
+    
     async loadSearchParams() {
       try {
         const params = Cookies.get('searchParams');
@@ -408,7 +410,7 @@ export default {
       this.error = null;
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/trip/searchResult`, {
+        const response = await axios.get(`https://unigo.onrender.com/api/trip/searchResult`, {
           params: {
             departure_location: this.searchParams.from,
             arrival_location: this.searchParams.to,
@@ -420,6 +422,9 @@ export default {
           }
         });
 
+        console.log('Ответ сервера:', response.data.trips[0]);
+        
+        // Обрабатываем новую структуру ответа
         if (response.data && response.data.success) {
           this.trips = response.data.trips || [];
           this.sortedTrips = [...this.trips];
@@ -581,21 +586,196 @@ export default {
           this.$router.push('/login');
           return;
         }
+        console.log("1")
+        // Запрашиваем подтверждение для поездок с подтверждением
+        /*if (!trip.instant_booking) {
+          const confirm = await this.$confirm(
+            `Эта поездка требует подтверждения водителя. После бронирования вы будете перенаправлены в чат с водителем для уточнения деталей. Продолжить?`,
+            'Подтверждение бронирования',
+            {
+              confirmButtonText: 'Да, забронировать',
+              cancelButtonText: 'Отмена',
+              type: 'info'
+            }
+          );
+          
+          if (!confirm) return;
+        }*/
 
-        // Сохраняем данные о поездке для подтверждения бронирования
-        this.currentBookingTrip = trip;
-        this.showBookingConfirmation = true;
+        const response1 = await axios.post(
+          `https://unigo.onrender.com/api/chat/create`,
+          {
+            trip_id: trip.id
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        console.log("2")
+         // Получаем chat_id из ответа сервера
+        const chat_id = response1.data.chatId; // Предполагая, что сервер возвращает { chatId: ... }
+        console.log("3")
+        const response = await axios.post(
+          `https://unigo.onrender.com/api/booking/create`,
+          {
+            trip_id: trip.id,
+            chat_id: chat_id,
+            seats_booked: this.searchParams.passengers
+            // остальные поля не обязательны (будут установлены по умолчанию)
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
 
+        // Обновляем локальное состояние
+        const booking = response.data.booking;
+        const updatedTrip = response.data.trip;
+
+        const index = this.trips.findIndex(t => t.id === updatedTrip.id);
+        if (index !== -1) {
+          this.trips.splice(index, 1, updatedTrip);
+          this.sortTrips();
+        }
+        
+        // Отправка уведомлений водителю
+        if (trip.instant_booking) {
+          try {
+            // Уведомление в приложении
+            await axios.post(
+              `${API_BASE_URL}/api/notifications`,
+              {
+                user_id: trip.driver_id,
+                title: 'Новый запрос на бронирование',
+                message: `Пользователь ${this.currentUser.name} ${this.currentUser.surname} хочет забронировать ${this.searchParams.passengers} мест в вашей поездке`,
+                type: 'booking_request',
+                related_id: booking.id
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+            
+            // Email уведомление
+            await axios.post(
+              `${API_BASE_URL}/api/send-email`,
+              {
+                to: trip.driver_email,
+                subject: 'Новый запрос на бронирование',
+                template: 'booking_request',
+                data: {
+                  driver_name: trip.driver_name,
+                  passenger_name: `${this.currentUser.name} ${this.currentUser.surname}`,
+                  seats: this.searchParams.passengers,
+                  trip_details: `${trip.departure_location} → ${trip.arrival_location}`,
+                  trip_date: this.formatDate(trip.departure_time),
+                  booking_link: `${window.location.origin}/driver/bookings/${booking.id}`
+                }
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+          } catch (notificationError) {
+            console.error('Ошибка отправки уведомлений водителю:', notificationError);
+          }
+        }
+        
+        // Уведомление пользователю
+        this.$notify({
+          title: 'Успешно!',
+          text: trip.instant_booking 
+            ? 'Запрос на бронирование отправлен водителю' 
+            : `Вы забронировали ${this.searchParams.passengers} мест в поездке`,
+          type: 'success'
+        });
+        
+        // Перенаправление
+        if (trip.instant_booking) {
+          // Открываем чат с водителем
+          this.$router.push(`/chat/${trip.driver_id}`);
+        } else {
+          // Для мгновенных бронирований - перенаправляем на страницу оплаты
+          this.$router.push(`/payment/${booking.id}`);
+        }
+        
       } catch (error) {
-        console.error('Ошибка при начале бронирования:', error);
+        console.error('Ошибка бронирования:', error);
+        
+        let errorMessage = 'Ошибка при бронировании';
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage = 'Для бронирования необходимо авторизоваться';
+            this.$router.push('/login');
+          } else if (error.response.status === 400) {
+            errorMessage = error.response.data.message || 'Недостаточно свободных мест';
+          }
+        }
+        
         this.$notify({
           title: 'Ошибка',
-          text: 'Не удалось начать процесс бронирования',
+          text: errorMessage,
           type: 'error'
         });
       }
     },
+    
+    async showPassengers(trip, locationType) {
+      this.modalLocationType = locationType;
+      this.currentLocation = locationType === 'departure' 
+        ? trip.departure_location 
+        : trip.arrival_location;
+      
+      try {
+        const token = Cookies.get('token');
+        console.log("trip.trip_id",trip.id)
 
+        const response = await axios.get(
+          'https://unigo.onrender.com/api/user/get-all',
+          {
+            params: { // ✅ GET-параметры
+              trip_id: trip.id 
+            },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        
+        this.passengers = (response.data.passengers || []).map(passenger => ({
+          ...passenger,
+          name: passenger.name || 'Не указано',
+          surname: passenger.surname || '',
+          gender: passenger.gender || 'unknown',
+          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
+          seats_booked: passenger.seats_booked,
+          department: passenger.department,
+          birthday:passenger.birthday,
+          position: passenger.position || '?'
+        }));
+
+        console.log("this.passengers",this.passengers)
+        
+        this.showPassengersModal = true;
+      } catch (error) {
+        console.error('Ошибка при загрузке пассажиров:', error);
+        this.$notify({
+          title: 'Ошибка',
+          text: 'Не удалось загрузить информацию о пассажирах',
+          type: 'error'
+        });
+      }
+      
+    },
     async confirmBooking() {
       try {
         const token = Cookies.get('token');
@@ -606,25 +786,131 @@ export default {
 
         const trip = this.currentBookingTrip;
 
-        // Перенаправляем на страницу оплаты с параметрами бронирования
-        this.$router.push({
-          path: '/payment',
-          query: {
-            tripId: trip.id,
-            seats: this.searchParams.passengers,
-            amount: trip.cost * this.searchParams.passengers
-          }
-        });
+        // Запрашиваем подтверждение для поездок с подтверждением
+        if (trip.instant_booking) {
+          const confirm = await this.$confirm(
+            `Эта поездка требует подтверждения водителя. После бронирования вы будете перенаправлены в чат с водителем для уточнения деталей. Продолжить?`,
+            'Подтверждение бронирования',
+            {
+              confirmButtonText: 'Да, забронировать',
+              cancelButtonText: 'Отмена',
+              type: 'info'
+            }
+          );
+          
+          if (!confirm) return;
+        }
 
+        const response = await axios.post(
+          `${API_BASE_URL}/api/trips/${trip.trip_id}/book`,
+          {
+            seats: this.searchParams.passengers,
+            departure_location: trip.departure_location,
+            arrival_location: trip.arrival_location
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        const booking = response.data.booking;
+        
+        // Обновляем список поездок
+        const updatedTrip = response.data.trip;
+        const index = this.trips.findIndex(t => t.id === updatedTrip.id);
+        if (index !== -1) {
+          this.trips.splice(index, 1, updatedTrip);
+          this.sortTrips();
+        }
+        
+        // Отправка уведомлений водителю
+        if (trip.instant_booking) {
+          try {
+            // Уведомление в приложении
+            await axios.post(
+              `${API_BASE_URL}/api/notifications`,
+              {
+                user_id: trip.driver_id,
+                title: 'Новый запрос на бронирование',
+                message: `Пользователь ${this.currentUser.name} ${this.currentUser.surname} хочет забронировать ${this.searchParams.passengers} мест в вашей поездке`,
+                type: 'booking_request',
+                related_id: booking.id
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+            
+            // Email уведомление
+            await axios.post(
+              `${API_BASE_URL}/api/send-email`,
+              {
+                to: trip.driver_email,
+                subject: 'Новый запрос на бронирование',
+                template: 'booking_request',
+                data: {
+                  driver_name: trip.driver_name,
+                  passenger_name: `${this.currentUser.name} ${this.currentUser.surname}`,
+                  seats: this.searchParams.passengers,
+                  trip_details: `${trip.departure_location} → ${trip.arrival_location}`,
+                  trip_date: this.formatDate(trip.departure_time),
+                  booking_link: `${window.location.origin}/driver/bookings/${booking.id}`
+                }
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+          } catch (notificationError) {
+            console.error('Ошибка отправки уведомлений водителю:', notificationError);
+          }
+        }
+        
+        // Уведомление пользователю
+        this.$notify({
+          title: 'Успешно!',
+          text: trip.instant_booking 
+            ? 'Запрос на бронирование отправлен водителю' 
+            : `Вы забронировали ${this.searchParams.passengers} мест в поездке`,
+          type: 'success'
+        });
+        
+        // Закрываем модальное окно
+        this.closeBookingModal();
+        
+        // Перенаправление
+        if (trip.instant_booking) {
+          // Открываем чат с водителем
+          this.$router.push(`/chat/${trip.driver_id}`);
+        } else {
+          // Для мгновенных бронирований - перенаправляем на страницу оплаты
+          this.$router.push(`/payment/${booking.id}`);
+        }
+        
       } catch (error) {
-        console.error('Ошибка подтверждения бронирования:', error);
+        console.error('Ошибка бронирования:', error);
+        
+        let errorMessage = 'Ошибка при бронировании';
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage = 'Для бронирования необходимо авторизоваться';
+            this.$router.push('/login');
+          } else if (error.response.status === 400) {
+            errorMessage = error.response.data.message || 'Недостаточно свободных мест';
+          }
+        }
+        
         this.$notify({
           title: 'Ошибка',
-          text: 'Не удалось подтвердить бронирование',
+          text: errorMessage,
           type: 'error'
         });
-      } finally {
-        this.closeBookingModal();
       }
     },
 
@@ -654,7 +940,6 @@ export default {
       this.filters = {
         pets: false,
         luggage: false,
-        big_size_luggage: false,
         childSeat: false
       };
       this.sortBy = 'default';
