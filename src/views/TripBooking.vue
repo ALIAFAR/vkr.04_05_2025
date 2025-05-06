@@ -24,11 +24,11 @@
             </div>
             <div class="detail-item">
               <p><strong>Дата отбытия:</strong></p>
-              <span>{{ trip.departureDate }}</span>
+              <span>{{ trip.departuredate }}</span>
             </div>
             <div class="detail-item">
               <p><strong>Время отбытия:</strong></p>
-              <span>{{ trip.departureTime }}</span>
+              <span>{{ trip.departuretime }}</span>
             </div>
             <div class="detail-item">
               <p><strong>Цена:</strong></p>
