@@ -24,15 +24,29 @@
             </div>
             <div class="detail-item">
               <p><strong>Дата отбытия:</strong></p>
-              <span>{{ trip.departureDate }}</span>
+              <span>{{ trip.departuredate }}</span>
             </div>
             <div class="detail-item">
               <p><strong>Время отбытия:</strong></p>
-              <span>{{ trip.departureTime }}</span>
+              <span>{{ trip.departuretime }}</span>
             </div>
             <div class="detail-item">
-              <p><strong>Пассажиры:</strong></p>
-              <span>{{ trip.passengers }}</span>
+              <p><strong>Цена:</strong></p>
+              <span>{{ trip.cost }}</span>
+            </div>
+            <div class="detail-item">
+              <p><strong>Остановки:</strong></p>
+              <span>{{ trip.stops }}</span>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="trip-actions">
+              <button class="btn-view-passengers" @click="showPassengers(trip, 'departure')">
+                Посмотреть пассажиров
+              </button>
+              <button class="btn-cancel" @click="cancelBooking(trip)">
+                Отменить бронь
+              </button>
             </div>
           </div>
         </div>
@@ -43,11 +57,82 @@
         Вернуться на главную
       </button>
     </div>
+
+    <!-- Модальное окно с пассажирами -->
+    <div v-if="showPassengersModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <button class="modal-close" @click="closeModal">×</button>
+        
+        <!-- Информация о водителе -->
+        <div class="driver-info-modal" v-if="driver">
+          <img :src="driver.avatarurl || '/default-avatar.jpg'" class="driver-avatar" @error="handleImageError">
+          <div class="driver-details">
+            <h4>{{ driver.driver_name }} {{ driver.driver_surname }}</h4>
+            <p>Рейтинг: ★ {{ driver.rating?.toFixed(1) || 'Нет оценки' }}</p>
+            <p>Стаж: {{ calculateDrivingExperience(driver.license_issue_date) }}</p>
+            <p>Автомобиль: {{ driver.brand }} {{ driver.mark }}</p>
+          </div>
+        </div>
+        
+        <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
+        <p class="location-info">{{ currentLocation }}</p>
+        
+        <div class="passengers-filter">
+          <label>
+            <input type="checkbox" v-model="showOnlyMyBookings"> Показать только мои бронирования
+          </label>
+        </div>
+        
+        <div class="passengers-list">
+          <div v-if="filteredPassengers.length === 0" class="no-passengers">
+            <p>Нет забронировавших пассажиров</p>
+          </div>
+          <div v-else>
+            <div v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
+              <router-link :to="`/profile/${passenger.user_id}`" class="passenger-avatar-link">
+                <img 
+                  :src="passenger.avatarUrl || '/default-avatar.jpg'" 
+                  alt="Аватар пассажира" 
+                  class="passenger-avatar"
+                  @error="handleImageError"
+                >
+              </router-link>
+              <div class="passenger-info">
+                <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
+                <div class="passenger-meta">
+                  <span class="passenger-gender" :class="passenger.gender">
+                    {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
+                  </span>
+                  <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
+                  <span v-if="passenger.passenger_rating" class="passenger-rating">
+                    ★ {{ passenger.passenger_rating.toFixed(1) }}
+                  </span>
+                </div>
+                <div class="passenger-details">
+                  <span class="passenger-seats">Мест: {{ passenger.seats_booked }}</span>
+                  <span class="passenger-price">{{ passenger.position }} ₽</span>
+                </div>
+                <div v-if="passenger.comment" class="passenger-comment">
+                  "{{ passenger.comment }}"
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="passengers-summary">
+          <p>Всего пассажиров: {{ filteredPassengers.length }}</p>
+          <p>Общее количество мест: {{ totalBookedSeats }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import AppNavbar from "@/components/AppNavbar.vue";
+import axios from "axios";
+import Cookies from 'js-cookie';
 
 export default {
   components: {
@@ -55,58 +140,204 @@ export default {
   },
   data() {
     return {
-      bookedTrips: [], // Список забронированных поездок
+      bookedTrips: [],
+      showPassengersModal: false,
+      passengers: [],
+      currentLocation: '',
+      modalLocationType: 'departure',
+      showOnlyMyBookings: false,
+      driver: {
+        driver_name: '',
+        driver_surname: '',
+        avatarurl: '',
+        birth_date: '',
+        license_issue_date: '',
+        registration_date: '',
+        rating: null,
+        reviews_count: 0,
+        total_trips: 0,
+        canceled_trips: 0,
+        rescheduled_trips: 0,
+        mark: '',
+        brand: '',
+        reviews: []
+      },
+      loading: false,
+      error: null
     };
   },
+  computed: {
+    filteredPassengers() {
+      let passengers = this.passengers;
+      
+      if (this.showOnlyMyBookings) {
+        const userId = Cookies.get('userId');
+        if (userId) {
+          passengers = passengers.filter(p => p.user_id === userId);
+        }
+      }
+      
+      return passengers;
+    },
+    totalBookedSeats() {
+      return this.filteredPassengers.reduce((sum, passenger) => sum + passenger.seats_booked, 0);
+    }
+  },
   created() {
-    // Загружаем забронированные поездки при создании компонента
     this.loadBookedTrips();
   },
   methods: {
-    // Загрузка забронированных поездок с сервера
     async loadBookedTrips() {
+      this.loading = true;
       try {
-        // Получаем токен авторизации (например, из localStorage)
-        const token = localStorage.getItem("authToken");
-
-        // Если токен отсутствует, пользователь не авторизован
+        const token = Cookies.get('token');
         if (!token) {
           console.error("Пользователь не авторизован");
           return;
         }
 
-        // Делаем запрос на сервер
-        const response = await fetch("https://api.yourserver.com/booked-trips", {
-          method: "GET",
+        const response = await axios.get("https://unigo.onrender.com/api/booking/get-booked", {
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Передаем токен в заголовке
-          },
+            "Authorization": `Bearer ${token}`
+          }
         });
 
-        // Проверяем статус ответа
-        if (!response.ok) {
-          throw new Error("Ошибка при загрузке забронированных поездок");
-        }
-
-        // Парсим JSON-ответ
-        const data = await response.json();
-
-        // Сохраняем забронированные поездки в data
-        this.bookedTrips = data.bookedTrips;
+        this.bookedTrips = response.data.bookedTrips;
+        console.log("data.bookedTrips",this.bookedTrips)
       } catch (error) {
         console.error("Ошибка при загрузке забронированных поездок:", error);
-        this.bookedTrips = []; // Очищаем список в случае ошибки
+        this.bookedTrips = [];
+      } finally {
+        this.loading = false;
       }
     },
 
-    // Возврат на главную страницу
-    goToHome() {
-      this.$router.push("/"); // Переход на главную страницу
+    async showPassengers(trip, locationType) {
+      this.modalLocationType = locationType;
+      this.currentLocation = locationType === 'departure' 
+        ? trip.from 
+        : trip.to;
+      
+      try {
+        const token = Cookies.get('token');
+        
+        // Загружаем информацию о водителе
+        const driverResponse = await axios.get(
+          `https://unigo.onrender.com/api/user/driver/${trip.driver_id}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        this.driver = driverResponse.data;
+        
+        // Загружаем пассажиров
+        const passengersResponse = await axios.get(
+          'https://unigo.onrender.com/api/user/get-all',
+          {
+            params: { trip_id: trip.id_trip },
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+
+        this.passengers = (passengersResponse.data.passengers || []).map(passenger => ({
+          ...passenger,
+          name: passenger.name || 'Не указано',
+          surname: passenger.surname || '',
+          gender: passenger.gender || 'unknown',
+          passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
+          seats_booked: passenger.seats_booked || 1,
+          department: passenger.department || '',
+          birthday: passenger.birthday,
+          position: passenger.position || '?'
+        }));
+        
+        this.showPassengersModal = true;
+      } catch (error) {
+        console.error('Ошибка при загрузке информации:', error);
+        this.$notify({
+          title: 'Ошибка',
+          text: 'Не удалось загрузить информацию',
+          type: 'error'
+        });
+      }
     },
-  },
+
+    async cancelBooking(trip) {
+      try {
+        const confirm = await this.$confirm(
+          'Вы уверены, что хотите отменить бронирование?',
+          'Подтверждение отмены',
+          {
+            confirmButtonText: 'Да, отменить',
+            cancelButtonText: 'Нет',
+            type: 'warning'
+          }
+        );
+        
+        if (confirm) {
+          const token = Cookies.get('token');
+          await axios.put(`https://unigo.onrender.com/api/booking/cancell/${trip.booking_id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          this.$notify({
+            title: 'Успешно',
+            text: 'Бронирование отменено',
+            type: 'success'
+          });
+          
+          await this.loadBookedTrips();
+        }
+      } catch (error) {
+        console.error('Ошибка при отмене бронирования:', error);
+        this.$notify({
+          title: 'Ошибка',
+          text: 'Не удалось отменить бронирование',
+          type: 'error'
+        });
+      }
+    },
+
+    calculateAge(birthDate) {
+      if (!birthDate) return 'Не указан';
+      const birthYear = new Date(birthDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+      return currentYear - birthYear;
+    },
+
+    calculateDrivingExperience(licenseDate) {
+      if (!licenseDate) return 'Не указано';
+      const licenseYear = new Date(licenseDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const experience = currentYear - licenseYear;
+      
+      if (experience === 0) return 'Менее года';
+      return `${experience} ${this.declension(experience, ['год', 'года', 'лет'])}`;
+    },
+
+    declension(number, titles) {
+      const cases = [2, 0, 1, 1, 1, 2];
+      return titles[
+        number % 100 > 4 && number % 100 < 20 
+          ? 2 
+          : cases[number % 10 < 5 ? number % 10 : 5]
+      ];
+    },
+
+    closeModal() {
+      this.showPassengersModal = false;
+      this.passengers = [];
+    },
+
+    goToHome() {
+      this.$router.push("/");
+    },
+
+    handleImageError(event) {
+      event.target.src = '/default-avatar.jpg';
+    }
+  }
 };
 </script>
+
 
 
 <style scoped>
