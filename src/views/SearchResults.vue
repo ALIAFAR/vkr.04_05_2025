@@ -587,20 +587,11 @@ export default {
           return;
         }
         console.log("1")
-        // Запрашиваем подтверждение для поездок с подтверждением
-        /*if (!trip.instant_booking) {
-          const confirm = await this.$confirm(
-            `Эта поездка требует подтверждения водителя. После бронирования вы будете перенаправлены в чат с водителем для уточнения деталей. Продолжить?`,
-            'Подтверждение бронирования',
-            {
-              confirmButtonText: 'Да, забронировать',
-              cancelButtonText: 'Отмена',
-              type: 'info'
-            }
-          );
+        
+        if (!trip.instant_booking) {
+          this.showPassengersModal=true
           
-          if (!confirm) return;
-        }*/
+        }
 
         const response1 = await axios.post(
           `https://unigo.onrender.com/api/chat/create`,
