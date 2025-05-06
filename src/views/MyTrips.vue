@@ -265,7 +265,7 @@ export default {
       return this.userTrips.filter(trip => trip.trip_status === 'active');
     },
     completedTrips() {
-      return this.userTrips.filter(trip => trip.trip_status === 'completed');
+      return this.userTrips.filter(trip => trip.trip_status === 'last');
     }
   },
   created() {
