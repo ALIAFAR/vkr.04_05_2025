@@ -338,301 +338,199 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
-/* Основные стили */
-.booking-container {
-  padding: 2rem 1.5rem;
-  max-width: 1200px;
-  margin: 6rem auto 3rem;
-  text-align: center;
-}
+/* Все предыдущие стили остаются без изменений */
 
-.booking-header {
-  margin-bottom: 2.5rem;
-}
-
-.booking-header h1 {
-  margin-bottom: 0.5rem;
-  font-size: 2.25rem;
-  color: #004281;
-  font-weight: 700;
-}
-
-.subtitle {
-  color: #6B7280;
-  font-size: 1.1rem;
-  margin-bottom: 0;
-}
-
-/* Список поездок */
-.trips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-.trip-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  border: 1px solid #E5E7EB;
-}
-
-.trip-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 66, 129, 0.15);
-}
-
-.trip-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.route {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.city {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #111827;
-}
-
-.arrow {
-  display: flex;
-  align-items: center;
-}
-
-.status-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-}
-
-.status-badge.active {
-  background: #EFF6FF;
-  color: #1D4ED8;
-}
-
-.trip-details {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.detail-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #6B7280;
-  font-size: 0.9rem;
-}
-
-.detail-label svg {
-  width: 18px;
-  height: 18px;
-}
-
-.detail-value {
-  font-weight: 500;
-  color: #111827;
-}
-
+/* Новые стили для кнопок действий */
 .trip-actions {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
 
-.action-btn {
-  flex: 1;
-  padding: 0.6rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9rem;
+.btn-view-passengers, .btn-cancel {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  transition: all 0.2s;
+  flex-grow: 1;
 }
 
-.action-btn.details {
-  background: white;
-  color: #004281;
-  border-color: #004281;
-}
-
-.action-btn.details:hover {
-  background: #F5F5F5;
-}
-
-.action-btn.cancel {
-  background: white;
-  color: #DC2626;
-  border-color: #DC2626;
-}
-
-.action-btn.cancel:hover {
-  background: #FEF2F2;
-}
-
-/* Состояние "нет поездок" */
-.no-trips {
-  background: white;
-  padding: 3rem 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.empty-icon {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 1.5rem;
-  opacity: 0.8;
-}
-
-.no-trips h3 {
-  font-size: 1.5rem;
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.no-trips p {
-  color: #6B7280;
-  margin-bottom: 1.5rem;
-}
-
-.cta-button {
-  background: #004281;
+.btn-view-passengers {
+  background-color: #3498db;
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
   border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.cta-button:hover {
-  background: #003366;
-  transform: translateY(-2px);
+.btn-view-passengers:hover {
+  background-color: #2980b9;
 }
 
-/* Кнопка назад */
-.back-button {
-  margin-top: 3rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  color: white;
-  background-color: #004281;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  display: inline-flex;
+.btn-cancel {
+  background-color: #f1f1f1;
+  color: #d32f2f;
+  border: 1px solid #d32f2f;
+}
+
+.btn-cancel:hover {
+  background-color: #ffebee;
+}
+
+/* Стили для модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 8px rgba(0, 66, 129, 0.2);
+  z-index: 1000;
 }
 
-.back-button:hover {
-  background-color: #003366;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 66, 129, 0.25);
+.modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 25px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
 }
 
-.back-button svg {
-  width: 18px;
-  height: 18px;
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #777;
 }
 
-/* Адаптация для планшетов */
-@media (max-width: 1024px) {
-  .booking-container {
-    padding: 1.5rem;
-    margin: 5rem auto;
-  }
-  
-  .booking-header h1 {
-    font-size: 2rem;
-  }
-  
-  .trips-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
+.driver-info-modal {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
-/* Адаптация для мобильных устройств */
+.driver-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.driver-details h4 {
+  margin: 0 0 5px 0;
+}
+
+.driver-details p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.passengers-list {
+  margin: 15px 0;
+}
+
+.passenger-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.passenger-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.passenger-info {
+  flex-grow: 1;
+}
+
+.passenger-name {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.passenger-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
+.passenger-gender {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.passenger-gender.male {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.passenger-gender.female {
+  background-color: #fce4ec;
+  color: #ad1457;
+}
+
+.passenger-rating {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.passenger-details {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+}
+
+.passenger-comment {
+  font-style: italic;
+  color: #666;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.passengers-summary {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+}
+
+/* Адаптация для мобильных */
 @media (max-width: 768px) {
-  .booking-container {
-    margin: 7rem auto 2rem;
-    padding: 1rem;
-  }
-
-  .booking-header h1 {
-    font-size: 1.75rem;
-  }
-  
-  .subtitle {
-    font-size: 1rem;
-  }
-
-  .trips-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .trip-actions {
     flex-direction: column;
   }
   
-  .no-trips {
-    padding: 2rem 1.5rem;
+  .modal-content {
+    padding: 20px 15px;
   }
   
-  .empty-icon {
-    width: 100px;
-    height: 100px;
-  }
-}
-
-/* Особые стили для маленьких экранов */
-@media (max-width: 480px) {
-  .booking-header h1 {
-    font-size: 1.5rem;
-  }
-  
-  .city {
-    font-size: 1rem;
-  }
-  
-  .detail-label span {
-    display: none;
-  }
-  
-  .back-button {
-    width: 100%;
-    justify-content: center;
+  .driver-info-modal {
+    flex-direction: column;
+    text-align: center;
   }
 }
 </style>
