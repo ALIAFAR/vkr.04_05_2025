@@ -6,14 +6,14 @@
         
         <div class="driver-main-info">
           <img 
-            :src="driver.avatar || '/default-avatar.jpg'" 
+            :src="driver.avatarurl || '/default-avatar.jpg'" 
             alt="Аватар водителя" 
             class="driver-avatar"
             @error="handleImageError"
           >
           
           <div class="driver-text-info">
-            <h1>{{ driver.name }} {{ driver.surname }}</h1>
+            <h1>{{ driver.driver_name }} {{ driver.driver_surname }}</h1>
             <div class="driver-rating">
               <span class="star">★</span>
               <span class="rating-value">{{ driver.rating || 'Нет оценки' }}</span>
@@ -74,7 +74,7 @@
             </div>
             
             <div class="car-specs">
-              <span v-if="driver.car.color">Цвет: {{ driver.car.color }}</span>
+              <span v-if="driver.car.color">Цветататататата: {{ driver.car.color }}</span>
               <span v-if="driver.car.plate_number">Номер: {{ driver.car.plate_number }}</span>
             </div>
             
@@ -141,9 +141,9 @@
     data() {
       return {
         driver: {
-          name: '',
-          surname: '',
-          avatar: '',
+          driver_name: '',
+          driver_surname: '',
+          avatarurl: '',
           birth_date: '',
           license_issue_date: '',
           registration_date: '',
@@ -152,7 +152,8 @@
           total_trips: 0,
           canceled_trips: 0,
           rescheduled_trips: 0,
-          car: null,
+          mark: '',
+          brand: '',
           reviews: []
         },
         loading: true,
@@ -164,34 +165,24 @@
     },
     methods: {
       async fetchDriverData() {
-        this.loading = true;
-        this.error = null;
-        
-        try {
-          const driverId = this.$route.params.id;
-          const response = await axios.get(`https://unigo.onrender.com/api/drivers/${driverId}`, {
-            headers: {
-              'Authorization': `Bearer ${Cookies.get('token')}`
-            }
-          });
-          
-          this.driver = response.data.driver || {};
-        } catch (error) {
-          console.error('Ошибка при загрузке данных водителя:', error);
-          
-          if (error.response) {
-            if (error.response.status === 401) {
-              this.error = 'Для просмотра профиля необходимо авторизоваться';
-              this.$router.push('/login');
-            } else if (error.response.status === 404) {
-              this.error = 'Профиль водителя не найден';
-            }
-          } else {
-            this.error = 'Произошла ошибка при загрузке данных';
+          this.loading = true;
+          try {
+              const response = await axios.get(
+                  `https://unigo.onrender.com/api/user/driver/${this.$route.params.id}`,
+                  { headers: { 'Authorization': `Bearer ${Cookies.get('token')}` } }
+              );
+              
+              // Теперь response.data содержит напрямую объект driver
+              this.driver = response.data;
+              
+          } catch (error) {
+              if (error.response?.status === 401) {
+                  this.$router.push('/login');
+              }
+              console.error('Error:', error.response?.data || error.message);
+          } finally {
+              this.loading = false;
           }
-        } finally {
-          this.loading = false;
-        }
       },
       
       calculateAge(birthDate) {
