@@ -74,7 +74,7 @@
             </div>
             
             <div class="car-specs">
-              <span v-if="driver.car.color">Цвет: {{ driver.car.color }}</span>
+              <span v-if="driver.car.color">Цветататататата: {{ driver.car.color }}</span>
               <span v-if="driver.car.plate_number">Номер: {{ driver.car.plate_number }}</span>
             </div>
             
@@ -164,34 +164,24 @@
     },
     methods: {
       async fetchDriverData() {
-        this.loading = true;
-        this.error = null;
-        
-        try {
-          const driverId = this.$route.params.id;
-          const response = await axios.get(`https://unigo.onrender.com/api/drivers/${driverId}`, {
-            headers: {
-              'Authorization': `Bearer ${Cookies.get('token')}`
-            }
-          });
-          
-          this.driver = response.data.driver || {};
-        } catch (error) {
-          console.error('Ошибка при загрузке данных водителя:', error);
-          
-          if (error.response) {
-            if (error.response.status === 401) {
-              this.error = 'Для просмотра профиля необходимо авторизоваться';
-              this.$router.push('/login');
-            } else if (error.response.status === 404) {
-              this.error = 'Профиль водителя не найден';
-            }
-          } else {
-            this.error = 'Произошла ошибка при загрузке данных';
+          this.loading = true;
+          try {
+              const response = await axios.get(
+                  `https://unigo.onrender.com/api/user/driver/${this.$route.params.id}`,
+                  { headers: { 'Authorization': `Bearer ${Cookies.get('token')}` } }
+              );
+              
+              // Теперь response.data содержит напрямую объект driver
+              this.driver = response.data;
+              
+          } catch (error) {
+              if (error.response?.status === 401) {
+                  this.$router.push('/login');
+              }
+              console.error('Error:', error.response?.data || error.message);
+          } finally {
+              this.loading = false;
           }
-        } finally {
-          this.loading = false;
-        }
       },
       
       calculateAge(birthDate) {
