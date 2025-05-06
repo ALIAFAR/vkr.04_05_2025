@@ -203,6 +203,7 @@ export default {
         });
 
         this.bookedTrips = response.data.bookedTrips;
+        console.log("data.bookedTrips",this.bookedTrips)
       } catch (error) {
         console.error("Ошибка при загрузке забронированных поездок:", error);
         this.bookedTrips = [];
