@@ -740,144 +740,64 @@ export default {
     },
     
     async bookTrip(trip) {
-      try {
-        const token = Cookies.get('token');
-        if (!token) {
-          this.$router.push('/login');
-          return;
-        }
-        console.log("1")
-        
-        if (trip.instant_booking) {
-          console.log("inst book check")
-          this.showBookingConfirmation1=true     
-        }
+  try {
+    const token = Cookies.get('token');
+    if (!token) {
+      this.$router.push('/login');
+      return;
+    }
 
-        const response1 = await axios.post(
-          `https://unigo.onrender.com/api/chat/create`,
-          {
-            trip_id: trip.id
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        console.log("2")
-         // Получаем chat_id из ответа сервера
-        const chat_id = response1.data.chatId; // Предполагая, что сервер возвращает { chatId: ... }
-        console.log("3")
-        const response = await axios.post(
-          `https://unigo.onrender.com/api/booking/create`,
-          {
-            trip_id: trip.id,
-            chat_id: chat_id,
-            seats_booked: this.searchParams.passengers
-            // остальные поля не обязательны (будут установлены по умолчанию)
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+    // Для мгновенного бронирования показываем модальное окно
+    if (trip.instant_booking) {
+      this.showBookingConfirmation1 = true;
+      this.currentBookingTrip = trip; // Сохраняем текущую поездку
+      return;
+    }
 
-        // Обновляем локальное состояние
-        const booking = response.data.booking;
-        const updatedTrip = response.data.trip;
+    // Создаем чат
+    const response1 = await axios.post(
+      `https://unigo.onrender.com/api/chat/create`,
+      { trip_id: trip.id },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    
+    const chat_id = response1.data.chatId;
 
-        const index = this.trips.findIndex(t => t.id === updatedTrip.id);
-        if (index !== -1) {
-          this.trips.splice(index, 1, updatedTrip);
-          this.sortTrips();
-        }
-        
-        // Отправка уведомлений водителю
-        if (trip.instant_booking) {
-          try {
-            // Уведомление в приложении
-            await axios.post(
-              `${API_BASE_URL}/api/notifications`,
-              {
-                user_id: trip.driver_id,
-                title: 'Новый запрос на бронирование',
-                message: `Пользователь ${this.currentUser.name} ${this.currentUser.surname} хочет забронировать ${this.searchParams.passengers} мест в вашей поездке`,
-                type: 'booking_request',
-                related_id: booking.id
-              },
-              {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              }
-            );
-            
-            // Email уведомление
-            await axios.post(
-              `${API_BASE_URL}/api/send-email`,
-              {
-                to: trip.driver_email,
-                subject: 'Новый запрос на бронирование',
-                template: 'booking_request',
-                data: {
-                  driver_name: trip.driver_name,
-                  passenger_name: `${this.currentUser.name} ${this.currentUser.surname}`,
-                  seats: this.searchParams.passengers,
-                  trip_details: `${trip.departure_location} → ${trip.arrival_location}`,
-                  trip_date: this.formatDate(trip.departure_time),
-                  booking_link: `${window.location.origin}/driver/bookings/${booking.id}`
-                }
-              },
-              {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              }
-            );
-          } catch (notificationError) {
-            console.error('Ошибка отправки уведомлений водителю:', notificationError);
-          }
-        }
-        
-        // Уведомление пользователю
-        this.$notify({
-          title: 'Успешно!',
-          text: trip.instant_booking 
-            ? 'Запрос на бронирование отправлен водителю' 
-            : `Вы забронировали ${this.searchParams.passengers} мест в поездке`,
-          type: 'success'
-        });
-        
-        // Перенаправление
-        if (trip.instant_booking) {
-          // Открываем чат с водителем
-          this.$router.push(`/chat/${trip.driver_id}`);
-        } else {
-          // Для мгновенных бронирований - перенаправляем на страницу оплаты
-          this.$router.push(`/payment/${booking.id}`);
-        }
-        
-      } catch (error) {
-        console.error('Ошибка бронирования:', error);
-        
-        let errorMessage = 'Ошибка при бронировании';
-        if (error.response) {
-          if (error.response.status === 401) {
-            errorMessage = 'Для бронирования необходимо авторизоваться';
-            this.$router.push('/login');
-          } else if (error.response.status === 400) {
-            errorMessage = error.response.data.message || 'Недостаточно свободных мест';
-          }
-        }
-        
-        this.$notify({
-          title: 'Ошибка',
-          text: errorMessage,
-          type: 'error'
-        });
+    // Создаем бронирование
+    const response = await axios.post(
+      `https://unigo.onrender.com/api/booking/create`,
+      {
+        trip_id: trip.id,
+        chat_id: chat_id,
+        seats_booked: this.searchParams.passengers
+      },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+
+    // Перенаправляем на страницу оплаты с ID бронирования
+    this.$router.push(`/payment/${response.data.booking.id}`);
+    
+  } catch (error) {
+    console.error('Ошибка бронирования:', error);
+    let errorMessage = 'Ошибка при бронировании';
+    
+    if (error.response) {
+      if (error.response.status === 401) {
+        errorMessage = 'Для бронирования необходимо авторизоваться';
+        this.$router.push('/login');
+      } else if (error.response.status === 400) {
+        errorMessage = error.response.data.message || 'Недостаточно свободных мест';
       }
-    },
+    }
+    
+    this.$notify({
+      title: 'Ошибка',
+      text: errorMessage,
+      type: 'error'
+    });
+  }
+},
+
     
     async showPassengers(trip, locationType) {
       this.modalLocationType = locationType;

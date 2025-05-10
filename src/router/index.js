@@ -55,6 +55,12 @@ const routes = [
     component: ArrivalDate,  // компонент для страницы
   },
   {
+    path: '/payment/:bookingId',
+    name: 'PaymentPage',
+    component: () => import('../views/PaymentPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/driver/:id',
     name: 'DriverProfile',
     component: DriverProfile,
