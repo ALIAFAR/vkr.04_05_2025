@@ -152,11 +152,6 @@ export default {
     await this.loadTripData();
     this.generatePaymentId();
   },
-  beforeDestroy() {
-    if (this.checkStatusInterval) {
-      clearInterval(this.checkStatusInterval);
-    }
-  },
   methods: {
     async loadTripData() {
       const tripId = this.$route.query.tripId;
