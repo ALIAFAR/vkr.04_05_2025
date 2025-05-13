@@ -569,17 +569,37 @@ body {
     margin-left: 0;
   }
   
+  /* Исправление выпадающего меню на мобильных устройствах */
   .dropdown-menu {
-    position: static;
-    box-shadow: none;
-    border: none;
-    width: 100%;
-    margin-top: 8px;
-    animation: none;
+    position: absolute;
+    top: 100%;
+    right: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-width: 180px;
+    overflow: hidden;
+    z-index: 1002;
+    transform-origin: top right;
+    animation: fadeIn 0.2s ease-out;
+    display: block; /* Убедимся, что меню отображается */
   }
   
   .dropdown-menu button {
-    padding: 12px 20px;
+    width: 100%;
+    padding: 10px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #333;
+    font-family: 'Lora', sans-serif;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-menu button:hover {
+    background-color: rgba(0, 66, 129, 0.1);
+    color: rgba(0, 66, 129, 1);
   }
 }
 
@@ -615,16 +635,5 @@ body {
     width: 36px;
     height: 36px;
   }
-}
-
-/* Анимации для уведомления */
-.notification-enter-active,
-.notification-leave-active {
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-.notification-enter-from,
-.notification-leave-to {
-  opacity: 0;
-  transform: translate(-50%, -20px);
 }
 </style>
