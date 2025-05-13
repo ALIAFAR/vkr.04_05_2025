@@ -382,18 +382,20 @@ body {
 }
 
 /* Выпадающее меню - десктоп */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  overflow: hidden;
-  z-index: 1004;
-  animation: fadeIn 0.2s ease-out;
-}
+  .dropdown-menu {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    animation: none;
+    margin-top: 5px;
+    display: block !important; /* Важно: принудительно показываем */
+    opacity: 1 !important; /* Важно: убираем прозрачность */
+    transform: none !important; /* Важно: сбрасываем трансформации */
+    z-index: 1005; /* Увеличиваем z-index */
+  }
 
 .dropdown-menu button {
   width: 100%;
@@ -406,13 +408,28 @@ body {
   font-size: 14px;
   transition: all 0.2s ease;
   display: block;
+      padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: white; /* Добавляем фон */
 }
 
 .dropdown-menu button:hover {
   background-color: rgba(0, 66, 129, 0.1);
   color: rgba(0, 66, 129, 1);
 }
+  .dropdown-menu button:last-child {
+    border-bottom: none;
+  }
+  .profile {
+  position: relative;
+}
 
+/* Гарантируем, что меню будет видно */
+.mobile-menu-active .dropdown-menu {
+  display: block;
+  opacity: 1;
+  transform: none;
+}
 /* Модальное окно выхода */
 .logout-modal {
   position: fixed;
