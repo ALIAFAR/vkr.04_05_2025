@@ -139,13 +139,14 @@ export default {
       this.navWithClose("/");
     },
 
-    toggleProfileDropdown() {
-      this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
-      if (this.isProfileDropdownVisible) {
-        this.closeMobileMenu();
-      }
-    },
-
+  toggleProfileDropdown() {
+    // Закрываем мобильное меню только если оно открыто
+    if (this.isMobileMenuOpen) {
+      this.closeMobileMenu();
+    }
+    this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
+  },
+  
     closeDropdown() {
       this.isProfileDropdownVisible = false;
     },
