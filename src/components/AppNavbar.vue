@@ -370,6 +370,7 @@ body {
 .profile {
   position: relative;
   margin-left: 10px;
+  z-index: 1003; /* Добавляем z-index */
 }
 
 .profile-photo {
@@ -386,37 +387,38 @@ body {
 }
 
 /* Выпадающее меню */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  overflow: hidden;
-  z-index: 1002;
-  transform-origin: top right;
-  animation: fadeIn 0.2s ease-out;
-}
+  .dropdown-menu {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    margin-top: 10px;
+    animation: none;
+    display: block;
+  }
 
-.dropdown-menu button {
-  width: 100%;
-  padding: 10px 16px;
-  text-align: left;
-  background: none;
-  border: none;
-  color: #333;
-  font-family: 'Lora', sans-serif;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
+  .dropdown-menu button {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+    text-align: left;
+  }
 
 .dropdown-menu button:hover {
   background-color: rgba(0, 66, 129, 0.1);
   color: rgba(0, 66, 129, 1);
 }
+  .dropdown-menu button:last-child {
+    border-bottom: none;
+  }
 
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 /* Модальное окно */
 .logout-modal {
   position: fixed;
