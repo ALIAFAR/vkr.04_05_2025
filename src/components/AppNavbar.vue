@@ -139,13 +139,9 @@ export default {
       this.navWithClose("/");
     },
 
-  toggleProfileDropdown() {
-    // Закрываем мобильное меню только если оно открыто
-    if (this.isMobileMenuOpen) {
-      this.closeMobileMenu();
-    }
-    this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
-  },
+    toggleProfileDropdown() {
+      this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
+    },
   
     closeDropdown() {
       this.isProfileDropdownVisible = false;
@@ -362,7 +358,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Профиль - десктопная версия */
+/* Профиль */
 .profile {
   position: relative;
   margin-left: 10px;
@@ -382,21 +378,21 @@ body {
   transform: scale(1.1);
 }
 
-/* Выпадающее меню - десктоп */
-  .dropdown-menu {
-    position: relative;
-    top: auto;
-    right: auto;
-    width: 100%;
-    box-shadow: none;
-    border-radius: 0;
-    animation: none;
-    margin-top: 5px;
-    display: block !important; /* Важно: принудительно показываем */
-    opacity: 1 !important; /* Важно: убираем прозрачность */
-    transform: none !important; /* Важно: сбрасываем трансформации */
-    z-index: 1005; /* Увеличиваем z-index */
-  }
+/* Выпадающее меню */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  z-index: 1004;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
 
 .dropdown-menu button {
   width: 100%;
@@ -409,28 +405,22 @@ body {
   font-size: 14px;
   transition: all 0.2s ease;
   display: block;
-      padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    background-color: white; /* Добавляем фон */
 }
 
 .dropdown-menu button:hover {
   background-color: rgba(0, 66, 129, 0.1);
   color: rgba(0, 66, 129, 1);
 }
-  .dropdown-menu button:last-child {
-    border-bottom: none;
-  }
-  .profile {
-  position: relative;
-}
 
-/* Гарантируем, что меню будет видно */
-.mobile-menu-active .dropdown-menu {
+/* Показываем dropdown при активном состоянии */
+.profile:hover .dropdown-menu,
+.profile:focus-within .dropdown-menu,
+.dropdown-menu.show {
   display: block;
   opacity: 1;
-  transform: none;
+  transform: translateY(0);
 }
+
 /* Модальное окно выхода */
 .logout-modal {
   position: fixed;
@@ -572,8 +562,7 @@ body {
     margin-left: 0;
     width: 100%;
     border-top: 1px solid #f0f0f0;
-    display: flex;
-    flex-direction: column;
+    position: static;
   }
   
   .profile-photo {
@@ -582,15 +571,17 @@ body {
   }
   
   /* Выпадающее меню на мобильных */
-  .dropdown-menu {
+  .mobile-menu-active .dropdown-menu {
     position: relative;
     top: auto;
     right: auto;
     width: 100%;
     box-shadow: none;
-    border-radius: 0;
     animation: none;
-    margin-top: 5px;
+    margin-top: 10px;
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
   
   .dropdown-menu button {
