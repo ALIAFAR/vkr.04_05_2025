@@ -212,7 +212,7 @@ body {
   padding-top: 60px;
 }
 
-/* Стили для уведомления */
+/* Уведомление */
 .notification {
   position: fixed;
   top: 20px;
@@ -248,7 +248,7 @@ body {
   text-align: center;
 }
 
-/* Анимации для уведомления */
+/* Анимации уведомления */
 .notification-enter-active,
 .notification-leave-active {
   transition: all 0.4s ease;
@@ -311,7 +311,7 @@ body {
   height: 20px;
   cursor: pointer;
   z-index: 1001;
-  padding: 25px;
+  padding: 5px;
 }
 
 .burger-line {
@@ -361,16 +361,11 @@ body {
   transform: translateY(-2px);
 }
 
-/* Кнопки авторизации для мобильных */
-.mobile-auth-btn {
-  display: none;
-}
-
-/* Профиль */
+/* Профиль - десктопная версия */
 .profile {
   position: relative;
   margin-left: 10px;
-  z-index: 1003; /* Добавляем z-index */
+  z-index: 1003;
 }
 
 .profile-photo {
@@ -386,40 +381,39 @@ body {
   transform: scale(1.1);
 }
 
-/* Выпадающее меню */
-  .dropdown-menu {
-    position: relative;
-    top: auto;
-    right: auto;
-    width: 100%;
-    box-shadow: none;
-    border-radius: 0;
-    margin-top: 10px;
-    animation: none;
-    display: block;
-  }
+/* Выпадающее меню - десктоп */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  overflow: hidden;
+  z-index: 1004;
+  animation: fadeIn 0.2s ease-out;
+}
 
-  .dropdown-menu button {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    width: 100%;
-    text-align: left;
-  }
+.dropdown-menu button {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  font-family: 'Lora', sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: block;
+}
 
 .dropdown-menu button:hover {
   background-color: rgba(0, 66, 129, 0.1);
   color: rgba(0, 66, 129, 1);
 }
-  .dropdown-menu button:last-child {
-    border-bottom: none;
-  }
 
-/* Анимации */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-/* Модальное окно */
+/* Модальное окно выхода */
 .logout-modal {
   position: fixed;
   top: 0;
@@ -440,7 +434,6 @@ body {
   width: 90%;
   max-width: 350px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content p {
@@ -484,19 +477,8 @@ body {
 
 /* Анимации */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { 
-    opacity: 0;
-    transform: translate(-50%, -20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Адаптивные стили */
@@ -540,6 +522,7 @@ body {
     pointer-events: none;
     gap: 0;
     margin-right: 0;
+    z-index: 999;
   }
   
   .menu.mobile-menu-active {
@@ -557,51 +540,48 @@ body {
     font-size: 15px;
   }
   
-  /* Показываем кнопки авторизации в мобильном меню */
+  /* Мобильные кнопки авторизации */
   .mobile-auth-btn {
     display: block;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
   }
   
+  /* Профиль на мобильных */
   .profile {
-    order: -1;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
+    order: 1;
+    padding: 15px 20px;
     margin-left: 0;
+    width: 100%;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
   }
   
-  /* Исправление выпадающего меню на мобильных устройствах */
+  .profile-photo {
+    align-self: flex-start;
+    margin-bottom: 10px;
+  }
+  
+  /* Выпадающее меню на мобильных */
   .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    min-width: 180px;
-    overflow: hidden;
-    z-index: 1002;
-    transform-origin: top right;
-    animation: fadeIn 0.2s ease-out;
-    display: block; /* Убедимся, что меню отображается */
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    animation: none;
+    margin-top: 5px;
   }
   
   .dropdown-menu button {
-    width: 100%;
-    padding: 10px 16px;
-    text-align: left;
-    background: none;
-    border: none;
-    color: #333;
-    font-family: 'Lora', sans-serif;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
   }
-
-  .dropdown-menu button:hover {
-    background-color: rgba(0, 66, 129, 0.1);
-    color: rgba(0, 66, 129, 1);
+  
+  .dropdown-menu button:last-child {
+    border-bottom: none;
   }
 }
 
