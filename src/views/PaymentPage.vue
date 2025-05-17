@@ -161,7 +161,6 @@
   import PaymentSuccessModal from '@/components/PaymentSuccessModal.vue';
   import axios from 'axios';
   import Cookies from 'js-cookie';
-  import { API_CONFIG } from '@/config/api'
   
   const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'https://unigo.onrender.com';
   
@@ -221,7 +220,7 @@
         this.generateSbpQr();
       }
     },
-    beforeDestroy() {
+    beforeUnmount() {
       if (this.checkStatusInterval) {
         clearInterval(this.checkStatusInterval);
       }

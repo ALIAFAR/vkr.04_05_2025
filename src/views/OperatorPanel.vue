@@ -93,7 +93,6 @@
 <script>
 import * as XLSX from 'xlsx';
 import axios from 'axios';
-import { API_CONFIG } from '@/config/api'
 
 export default {
   data() {

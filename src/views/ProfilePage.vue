@@ -112,7 +112,6 @@
 import AppNavbar from "@/components/AppNavbar.vue"; // Импортируем AppNavbar
 import axios from "axios"; // Импортируем axios для запросов на сервер
 import { useToast } from "vue-toastification"; // Для уведомлений
-import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
