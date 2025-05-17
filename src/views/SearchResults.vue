@@ -469,6 +469,8 @@ export default {
       currentLocation: '',
       modalLocationType: 'departure',
       currentUser: null // Добавлено для хранения данных пользователя
+
+      
     };
   },
   computed: {

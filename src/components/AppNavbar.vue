@@ -142,11 +142,8 @@ export default {
 
     toggleProfileDropdown() {
       this.isProfileDropdownVisible = !this.isProfileDropdownVisible;
-      if (this.isProfileDropdownVisible) {
-        this.closeMobileMenu();
-      }
     },
-
+  
     closeDropdown() {
       this.isProfileDropdownVisible = false;
     },
@@ -213,7 +210,7 @@ body {
   padding-top: 60px;
 }
 
-/* Стили для уведомления */
+/* Уведомление */
 .notification {
   position: fixed;
   top: 20px;
@@ -249,7 +246,7 @@ body {
   text-align: center;
 }
 
-/* Анимации для уведомления */
+/* Анимации уведомления */
 .notification-enter-active,
 .notification-leave-active {
   transition: all 0.4s ease;
@@ -312,7 +309,7 @@ body {
   height: 20px;
   cursor: pointer;
   z-index: 1001;
-  padding: 25px;
+  padding: 5px;
 }
 
 .burger-line {
@@ -362,15 +359,11 @@ body {
   transform: translateY(-2px);
 }
 
-/* Кнопки авторизации для мобильных */
-.mobile-auth-btn {
-  display: none;
-}
-
 /* Профиль */
 .profile {
   position: relative;
   margin-left: 10px;
+  z-index: 1003;
 }
 
 .profile-photo {
@@ -389,16 +382,17 @@ body {
 /* Выпадающее меню */
 .dropdown-menu {
   position: absolute;
-  top: 100%;
   right: 0;
+  top: 100%;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  overflow: hidden;
-  z-index: 1002;
-  transform-origin: top right;
-  animation: fadeIn 0.2s ease-out;
+  min-width: 160px;
+  z-index: 1004;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
 }
 
 .dropdown-menu button {
@@ -411,6 +405,7 @@ body {
   font-family: 'Lora', sans-serif;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: block;
 }
 
 .dropdown-menu button:hover {
@@ -418,7 +413,16 @@ body {
   color: rgba(0, 66, 129, 1);
 }
 
-/* Модальное окно */
+/* Показываем dropdown при активном состоянии */
+.profile:hover .dropdown-menu,
+.profile:focus-within .dropdown-menu,
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Модальное окно выхода */
 .logout-modal {
   position: fixed;
   top: 0;
@@ -439,7 +443,6 @@ body {
   width: 90%;
   max-width: 350px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content p {
@@ -483,19 +486,8 @@ body {
 
 /* Анимации */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { 
-    opacity: 0;
-    transform: translate(-50%, -20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Адаптивные стили */
@@ -539,6 +531,7 @@ body {
     pointer-events: none;
     gap: 0;
     margin-right: 0;
+    z-index: 999;
   }
   
   .menu.mobile-menu-active {
@@ -556,31 +549,49 @@ body {
     font-size: 15px;
   }
   
-  /* Показываем кнопки авторизации в мобильном меню */
+  /* Мобильные кнопки авторизации */
   .mobile-auth-btn {
     display: block;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
   }
   
+  /* Профиль на мобильных */
   .profile {
-    order: -1;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
+    order: 1;
+    padding: 15px 20px;
     margin-left: 0;
+    width: 100%;
+    border-top: 1px solid #f0f0f0;
+    position: static;
   }
   
-  .dropdown-menu {
-    position: static;
-    box-shadow: none;
-    border: none;
+  .profile-photo {
+    align-self: flex-start;
+    margin-bottom: 10px;
+  }
+  
+  /* Выпадающее меню на мобильных */
+  .mobile-menu-active .dropdown-menu {
+    position: relative;
+    top: auto;
+    right: auto;
     width: 100%;
-    margin-top: 8px;
+    box-shadow: none;
     animation: none;
+    margin-top: 10px;
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
   
   .dropdown-menu button {
     padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .dropdown-menu button:last-child {
+    border-bottom: none;
   }
 }
 
@@ -616,16 +627,5 @@ body {
     width: 36px;
     height: 36px;
   }
-}
-
-/* Анимации для уведомления */
-.notification-enter-active,
-.notification-leave-active {
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-.notification-enter-from,
-.notification-leave-to {
-  opacity: 0;
-  transform: translate(-50%, -20px);
 }
 </style>

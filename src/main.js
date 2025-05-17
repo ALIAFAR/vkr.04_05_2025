@@ -1,14 +1,17 @@
 import { createApp } from 'vue';
 import App from './App.vue';
+import AppNavbar from './components/AppNavbar.vue'; // Импорт компонента Navbar
 import router from './router';
 import store from './store';
-import Notifications from '@kyvg/vue3-notification'
+import Notifications from '@kyvg/vue3-notification';
 
 const app = createApp(App);
 
-app.use(Notifications)
+// Регистрируем компонент Navbar
+app.component('AppNavbar', AppNavbar);
 
-// Подключаем роутер и store
+// Подключаем уведомления, роутер и store
+app.use(Notifications);
 app.use(router);
 app.use(store);
 
