@@ -230,6 +230,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -280,7 +281,7 @@ export default {
           return;
         }
 
-        const response = await axios.get("https://unigo.onrender.com/api/trip/search", {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/trip/search', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -346,7 +347,7 @@ export default {
         
         // Используем правильный эндпоинт для получения пассажиров
         const response = await axios.get(
-          'https://unigo.onrender.com/api/user/get-all',
+          API_CONFIG.BASE_URL +'/user/get-all',
           {
             params: { // ✅ GET-параметры
               trip_id: tripId 
@@ -416,7 +417,7 @@ export default {
           stops: this.editingTrip.stops.filter(stop => stop.trim() !== '')
         };
 
-        await axios.put(`https://unigo.onrender.com/api/trip/${this.editingTrip.id}`, updatedTrip, {
+        await axios.put(API_CONFIG.BASE_URL+`/trip/${this.editingTrip.id}`, updatedTrip, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -438,7 +439,7 @@ export default {
         const token = Cookies.get('token');
         const newDateTime = new Date(`${this.rescheduleData.newDate}T${this.rescheduleData.newTime}`);
         
-        await axios.patch(`https://unigo.onrender.com/api/trip/${this.rescheduleData.tripId}/reschedule`, {
+        await axios.patch(API_CONFIG.BASE_URL+`/trip/${this.rescheduleData.tripId}/reschedule`, {
           new_departure_time: newDateTime.toISOString()
         }, {
           headers: {
@@ -467,7 +468,7 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        await axios.delete(`https://unigo.onrender.com/api/trip/${tripId}`, {
+        await axios.delete(API_CONFIG.BASE_URL +`/api/trip/${tripId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -487,7 +488,7 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        await axios.post("https://unigo.onrender.com/api/trip/search", {
+        await axios.post(API_CONFIG.BASE_URL +'/trip/search', {
           message: message
         }, {
           headers: {

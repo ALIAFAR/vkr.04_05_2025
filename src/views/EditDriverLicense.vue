@@ -56,6 +56,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -83,7 +84,7 @@ export default {
       try {
         const token = Cookies.get('token');
         console.log("this.editDriverLicense",this.editDriverLicense)
-        await axios.post('https://unigo.onrender.com/api/user/upd_profile_license', this.editDriverLicense, {
+        await axios.post(API_CONFIG.BASE_URL +'/user/upd_profile_license', this.editDriverLicense, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
