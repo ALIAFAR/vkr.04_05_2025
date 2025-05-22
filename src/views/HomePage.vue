@@ -55,11 +55,13 @@
       </div>
 
       <!-- Кнопки -->
-      <div class="passenger-btn-container">
-        <!-- Кнопка для изменения количества пассажиров -->
-        <button class="search-btn" @click="incrementPassenger">
-          {{ passengerCount }} пассажир{{ passengerCount === 1 ? "" : "а" }}
-        </button>
+    <div class="passenger-selector">
+      <button class="passenger-btn minus" @click="decrementPassenger" :disabled="passengerCount <= 1">-</button>
+      <div class="passenger-count">
+        {{ passengerCount }} пассажир{{ passengerCount === 1 ? '' : 'а' }}
+      </div>
+      <button class="passenger-btn plus" @click="incrementPassenger" :disabled="passengerCount >= 20">+</button>
+
 
         <!-- Кнопка для перехода на страницу поиска -->
         <button class="search-btn" @click="goToSearch">Поиск</button>
@@ -145,17 +147,22 @@ export default {
     },
   },
   
-  methods: {
-    incrementPassenger() {
-      if (this.passengerCount < 4) {
-        this.passengerCount++;
-      } else {
-        this.showNotification(
-          "Вы не можете добавить больше 4 пассажиров.",
-          "error"
-        );
-      }
-    },
+methods: {
+  incrementPassenger() {
+    if (this.passengerCount < 20) {
+      this.passengerCount++;
+    } else {
+      this.showNotification(
+        "Максимальное количество пассажиров - 20",
+        "error"
+      );
+    }
+  },
+  decrementPassenger() {
+    if (this.passengerCount > 1) {
+      this.passengerCount--;
+    }
+  },
 
     goToSearch() {
       if (!this.isFormValid) {
@@ -958,6 +965,64 @@ footer {
   .info-block p {
     font-size: 13px;
   }
+  /* Добавляем новые стили для селектора пассажиров */
+.passenger-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 30px;
+  padding: 5px 15px;
+  box-shadow: 0 2px 8px rgba(0, 66, 129, 0.1);
+  margin: 10px;
+  width: 200px;
+}
+
+.passenger-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(0, 66, 129, 0.1);
+  color: rgba(0, 66, 129, 0.8);
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.passenger-btn:hover:not(:disabled) {
+  background-color: rgba(0, 66, 129, 0.2);
+  transform: scale(1.1);
+}
+
+.passenger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passenger-count {
+  margin: 0 15px;
+  font-size: 16px;
+  color: rgba(0, 66, 129, 0.8);
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .passenger-selector {
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .passenger-count {
+    flex-grow: 1;
+  }
+}
 }
 
 @keyframes fadeIn {
