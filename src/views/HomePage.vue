@@ -45,8 +45,7 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
-        <span class="field-title">Дата</span>
-        <input type="date" id="trip-date" class="date-input" />
+        <input type="date" id="trip-date" class="date-input" placeholder="Дата"/>
         <label for="trip-date" class="placeholder-label">Дата</label>
       </div>
 
@@ -643,11 +642,6 @@ body {
   .mobile-menu.show {
     display: block;
   }
-.field-title {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: bold;
-}
 
   .mobile-menu-item {
     padding: 15px;
