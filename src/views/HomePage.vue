@@ -11,10 +11,7 @@
           v-model="fromLocation"
           @input="onFromLocationChange"
         />
-        <ul
-          v-if="fromLocation && fromAddressSuggestions.length"
-          class="suggestions-list"
-        >
+        <ul v-if="fromLocation && fromAddressSuggestions.length" class="suggestions-list">
           <li
             v-for="(suggestion, index) in fromAddressSuggestions"
             :key="index"
@@ -34,10 +31,7 @@
           v-model="toLocation"
           @input="onToLocationChange"
         />
-        <ul
-          v-if="toLocation && toAddressSuggestions.length"
-          class="suggestions-list"
-        >
+        <ul v-if="toLocation && toAddressSuggestions.length" class="suggestions-list">
           <li
             v-for="(suggestion, index) in toAddressSuggestions"
             :key="index"
@@ -54,28 +48,16 @@
         <input type="date" placeholder="Дата" v-model="drivingDate" />
       </div>
 
-      <!-- Кнопки -->
-    <div class="passenger-control">
-      <div class="passenger-label">Пассажиры:</div>
-      <div class="passenger-buttons">
-        <button class="passenger-btn" @click="decrementPassenger" :disabled="passengerCount <= 1">
-          <svg width="12" height="2" viewBox="0 0 12 2" fill="none">
-            <path d="M11 1H1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+      <!-- Счётчик пассажиров (+ 1 -) -->
+      <div class="passenger-control">
+        <button class="passenger-btn" @click="decrementPassenger" :disabled="passengerCount <= 1">−</button>
         <span class="passenger-count">{{ passengerCount }}</span>
-        <button class="passenger-btn" @click="incrementPassenger" :disabled="passengerCount >= 4">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <button class="passenger-btn" @click="incrementPassenger" :disabled="passengerCount >= 4">+</button>
       </div>
+
+      <!-- Кнопка "Поиск" -->
+      <button class="search-btn" @click="goToSearch">Поиск</button>
     </div>
-
-    <!-- Кнопка поиска -->
-    <button class="search-btn" @click="goToSearch">Поиск</button>
-  </div>
-
 
     <!-- Уведомление -->
     <div v-if="notificationVisible" :class="['notification', notificationType]">
@@ -873,31 +855,85 @@ footer {
 .search-container {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
   padding: 15px;
   background-color: rgba(107, 151, 193, 0.299);
   border-radius: 10px;
   max-width: 1200px;
   margin: 160px auto 0 auto;
 }
-/* Стили для контроля пассажиров */
+
+/* Общие стили для полей ввода */
+.input-container {
+  position: relative;
+  flex: 1;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Стили для счётчика пассажиров */
 .passenger-control {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   background-color: white;
   border-radius: 8px;
   padding: 8px 12px;
   height: 40px;
-  box-sizing: border-box;
+  border: 1px solid #ddd;
 }
 
-.passenger-label {
+.passenger-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background-color: rgba(0, 66, 129, 0.1);
+  color: rgba(0, 66, 129, 0.8);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.passenger-btn:hover:not(:disabled) {
+  background-color: rgba(0, 66, 129, 0.2);
+}
+
+.passenger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passenger-count {
+  min-width: 20px;
+  text-align: center;
   font-size: 14px;
   color: rgba(0, 66, 129, 0.8);
-  white-space: nowrap;
 }
 
+/* Стили для кнопки поиска */
+.search-btn {
+  padding: 10px 20px;
+  background-color: rgba(0, 66, 129, 1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+  background-color: rgba(0, 66, 129, 0.9);
+}
 .passenger-buttons {
   display: flex;
   align-items: center;
@@ -1098,18 +1134,16 @@ footer {
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
   .search-container {
-    flex-direction: column;
+    flex-wrap: wrap;
     margin: 100px auto 0 auto;
     width: 90%;
   }
-  
-  .passenger-control {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
+
+  .input-container,
+  .passenger-control,
   .search-btn {
     width: 100%;
+    margin-bottom: 10px;
   }
 }
 </style>
