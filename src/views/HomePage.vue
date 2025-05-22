@@ -45,9 +45,11 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
-      <input type="date" id="trip-date" class="date-input" />
-      <label for="trip-date" class="placeholder-label">Дата</label>
+        <span class="field-title">Дата</span>
+        <input type="date" id="trip-date" class="date-input" />
+        <label for="trip-date" class="placeholder-label">Дата</label>
       </div>
+
 
 
       <!-- Счётчик пассажиров (+ 1 -) -->
@@ -641,6 +643,11 @@ body {
   .mobile-menu.show {
     display: block;
   }
+.field-title {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
 
   .mobile-menu-item {
     padding: 15px;
