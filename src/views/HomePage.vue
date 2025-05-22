@@ -724,4 +724,44 @@ body {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 768px) {
+  /* Кнопки меню */
+  .menu-item {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  /* Кнопки управления пассажирами */
+  .passenger-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .passenger-control {
+    padding: 0 10px;
+    min-width: auto;
+  }
+
+  /* Кнопка поиска */
+  .search-btn {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  /* Кнопки в выпадающем меню профиля */
+  .dropdown-menu button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  /* Мобильные кнопки */
+  .mobile-menu-item {
+    font-size: 16px;
+    padding: 12px 0;
+  }
+}
+
 </style>
