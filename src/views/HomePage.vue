@@ -45,12 +45,8 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
-        <input type="date" id="trip-date" class="date-input" placeholder="Дата"/>
-          type="text"
-          placeholder="Дата"
-          v-model="toLocation"
-          @input="onToLocationChange"
-        /
+        <input type="date" placeholder="Дата" id="trip-date" class="date-input"/>
+
       </div>
 
 
