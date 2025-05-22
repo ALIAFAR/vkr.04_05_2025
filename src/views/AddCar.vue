@@ -81,6 +81,7 @@ import AppNavbar from "@/components/AppNavbar.vue";
 import { useToast } from "vue-toastification"; // Для уведомлений
 import axios from "axios"; // Импортируем axios для запросов на сервер
 import Cookies from "js-cookie"; // Импортируем библиотеку для работы с кукисами
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -141,7 +142,7 @@ export default {
   try {
     // Отправка данных на сервер
     const response = await axios.post(
-      "https://unigo.onrender.com/api/car/create", // Замените на ваш URL
+      API_CONFIG.BASE_URL +'/car/create', // Замените на ваш URL
       vehicleData,
       {
         headers: {

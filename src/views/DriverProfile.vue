@@ -135,6 +135,7 @@
   <script>
   import axios from 'axios';
   import Cookies from 'js-cookie';
+  import { API_CONFIG } from '@/config/api'
   
   export default {
     name: 'DriverProfile',
@@ -168,7 +169,7 @@
           this.loading = true;
           try {
               const response = await axios.get(
-                  `https://unigo.onrender.com/api/user/driver/${this.$route.params.id}`,
+                  API_CONFIG.BASE_URL+`/user/driver/${this.$route.params.id}`,
                   { headers: { 'Authorization': `Bearer ${Cookies.get('token')}` } }
               );
               

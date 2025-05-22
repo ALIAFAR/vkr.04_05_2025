@@ -74,6 +74,7 @@
 <script>
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_CONFIG } from '@/config/api'
 
 export default {
   data() {
@@ -95,7 +96,7 @@ export default {
           return false;
         }
 
-        const response = await axios.get("https://unigo.onrender.com/api/user/auth", {
+        const response = await axios.get(API_CONFIG.BASE_URL+'/user/auth', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

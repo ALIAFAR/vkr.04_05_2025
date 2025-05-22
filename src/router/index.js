@@ -36,6 +36,8 @@ import NotificationsPage from '@/views/NotificationsPage.vue'; // Импорти
 import UserVerification from "@/views/UserVerification.vue";
 import CarVerification from "@/views/CarVerification.vue"; // Страница проверки автомобилей
 import DriverProfile from '@/views/DriverProfile.vue'; 
+import ForgotPassword from '@/views/ForgotPassword.vue';
+import ResetPassword from '@/views/ResetPassword.vue';
 
 const routes = [
   { path: "/", name: "HomePage", component: HomePage }, // Главная страница
@@ -194,6 +196,18 @@ const routes = [
   }, // Страница выбора регистрации
   { path: "/user-details", name: "user-details-page", component: UserDetails }, // Страница ввода данных пользователя
   { path: "/login", name: "login-page", component: Login }, // Страница входа
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+    meta: { title: 'Восстановление пароля' }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: { title: 'Сброс пароля' }
+  }
 ];
 
 const router = createRouter({

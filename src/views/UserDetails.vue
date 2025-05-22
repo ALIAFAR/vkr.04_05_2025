@@ -150,6 +150,7 @@ import axios from "axios";
 import { onMounted, reactive } from "vue";
 import Cookies from "js-cookie";
 import { useRouter } from "vue-router";
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -187,7 +188,7 @@ export default {
           return;
         }
 
-        const response = await axios.get("https://unigo.onrender.com/api/user/get_byFormId", {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/user/get_byFormId', {
           params: { user_id },
         });
 
@@ -248,7 +249,7 @@ export default {
       };
 
       try {
-        const response = await axios.post("https://unigo.onrender.com/api/user/registration", payload);
+        const response = await axios.post(API_CONFIG.BASE_URL +'/user/registration', payload);
         const expirationDate = new Date();
         expirationDate.setTime(expirationDate.getTime() + 12 * 60 * 60 * 1000);
         Cookies.set("token", response.data.token, { expires: expirationDate });

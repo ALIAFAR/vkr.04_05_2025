@@ -35,6 +35,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -57,7 +58,7 @@ export default {
     async fetchCarData() {
       try {
         const token = Cookies.get('token');
-        const response = await axios.get('https://unigo.onrender.com/api/car/profileCar', {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/car/profileCar', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

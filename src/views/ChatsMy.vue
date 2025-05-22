@@ -62,6 +62,7 @@
 import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -96,7 +97,7 @@ export default {
         this.isLoading = true;
         this.error = null;
         
-        const response = await axios.get('https://unigo.onrender.com/api/chat/get', {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/chat/get', {
           headers: { 'Authorization': `Bearer ${this.token}` }
         });
 
@@ -111,7 +112,7 @@ export default {
         }));
 
         const userResponse = await axios.get(
-          'https://unigo.onrender.com/api/user/get-id',
+          API_CONFIG.BASE_URL +'/user/get-id',
           { headers: { 'Authorization': `Bearer ${this.token}` } }
         );
         Cookies.set('userId', userResponse.data.user_id);

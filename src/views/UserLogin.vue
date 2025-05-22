@@ -57,6 +57,9 @@
           >Зарегистрироваться</router-link
         >
       </div>
+      <div class="forgot-password-link">
+        <router-link to="/forgot-password">Забыли пароль?</router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -66,6 +69,7 @@ import axios from "axios";
 import AppNavbar from "@/components/AppNavbar.vue";
 import { notify } from "@kyvg/vue3-notification"; // Библиотека для уведомлений
 import Cookies from "js-cookie"; // Импорт библиотеки для работы с cookies
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -118,7 +122,7 @@ export default {
       this.error = "";
 
       try {
-        const response = await axios.post("https://unigo.onrender.com/api/user/login",
+        const response = await axios.post(API_CONFIG.BASE_URL +'/user/login',
           {
             login: this.emailOrPhone,
             password: this.password,
@@ -437,6 +441,21 @@ input:focus {
 
 .toggle-password:hover {
   color: #333;
+}
+
+
+.forgot-password-link {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.forgot-password-link a {
+  color: #004281;
+  text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+  text-decoration: underline;
 }
 
 

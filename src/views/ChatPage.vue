@@ -43,6 +43,7 @@
 import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -76,7 +77,7 @@ export default {
     async loadChat(chatId) {
       try {
         const response = await axios.get(
-          `https://unigo.onrender.com/api/chat/${chatId}`,
+          API_CONFIG.BASE_URL +`/chat/${chatId}`,
           {
             headers: {
               'Authorization': `Bearer ${Cookies.get("token")}`
@@ -96,7 +97,7 @@ export default {
     },
     async loadMessages(chatId) {
       try {
-        const response = await axios.get(`https://unigo.onrender.com/api/chat/${chatId}/messages`);
+        const response = await axios.get(API_CONFIG.BASE_URL +`/chat/${chatId}/messages`);
         this.messages = response.data.map(msg => ({
           ...msg,
           isCurrentUser: msg.sender_id === this.currentUserId,
@@ -114,7 +115,7 @@ export default {
       // Формируем URL для WebSocket соединения
       //const wsUrl = `${wsProtocol}//${window.location.hostname}:5000/`;
       
-      this.socket = new WebSocket('wss://unigo.onrender.com');
+      this.socket = new WebSocket(API_CONFIG.WS_URL);
 
       this.socket.onopen = () => {
         console.log('WebSocket соединение установлено');

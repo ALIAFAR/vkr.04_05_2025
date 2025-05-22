@@ -50,6 +50,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -87,7 +88,7 @@ export default {
         console.log("Отправляемые данные:", payload);
 
         // Отправляем данные на сервер
-        await axios.post('https://unigo.onrender.com/api/user/update-profile', payload, {
+        await axios.post(API_CONFIG.BASE_URL +'/user/update-profile', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -59,6 +59,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import Cookies from "js-cookie"; // Подключаем js-cookie
 import axios from "axios"; // Подключаем axios
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -142,7 +143,7 @@ export default {
     // Метод для проверки временного пароля через axios
     async checkTemporaryPassword(password) {
       try {
-        const response = await axios.get("https://unigo.onrender.com/api/user/password_check", {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/user/password_check', {
           params: {
             password: password, // Передаем временный пароль как параметр
           },

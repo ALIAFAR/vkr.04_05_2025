@@ -143,6 +143,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api'
 
 export default {
   components: {
@@ -210,7 +211,7 @@ export default {
           return;
         }
 
-        const response = await axios.get("https://unigo.onrender.com/api/booking/get-booked", {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/booking/get-booked', {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -237,14 +238,14 @@ export default {
         
         // Загружаем информацию о водителе
         const driverResponse = await axios.get(
-          `https://unigo.onrender.com/api/user/driver/${trip.driver_id}`,
+          API_CONFIG.BASE_URL +`/user/driver/${trip.driver_id}`,
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
         this.driver = driverResponse.data;
         
         // Загружаем пассажиров
         const passengersResponse = await axios.get(
-          'https://unigo.onrender.com/api/user/get-all',
+          API_CONFIG.BASE_URL +'/user/get-all',
           {
             params: { trip_id: trip.id_trip },
             headers: { 'Authorization': `Bearer ${token}` }
@@ -280,7 +281,7 @@ export default {
         
         if (confirm) {
           const token = Cookies.get('token');
-          await axios.put(`https://unigo.onrender.com/api/booking/cancell/${trip.booking_id}`, {}, {
+          await axios.put(API_CONFIG.BASE_URL +`/booking/cancell/${trip.booking_id}`, {}, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 

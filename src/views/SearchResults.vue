@@ -423,6 +423,7 @@
 import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from 'js-cookie';
+import { API_CONFIG } from '@/config/api'
 
 // Конфигурация API
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'https://unigo.onrender.com';
@@ -572,7 +573,7 @@ export default {
       this.error = null;
 
       try {
-        const response = await axios.get(`https://unigo.onrender.com/api/trip/searchResult`, {
+        const response = await axios.get(API_CONFIG.BASE_URL +`/trip/searchResult`, {
           params: {
             departure_location: this.searchParams.from,
             arrival_location: this.searchParams.to,
@@ -756,7 +757,7 @@ export default {
         }
 
         const response1 = await axios.post(
-          `https://unigo.onrender.com/api/chat/create`,
+          API_CONFIG.BASE_URL +`/chat/create`,
           {
             trip_id: trip.id
           },
@@ -771,7 +772,7 @@ export default {
         const chat_id = response1.data.chatId; // Предполагая, что сервер возвращает { chatId: ... }
         console.log("3")
         const response = await axios.post(
-          `https://unigo.onrender.com/api/booking/create`,
+          API_CONFIG.BASE_URL +`/booking/create`,
           {
             trip_id: trip.id,
             chat_id: chat_id,
@@ -892,7 +893,7 @@ export default {
         console.log("trip.trip_id",trip.id)
 
         const response = await axios.get(
-          'https://unigo.onrender.com/api/user/get-all',
+          API_CONFIG.BASE_URL +'/user/get-all',
           {
             params: { // ✅ GET-параметры
               trip_id: trip.id 
