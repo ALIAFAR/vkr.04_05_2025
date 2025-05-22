@@ -244,17 +244,13 @@ methods: {
 </script>
 
 <style scoped>
-.background {
-  background-image: url("/public/фон.jpg"); /* Используйте относительный путь */
-}
-
 /* Основные стили для страницы */
 body {
   font-family: Arial, sans-serif;
   background-image: url("/public/фон.jpg") no-repeat center center fixed;
   background-size: cover;
   margin: 0;
-  padding-top: 80px; /* Пространство для панели */
+  padding-top: 80px;
 }
 
 /* Уведомления */
@@ -270,6 +266,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: slideIn 0.5s ease;
 }
 
 .notification.success {
@@ -278,6 +275,17 @@ body {
 
 .notification.error {
   background-color: rgba(189, 15, 15, 0.61);
+}
+
+@keyframes slideIn {
+  from {
+    top: -50px;
+    opacity: 0;
+  }
+  to {
+    top: 20px;
+    opacity: 1;
+  }
 }
 
 /* Навигационная панель */
@@ -300,19 +308,16 @@ body {
   display: flex;
   align-items: center;
   margin-right: 80px;
-  font-size: 36px; /* Увеличенный размер шрифта */
-  font-family: 'Poppins', sans-serif; /* Пример красивого шрифта */
-  font-weight: bold; /* Сделать шрифт жирным */
-  color: rgba(0, 66, 129, 1); /* Цвет шрифта */
+  font-size: 36px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  color: rgba(0, 66, 129, 1);
 }
 
-/* Подключение шрифта Lora */
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;700&display=swap');
-
 .logo-img {
-  width: 100px; /* Увеличьте ширину логотипа */
-    height: auto; /* Сохраняет пропорции изображения */
-    margin-right: 10px; /* Отступ между логотипом и текстом */
+  width: 100px;
+  height: auto;
+  margin-right: 10px;
 }
 
 .menu {
@@ -331,6 +336,7 @@ body {
   border-radius: 5px;
   transition: background-color 0.3s ease;
 }
+
 .menu-item:hover {
   background-color: rgba(0, 66, 129, 0.1);
 }
@@ -368,51 +374,111 @@ body {
 /* Основной контейнер для поиска */
 .search-container {
   display: flex;
-  justify-content: space-between;
-  gap: 40px;
+  align-items: center;
+  gap: 15px;
   padding: 20px;
-  max-width: 1200px;
-  margin: 160px auto 0 auto;
   background-color: rgba(107, 151, 193, 0.299);
   border-radius: 10px;
+  max-width: 1200px;
+  margin: 100px auto 0 auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.passenger-btn-container {
-  display: flex;
-  justify-content: space-between; /* Распределение кнопок с одинаковыми промежутками */
-  width: 100%; /* Обеспечивает использование всей доступной ширины */
-  gap: 30px; /* Регулирует расстояние между кнопками */
-}
-
+/* Контейнеры для полей ввода */
 .input-container {
   position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
+  height: 50px;
 }
 
-/* Поля ввода и кнопки */
-.search-container input,
-.search-container button {
-  padding: 8px;
-  margin: 10px;
-  border-radius: 5px;
-  width: 180px;
+.input-container input {
+  width: 100%;
+  height: 100%;
+  padding: 0 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
+/* Стили для счётчика пассажиров */
+.passenger-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  border-radius: 8px;
+  padding: 0 15px;
+  height: 50px;
+  border: 1px solid #ddd;
+  min-width: 180px;
+}
+
+.passenger-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.passenger-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 66, 129, 0.3);
+  background-color: transparent;
+  color: rgba(0, 66, 129, 0.8);
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.passenger-btn:hover:not(:disabled) {
+  background-color: rgba(0, 66, 129, 0.1);
+  border-color: rgba(0, 66, 129, 0.5);
+}
+
+.passenger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passenger-count {
+  min-width: 30px;
+  text-align: center;
+  font-size: 16px;
+  color: rgba(0, 66, 129, 0.8);
+}
+
+/* Стили для кнопки поиска */
 .search-btn {
+  height: 50px;
+  padding: 0 25px;
   background-color: rgba(0, 66, 129, 1);
   color: white;
   border: none;
-  padding: 6px 12px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
+.search-btn:hover {
+  background-color: rgba(0, 66, 129, 0.9);
+}
+
+/* Выпадающие подсказки */
 .suggestions-list {
   position: absolute;
-  top: 35px;
-  left: 10px;
-  width: calc(100% - 20px);
+  top: 100%;
+  left: 0;
+  width: 100%;
   background-color: white;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   list-style: none;
@@ -422,7 +488,7 @@ body {
 }
 
 .suggestions-list li {
-  padding: 8px;
+  padding: 10px 15px;
   cursor: pointer;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -441,27 +507,27 @@ body {
   border-radius: 10px;
   margin: 40px auto;
   max-width: 1200px;
-  flex-wrap: wrap; /* Позволяет блокам переноситься на новую строку при необходимости */
+  flex-wrap: wrap;
 }
 
 .info-block {
-  flex: 1 1 calc(33% - 20px); /* Каждый блок занимает 1/3 ширины */
+  flex: 1 1 calc(33% - 20px);
   text-align: center;
   box-sizing: border-box;
   padding: 20px;
-  background-color: #f7f7f7; /* Цвет фона блока */
-  border-radius: 8px; /* Скругление углов */
+  background-color: #f7f7f7;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Выравнивание по вертикали */
-  align-items: center; /* Выравнивание по горизонтали */
-  min-height: 200px; /* Обеспечивает одинаковую высоту для всех блоков */
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
 }
 
 .info-block img {
   width: 80px;
   height: auto;
-  margin-bottom: 15px; /* Отступ между изображением и текстом */
+  margin-bottom: 15px;
 }
 
 .info-block h3 {
@@ -475,83 +541,7 @@ body {
   color: #444;
 }
 
-@media (max-width: 768px) {
-  .info-block {
-    flex: 1 1 100%; /* Для мобильных устройств блоки занимают всю ширину */
-  }
-}
-
-
 /* Подвал */
-footer {
-  text-align: center;
-  margin: 20px 0;
-  color: rgba(0, 66, 129, 0.8);
-  font-size: 14px;
-}
-/* Уведомления */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.616);
-}
-
-.notification.error {
-  background-color: rgba(142, 13, 13, 0.61);
-}
-@media (max-width: 768px) {
-  .search-container {
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-  }
-  
-  .menu {
-    display: none; /* Прячем меню на мобильных */
-  }
-
-  .profile-photo {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .passenger-btn-container {
-    flex-direction: column;
-  }
-
-  .search-btn {
-    width: 100%;
-    margin-top: 10px;
-  }
-}
-.notification {
-  animation: slideIn 0.5s ease;
-}
-
-@keyframes slideIn {
-  from {
-    top: -50px;
-    opacity: 0;
-  }
-  to {
-    top: 20px;
-    opacity: 1;
-  }
-}
-
-/* Стили для подвала */
 .footer {
   background-color: rgba(107, 151, 193, 0.299);
   padding: 20px 0;
@@ -579,563 +569,89 @@ footer {
 }
 
 /* Мобильная адаптация */
-@media (max-width: 768px) {
-  body {
-    padding-top: 60px;
-    background-image: url("/public/фон.jpg") no-repeat center center fixed;
-  }
-
-  .navbar {
-    height: 60px;
-    padding: 10px 15px;
-  }
-
-  .logo {
-    font-size: 24px;
-    margin-right: 20px;
-  }
-
-  .logo-img {
-    width: 60px;
-  }
-
-  .menu {
-    display: none; /* Скрываем обычное меню */
-  }
-
-  /* Добавляем кнопку гамбургер-меню */
-  .mobile-menu-btn {
-    display: block;
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: rgba(0, 66, 129, 0.8);
-    cursor: pointer;
-    margin-left: auto;
-    margin-right: 15px;
-  }
-
-  .profile-photo {
-    width: 32px;
-    height: 32px;
-  }
-
-  /* Стили для мобильного меню */
-  .mobile-menu {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 999;
-    display: none;
-  }
-
-  .mobile-menu.show {
-    display: block;
-  }
-
-  .mobile-menu-item {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    text-align: center;
-    color: rgba(0, 66, 129, 0.8);
-  }
-
-  /* Адаптация контейнера поиска */
-  .search-container {
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    margin: 100px auto 20px; /* Добавлен отступ сверху для навигации */
-    width: 90%;
-    max-width: 400px; /* Ограничиваем максимальную ширину */
-  }
-
-  /* Поля ввода */
-  .input-container {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  .search-container input,
-  .search-container button {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 0;
-    font-size: 16px;
-    box-sizing: border-box; /* Важно для правильного расчета ширины */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-  }
-
-  /* Специально для поля даты */
-  .input-container input[type="date"] {
-    padding: 11px 15px; /* Выравнивание с другими полями */
-  }
-
-  /* Контейнер кнопок пассажиров и поиска */
-  .passenger-btn-container {
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px; /* Отступ от полей ввода */
-  }
-
-  /* Кнопки */
-  .search-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    margin: 0;
-  }
-
-  /* Выпадающий список подсказок */
-  .suggestions-list {
-    width: 100%;
-    left: 0;
-    top: 100%;
-  }
-
-  /* Информационные блоки */
-  .info-section {
-    margin-top: 0px; /* Увеличиваем отступ от формы поиска */
-  }
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-  .search-container {
-    margin-top: 80px;
-    width: 95%;
-    padding: 12px;
-  }
-
-  .search-container input,
-  .search-container button {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-
-  .passenger-btn-container {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  /* Адаптация информационных блоков */
-  .info-section {
-    flex-direction: column;
-    padding: 20px;
-    margin: 20px auto;
-    width: 90%;
-    gap: 15px;
-  }
-
-  .info-block {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .info-block img {
-    width: 60px;
-  }
-
-  /* Адаптация подвала */
-  .footer {
-    padding: 15px;
-  }
-
-  .contact-info {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* Улучшенные уведомления для мобильных */
-  .notification {
-    width: 90%;
-    font-size: 14px;
-    padding: 12px;
-  }
-}
-
-/* Дополнительные адаптации для очень маленьких экранов */
-@media (max-width: 480px) {
-  .logo {
-    font-size: 20px;
-  }
-
-  .logo-img {
-    width: 50px;
-  }
-
-  .search-container input,
-  .search-btn {
-    font-size: 14px;
-  }
-
-  .info-block h3 {
-    font-size: 16px;
-  }
-
-  .info-block p {
-    font-size: 13px;
-  }
-}
-
-/* Анимация для мобильного меню */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-  body {
-    padding-top: 60px;
-  }
-
-  .navbar {
-    height: 60px;
-    padding: 10px 15px;
-  }
-
-  .logo {
-    font-size: 24px;
-    margin-right: 20px;
-  }
-
-  .logo-img {
-    width: 60px;
-  }
-
-  .menu {
-    display: none;
-  }
-
-  .mobile-menu-btn {
-    display: block;
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: rgba(0, 66, 129, 0.8);
-    cursor: pointer;
-    margin-left: auto;
-    margin-right: 15px;
-  }
-
-  .profile-photo {
-    width: 32px;
-    height: 32px;
-  }
-
-  .mobile-menu {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 999;
-    display: none;
-  }
-
-  .mobile-menu.show {
-    display: block;
-  }
-
-  .mobile-menu-item {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    text-align: center;
-    color: rgba(0, 66, 129, 0.8);
-  }
-
-.search-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 15px;
-  background-color: rgba(107, 151, 193, 0.299);
-  border-radius: 10px;
-  max-width: 1200px;
-  margin: 160px auto 0 auto;
-}
-
-/* Общие стили для полей ввода */
-.input-container {
-  position: relative;
-  flex: 1;
-}
-
-.input-container input {
-  width: 100%;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-/* Стили для счётчика пассажиров */
-.passenger-control {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background-color: white;
-  border-radius: 8px;
-  padding: 8px 12px;
-  height: 40px;
-  border: 1px solid #ddd;
-}
-
-.passenger-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: none;
-  background-color: rgba(0, 66, 129, 0.1);
-  color: rgba(0, 66, 129, 0.8);
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.passenger-btn:hover:not(:disabled) {
-  background-color: rgba(0, 66, 129, 0.2);
-}
-
-.passenger-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.passenger-count {
-  min-width: 20px;
-  text-align: center;
-  font-size: 14px;
-  color: rgba(0, 66, 129, 0.8);
-}
-
-/* Стили для кнопки поиска */
-.search-btn {
-  padding: 10px 20px;
-  background-color: rgba(0, 66, 129, 1);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.search-btn:hover {
-  background-color: rgba(0, 66, 129, 0.9);
-}
-.passenger-buttons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.passenger-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: 1px solid rgba(0, 66, 129, 0.3);
-  background-color: transparent;
-  color: rgba(0, 66, 129, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.passenger-btn:hover:not(:disabled) {
-  background-color: rgba(0, 66, 129, 0.1);
-  border-color: rgba(0, 66, 129, 0.5);
-}
-
-.passenger-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.passenger-count {
-  min-width: 20px;
-  text-align: center;
-  font-size: 14px;
-  color: rgba(0, 66, 129, 0.8);
-}
-  .input-container {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  .search-container input,
-  .search-container button {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 0;
-    font-size: 16px;
-    box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-  }
-
-  .input-container input[type="date"] {
-    padding: 11px 15px;
-  }
-
-  .passenger-btn-container {
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .search-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    margin: 0;
-  }
-
-  .suggestions-list {
-    width: 100%;
-    left: 0;
-    top: 100%;
-  }
-
-  .info-section {
-    flex-direction: column;
-    padding: 20px;
-    margin: 20px auto;
-    width: 90%;
-    gap: 15px;
-  }
-
-  .info-block {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .info-block img {
-    width: 60px;
-  }
-
-  .footer {
-    padding: 15px;
-  }
-
-  .contact-info {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .notification {
-    width: 90%;
-    font-size: 14px;
-    padding: 12px;
-  }
-}
-
-/* Дополнительные адаптации для очень маленьких экранов */
-@media (max-width: 480px) {
-  .logo {
-    font-size: 20px;
-  }
-
-  .logo-img {
-    width: 50px;
-  }
-
-  .search-container input,
-  .search-btn {
-    font-size: 14px;
-  }
-
-  .info-block h3 {
-    font-size: 16px;
-  }
-
-  .info-block p {
-    font-size: 13px;
-  }
-  /* Добавляем новые стили для селектора пассажиров */
-.passenger-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  border-radius: 30px;
-  padding: 5px 15px;
-  box-shadow: 0 2px 8px rgba(0, 66, 129, 0.1);
-  margin: 10px;
-  width: 200px;
-}
-
-.passenger-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background-color: rgba(0, 66, 129, 0.1);
-  color: rgba(0, 66, 129, 0.8);
-  font-size: 18px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.passenger-btn:hover:not(:disabled) {
-  background-color: rgba(0, 66, 129, 0.2);
-  transform: scale(1.1);
-}
-
-.passenger-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.passenger-count {
-  margin: 0 15px;
-  font-size: 16px;
-  color: rgba(0, 66, 129, 0.8);
-  min-width: 100px;
-  text-align: center;
-}
-
-
-/* Адаптация для мобильных */
-@media (max-width: 768px) {
-  .passenger-selector {
-    width: 100%;
-    margin: 10px 0;
-  }
-  
-  .passenger-count {
-    flex-grow: 1;
-  }
-}
-
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-};
-/* Адаптация для мобильных */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .search-container {
     flex-wrap: wrap;
-    margin: 100px auto 0 auto;
+    margin-top: 120px;
+  }
+  
+  .input-container,
+  .passenger-control {
+    flex: 1 1 45%;
+    min-width: 200px;
+  }
+  
+  .search-btn {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+  }
+
+  .navbar {
+    height: 60px;
+    padding: 10px 15px;
+  }
+
+  .logo {
+    font-size: 24px;
+    margin-right: 20px;
+  }
+
+  .logo-img {
+    width: 60px;
+  }
+
+  .menu {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: rgba(0, 66, 129, 0.8);
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 15px;
+  }
+
+  .profile-photo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: none;
+  }
+
+  .mobile-menu.show {
+    display: block;
+  }
+
+  .mobile-menu-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    color: rgba(0, 66, 129, 0.8);
+  }
+
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    margin: 100px auto 20px;
     width: 90%;
   }
 
@@ -1143,7 +659,69 @@ footer {
   .passenger-control,
   .search-btn {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
+
+  .input-container input,
+  .search-btn {
+    padding: 12px 15px;
+    font-size: 16px;
+  }
+
+  .passenger-control {
+    justify-content: center;
+    padding: 0 10px;
+  }
+
+  .info-section {
+    flex-direction: column;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    gap: 15px;
+  }
+
+  .info-block {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 20px;
+  }
+
+  .logo-img {
+    width: 50px;
+  }
+
+  .search-container input,
+  .search-btn {
+    font-size: 14px;
+  }
+
+  .passenger-btn {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+  }
+
+  .passenger-count {
+    font-size: 14px;
+  }
+
+  .info-block h3 {
+    font-size: 16px;
+  }
+
+  .info-block p {
+    font-size: 13px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
