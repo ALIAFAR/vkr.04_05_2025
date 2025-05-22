@@ -55,18 +55,27 @@
       </div>
 
       <!-- Кнопки -->
-    <div class="passenger-selector">
-      <button class="passenger-btn minus" @click="decrementPassenger" :disabled="passengerCount <= 1">-</button>
-      <div class="passenger-count">
-        {{ passengerCount }} пассажир{{ passengerCount === 1 ? '' : 'а' }}
-      </div>
-      <button class="passenger-btn plus" @click="incrementPassenger" :disabled="passengerCount >= 20">+</button>
-
-
-        <!-- Кнопка для перехода на страницу поиска -->
-        <button class="search-btn" @click="goToSearch">Поиск</button>
+    <div class="passenger-control">
+      <div class="passenger-label">Пассажиры:</div>
+      <div class="passenger-buttons">
+        <button class="passenger-btn" @click="decrementPassenger" :disabled="passengerCount <= 1">
+          <svg width="12" height="2" viewBox="0 0 12 2" fill="none">
+            <path d="M11 1H1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="passenger-count">{{ passengerCount }}</span>
+        <button class="passenger-btn" @click="incrementPassenger" :disabled="passengerCount >= 4">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
     </div>
+
+    <!-- Кнопка поиска -->
+    <button class="search-btn" @click="goToSearch">Поиск</button>
+  </div>
+
 
     <!-- Уведомление -->
     <div v-if="notificationVisible" :class="['notification', notificationType]">
@@ -861,15 +870,70 @@ footer {
     color: rgba(0, 66, 129, 0.8);
   }
 
-  .search-container {
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    margin: 100px auto 20px;
-    width: 90%;
-    max-width: 400px;
-  }
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: rgba(107, 151, 193, 0.299);
+  border-radius: 10px;
+  max-width: 1200px;
+  margin: 160px auto 0 auto;
+}
+/* Стили для контроля пассажиров */
+.passenger-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  height: 40px;
+  box-sizing: border-box;
+}
 
+.passenger-label {
+  font-size: 14px;
+  color: rgba(0, 66, 129, 0.8);
+  white-space: nowrap;
+}
+
+.passenger-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.passenger-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 66, 129, 0.3);
+  background-color: transparent;
+  color: rgba(0, 66, 129, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.passenger-btn:hover:not(:disabled) {
+  background-color: rgba(0, 66, 129, 0.1);
+  border-color: rgba(0, 66, 129, 0.5);
+}
+
+.passenger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passenger-count {
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(0, 66, 129, 0.8);
+}
   .input-container {
     width: 100%;
     margin-bottom: 10px;
@@ -1012,6 +1076,7 @@ footer {
   text-align: center;
 }
 
+
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
   .passenger-selector {
@@ -1023,11 +1088,28 @@ footer {
     flex-grow: 1;
   }
 }
+
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 };
-
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+    margin: 100px auto 0 auto;
+    width: 90%;
+  }
+  
+  .passenger-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .search-btn {
+    width: 100%;
+  }
+}
 </style>
