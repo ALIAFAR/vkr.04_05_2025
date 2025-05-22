@@ -45,8 +45,10 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
-        <input type="date" placeholder="Дата" v-model="drivingDate" />
+      <input type="date" id="trip-date" class="date-input" />
+      <label for="trip-date" class="placeholder-label">Дата</label>
       </div>
+
 
       <!-- Счётчик пассажиров (+ 1 -) -->
       <div class="passenger-control">
@@ -793,6 +795,44 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-repeat: no-repeat;
     background-size: 20px 20px;
   }
+}
+/* Стили для поля даты */
+.date-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0 15px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+  color: #333;
+  z-index: 2;
+}
+
+.placeholder-label {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  z-index: 1;
+}
+
+/* Скрывать псевдоплейсхолдер при выборе даты */
+.date-input:valid + .placeholder-label,
+.date-input:not(:placeholder-shown) + .placeholder-label {
+  display: none;
+}
+
+/* Safari fix для пустого поля */
+.date-input:invalid + .placeholder-label {
+  display: block;
 }
 
 
