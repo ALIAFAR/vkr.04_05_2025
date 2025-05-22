@@ -762,6 +762,38 @@ body {
     font-size: 16px;
     padding: 12px 0;
   }
+}/* Стили для поля даты, чтобы выглядело как другие поля ввода */
+input[type="date"] {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: white;
+  color: #333;
+  font-family: inherit;
 }
+
+/* Убираем внутреннюю иконку календаря (опционально) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5); /* подгоняем стиль под остальные элементы */
+  cursor: pointer;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  input[type="date"] {
+    flex: 1 1 45%;
+    min-width: 200px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+  }
+}
+
 
 </style>
