@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{'dark-theme': isDarkTheme}">
     <!-- Навигационная панель -->
     <div class="navbar">
       <div class="logo" @click="goToHome">
@@ -24,6 +24,12 @@
           <button class="menu-item mobile-auth-btn" @click="navWithClose('/registration')">Регистрация</button>
           <button class="menu-item mobile-auth-btn" @click="navWithClose('/login')">Вход</button>
         </template>
+
+        <!-- Кнопка переключения темы -->
+        <button class="menu-item theme-toggle" @click="toggleTheme">
+          <span v-if="isDarkTheme">☀️</span>
+          <span v-else>🌙</span>
+        </button>
 
         <!-- Профиль -->
         <div class="profile" ref="profile">
@@ -85,6 +91,7 @@ export default {
       isAuthenticated: false,
       isMobileMenuOpen: false,
       windowWidth: window.innerWidth,
+      isDarkTheme: false,
     };
   },
   methods: {
@@ -188,12 +195,40 @@ export default {
       if (this.windowWidth > 768) {
         this.closeMobileMenu();
       }
+    },
+    
+    toggleTheme() {
+      this.isDarkTheme = !this.isDarkTheme;
+      // Сохраняем выбор темы в localStorage
+      localStorage.setItem('darkTheme', this.isDarkTheme);
+      this.applyTheme();
+    },
+    
+    applyTheme() {
+      if (this.isDarkTheme) {
+        document.documentElement.classList.add('dark-theme');
+      } else {
+        document.documentElement.classList.remove('dark-theme');
+      }
+    },
+    
+    checkSavedTheme() {
+      const savedTheme = localStorage.getItem('darkTheme');
+      if (savedTheme !== null) {
+        this.isDarkTheme = savedTheme === 'true';
+      } else {
+        // Проверка предпочтений системы
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.isDarkTheme = prefersDark;
+      }
+      this.applyTheme();
     }
   },
   async mounted() {
     await this.isUserAuthenticated();
     document.addEventListener("click", this.handleOutsideClick);
     window.addEventListener('resize', this.handleResize);
+    this.checkSavedTheme();
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleOutsideClick);
@@ -208,9 +243,72 @@ body {
   font-family: 'Lora', Arial, sans-serif;
   margin: 0;
   padding-top: 60px;
+  background-color: #ffffff;
+  color: #333333;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Уведомление */
+/* Темная тема */
+.dark-theme {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-theme .navbar {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .logo-text {
+  color: #e0e0e0;
+}
+
+.dark-theme .menu-item {
+  color: #e0e0e0;
+}
+
+.dark-theme .menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .dropdown-menu {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .dropdown-menu button {
+  color: #e0e0e0;
+}
+
+.dark-theme .dropdown-menu button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.dark-theme .modal-content {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.dark-theme .modal-content button:last-child {
+  background-color: #3d3d3d;
+  color: #e0e0e0;
+}
+
+.dark-theme .menu.mobile-menu-active {
+  background-color: #1e1e1e;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .menu-item {
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.dark-theme .profile {
+  border-top: 1px solid #3d3d3d;
+}
+
+/* Общие стили */
 .notification {
   position: fixed;
   top: 20px;
@@ -246,7 +344,6 @@ body {
   text-align: center;
 }
 
-/* Анимации уведомления */
 .notification-enter-active,
 .notification-leave-active {
   transition: all 0.4s ease;
@@ -258,7 +355,6 @@ body {
   transform: translate(-50%, -20px);
 }
 
-/* Навигационная панель */
 .navbar {
   position: fixed;
   top: 0;
@@ -272,6 +368,7 @@ body {
   align-items: center;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
 .logo {
@@ -298,9 +395,9 @@ body {
   font-weight: bold;
   color: rgba(0, 66, 129, 1);
   white-space: nowrap;
+  transition: color 0.3s ease;
 }
 
-/* Бургер-меню */
 .burger-menu {
   display: none;
   flex-direction: column;
@@ -331,7 +428,6 @@ body {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Основное меню */
 .menu {
   display: flex;
   gap: 12px;
@@ -359,7 +455,13 @@ body {
   transform: translateY(-2px);
 }
 
-/* Профиль */
+.theme-toggle {
+  font-size: 18px;
+  padding: 5px 10px !important;
+  min-width: 40px;
+  text-align: center;
+}
+
 .profile {
   position: relative;
   margin-left: 10px;
@@ -379,7 +481,6 @@ body {
   transform: scale(1.1);
 }
 
-/* Выпадающее меню */
 .dropdown-menu {
   position: absolute;
   right: 0;
@@ -413,7 +514,6 @@ body {
   color: rgba(0, 66, 129, 1);
 }
 
-/* Показываем dropdown при активном состоянии */
 .profile:hover .dropdown-menu,
 .profile:focus-within .dropdown-menu,
 .dropdown-menu.show {
@@ -422,7 +522,6 @@ body {
   transform: translateY(0);
 }
 
-/* Модальное окно выхода */
 .logout-modal {
   position: fixed;
   top: 0;
@@ -443,6 +542,7 @@ body {
   width: 90%;
   max-width: 350px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .modal-content p {
@@ -450,6 +550,7 @@ body {
   font-size: 16px;
   color: #333;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .modal-buttons {
@@ -484,13 +585,11 @@ body {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Адаптивные стили */
 @media (max-width: 992px) {
   .logo-text {
     font-size: 20px;
@@ -532,6 +631,7 @@ body {
     gap: 0;
     margin-right: 0;
     z-index: 999;
+    transition: all 0.3s ease, background-color 0.3s ease;
   }
   
   .menu.mobile-menu-active {
@@ -549,14 +649,12 @@ body {
     font-size: 15px;
   }
   
-  /* Мобильные кнопки авторизации */
   .mobile-auth-btn {
     display: block;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
   }
   
-  /* Профиль на мобильных */
   .profile {
     order: 1;
     padding: 15px 20px;
@@ -571,7 +669,6 @@ body {
     margin-bottom: 10px;
   }
   
-  /* Выпадающее меню на мобильных */
   .mobile-menu-active .dropdown-menu {
     position: relative;
     top: auto;
@@ -592,6 +689,14 @@ body {
   
   .dropdown-menu button:last-child {
     border-bottom: none;
+  }
+  
+  .theme-toggle {
+    order: -1;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    padding: 14px 20px !important;
+    font-size: 16px;
   }
 }
 
@@ -627,5 +732,39 @@ body {
     width: 36px;
     height: 36px;
   }
+}
+</style>
+
+<style>
+/* Глобальные стили для темы */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --navbar-bg: #ffffff;
+  --menu-item-color: rgba(0, 66, 129, 0.9);
+  --menu-item-hover: rgba(0, 66, 129, 0.1);
+  --dropdown-bg: #ffffff;
+  --dropdown-text: #333333;
+  --modal-bg: #ffffff;
+  --modal-text: #333333;
+  --border-color: #f0f0f0;
+}
+
+.dark-theme {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --navbar-bg: #1e1e1e;
+  --menu-item-color: #e0e0e0;
+  --menu-item-hover: rgba(255, 255, 255, 0.1);
+  --dropdown-bg: #2d2d2d;
+  --dropdown-text: #e0e0e0;
+  --modal-bg: #2d2d2d;
+  --modal-text: #e0e0e0;
+  --border-color: #3d3d3d;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 </style>
