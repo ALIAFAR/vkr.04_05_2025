@@ -55,7 +55,7 @@
       <div class="passenger-control">
         <button class="passenger-btn" @click="decrementPassenger" :disabled="passengerCount <= 1">−</button>
         <span class="passenger-count">{{ passengerCount }}</span>
-        <button class="passenger-btn" @click="incrementPassenger" :disabled="passengerCount >= 4">+</button>
+        <button class="passenger-btn" @click="incrementPassenger" :disabled="passengerCount >= 20">+</button>
       </div>
 
       <!-- Кнопка "Поиск" -->
