@@ -1,4 +1,9 @@
 <template>
+         <!-- Кнопка переключения темы -->
+        <button class="menu-item theme-toggle" @click="toggleTheme">
+          <span v-if="$store.state.isDarkTheme">☀️</span>
+          <span v-else>🌙</span>
+        </button>
   <div id="app" :class="{ 'dark-theme': isDarkTheme }" class="font-sans min-h-screen">
     <router-view />
   </div>
