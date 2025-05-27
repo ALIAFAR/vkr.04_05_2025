@@ -822,7 +822,7 @@ input, button, .info-block, .notification, .input-label {
 
   .search-container {
     flex-wrap: wrap;
-    margin-top: 80px;
+    margin-top: 50px;
     gap: 15px;
     padding: 20px;
   }
