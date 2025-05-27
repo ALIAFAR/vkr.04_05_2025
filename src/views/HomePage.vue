@@ -77,7 +77,6 @@
           :disabled="passengerCount >= 20"
           aria-label="Увеличить количество пассажиров"
         >+</button>
-        <span class="passenger-label">Пассажиры</span>
       </div>
 
       <!-- Кнопка "Поиск" -->
@@ -895,5 +894,165 @@ body {
 /* Плавные переходы */
 input, button, .info-block, .notification {
   transition: all 0.3s ease;
+}
+/* Мобильная адаптация */
+@media (max-width: 1024px) {
+  .search-container {
+    flex-wrap: wrap;
+    margin-top: 80px; /* Уменьшил отступ сверху */
+    gap: 15px;
+    padding: 20px;
+  }
+  
+  .input-container,
+  .passenger-control {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 200px;
+  }
+  
+  .search-btn {
+    flex: 1 1 100%;
+  }
+  
+  .info-block {
+    flex: 1 1 calc(50% - 15px);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px; /* Уменьшил отступ для body */
+  }
+
+  .search-container {
+    margin-top: 20px; /* Ещё уменьшил отступ */
+    padding: 15px;
+    border-radius: 8px;
+    width: calc(100% - 30px); /* Добавил отступы по бокам */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .input-container,
+  .passenger-control,
+  .search-btn {
+    flex: 1 1 100%;
+  }
+  
+  .passenger-control {
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .info-section {
+    padding: 15px;
+    margin: 20px auto;
+    gap: 15px;
+    width: calc(100% - 30px);
+  }
+  
+  .info-block {
+    flex: 1 1 100%;
+    min-height: auto;
+    padding: 20px 15px;
+  }
+  
+  .footer {
+    padding: 20px 15px;
+    margin-top: 30px;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 60px; /* Фиксированный отступ для навбара */
+  }
+
+  .search-container {
+    margin-top: 10px; /* Минимальный отступ сверху */
+    padding: 12px;
+    width: calc(100% - 24px); /* Уменьшил ширину контейнера */
+  }
+  
+  .input-container input,
+  .passenger-control,
+  .search-btn {
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .passenger-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+  
+  .info-block {
+    padding: 18px 12px;
+  }
+  
+  .info-block h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .info-block p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  .info-block img {
+    width: 70px;
+    margin-bottom: 15px;
+  }
+  
+  .notification {
+    padding: 10px 30px 10px 15px;
+    font-size: 13px;
+    max-width: 96%;
+    top: 15px;
+  }
+  
+  .footer {
+    padding: 15px 10px;
+    margin-top: 25px;
+    font-size: 13px;
+  }
+  
+  .footer-bottom {
+    font-size: 11px;
+  }
+}
+
+/* Дополнительные медиа-запросы для очень маленьких экранов */
+@media (max-width: 360px) {
+  .search-container {
+    margin-top: 5px;
+    padding: 10px;
+    width: calc(100% - 20px);
+  }
+  
+  .input-container input {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  
+  .passenger-control {
+    height: 42px;
+  }
+  
+  .search-btn {
+    font-size: 14px;
+    padding: 0 15px;
+  }
+  
+  .info-block {
+    padding: 15px 10px;
+  }
 }
 </style>
