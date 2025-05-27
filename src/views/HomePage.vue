@@ -974,7 +974,7 @@ input, button, .info-block, .notification {
   }
 
   .search-container {
-    margin-top: 30px; /* Минимальный отступ сверху */
+    margin-top: 70px; /* Минимальный отступ сверху */
     padding: 12px;
     width: calc(100% - 24px); /* Уменьшил ширину контейнера */
   }
