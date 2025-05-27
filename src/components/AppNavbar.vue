@@ -27,7 +27,7 @@
 
         <!-- Кнопка переключения темы -->
         <button class="menu-item theme-toggle" @click="toggleTheme">
-          <span v-if="isDarkTheme">☀️</span>
+          <span v-if="$store.state.isDarkTheme">☀️</span>
           <span v-else>🌙</span>
         </button>
 
@@ -123,7 +123,17 @@ export default {
         return false;
       }
     },
-
+    methods: {
+  toggleTheme() {
+    this.$store.commit('toggleTheme');
+  }},
+  mounted() {
+  // Применяем тему при загрузке
+  document.documentElement.classList.toggle(
+    'dark-theme', 
+    this.$store.state.isDarkTheme
+  );
+},
     async goToPublishTrip() {
       const isAuthenticated = await this.isUserAuthenticated();
       if (!isAuthenticated) {
@@ -480,7 +490,12 @@ body {
 .profile-photo:hover {
   transform: scale(1.1);
 }
-
+.dropdown-menu {
+  background-color: var(--dropdown-bg) !important; /* Важно для переопределения */
+  opacity: 1 !important; /* Убираем прозрачность */
+  border: 1px solid var(--border-color); /* Добавляем границу для четкости */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Убираем transition для opacity */
+}
 .dropdown-menu {
   position: absolute;
   right: 0;

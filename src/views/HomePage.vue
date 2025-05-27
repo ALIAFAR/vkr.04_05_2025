@@ -398,7 +398,15 @@ export default {
   min-height: 100vh;
   padding-top: 80px;
 }
+.my-component {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
 
+.my-component:hover {
+  background-color: var(--hover-color);
+}
 /* Уведомления */
 .notification {
   position: fixed;
