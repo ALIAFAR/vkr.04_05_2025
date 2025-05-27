@@ -49,20 +49,20 @@
         <div v-if="loadingToSuggestions" class="suggestions-loading">Загрузка...</div>
       </div>
 
-        <!-- Поле "Дата" -->
-        <div class="input-container">
-          <input 
-            type="date" 
-            placeholder="Дата" 
-            v-model="drivingDate" 
-            :min="minDate"
-            class="date-input"
-            @change="validateDate"
-            @focus="onDateFocus"
-            @blur="onDateBlur"
-          />
-          <span v-if="dateError" class="error-message">{{ dateError }}</span>
-        </div>
+      <!-- Поле "Дата" -->
+      <div class="input-container">
+        <input 
+          type="date" 
+          placeholder="Дата" 
+          v-model="drivingDate" 
+          :min="minDate"
+          class="date-input"
+          @change="validateDate"
+          @focus="onDateFocus"
+          @blur="onDateBlur"
+        />
+        <span v-if="dateError" class="error-message">{{ dateError }}</span>
+      </div>
 
       <!-- Счётчик пассажиров (+ 1 -) -->
       <div class="passenger-control">
@@ -137,7 +137,7 @@
         <p><a href="/privacy-policy">Политика конфиденциальности</a></p>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2025 UniGO. Все права защищены.</p>
+        <p>© 2025 UniGO. Все права защищены.</p>
         <p>Версия 1.0.0</p>
       </div>
     </div>
@@ -392,7 +392,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 /* Основные стили для страницы */
@@ -742,114 +741,6 @@ body {
   gap: 20px;
 }
 
-/* Мобильная адаптация */
-@media (max-width: 1024px) {
-  .search-container {
-    flex-wrap: wrap;
-    margin-top: 120px;
-    gap: 20px;
-  }
-  
-  .input-container,
-  .passenger-control {
-    flex: 1 1 calc(50% - 10px);
-    min-width: 200px;
-  }
-  
-  .search-btn {
-    flex: 1 1 100%;
-  }
-  
-  .info-block {
-    flex: 1 1 calc(50% - 15px);
-  }
-}
-
-@media (max-width: 768px) {
-  body {
-    padding-top: 70px;
-  }
-
-  .search-container {
-    margin-top: 30px;
-    padding: 20px;
-    gap: 15px;
-  }
-
-  .input-container,
-  .passenger-control,
-  .search-btn {
-    flex: 1 1 100%;
-  }
-  
-  .passenger-control {
-    justify-content: center;
-    gap: 20px;
-  }
-  
-  .info-section {
-    padding: 20px;
-    margin: 30px auto;
-    gap: 20px;
-  }
-  
-  .info-block {
-    flex: 1 1 100%;
-    min-height: auto;
-    padding: 25px 20px;
-  }
-  
-  .footer {
-    padding: 25px 15px;
-    margin-top: 40px;
-  }
-  
-  .footer-bottom {
-    flex-direction: column;
-    gap: 5px;
-  }
-}
-
-@media (max-width: 480px) {
-  .search-container {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-  }
-  
-  .input-container input,
-  .passenger-control,
-  .search-btn {
-    height: 45px;
-    font-size: 15px;
-  }
-  
-  .passenger-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 15px;
-  }
-  
-  .info-block h3 {
-    font-size: 17px;
-  }
-  
-  .info-block p {
-    font-size: 13px;
-  }
-  
-  .notification {
-    padding: 12px 35px 12px 15px;
-    font-size: 14px;
-    max-width: 95%;
-  }
-}
-
-/* Анимации */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 /* Стили для поля даты */
 .date-input {
   width: 100%;
@@ -862,9 +753,9 @@ body {
   background-color: white;
   color: #333;
   transition: border-color 0.3s;
-  -webkit-appearance: none; /* Убираем стандартный стиль для iOS */
-  -moz-appearance: none; /* Убираем стандартный стиль для Firefox */
-  appearance: none; /* Убираем стандартный стиль для других браузеров */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .date-input:focus {
@@ -873,7 +764,6 @@ body {
   box-shadow: 0 0 0 2px rgba(0, 66, 129, 0.1);
 }
 
-/* Стили для placeholder */
 .date-input::-webkit-input-placeholder {
   color: #999;
   font-size: 16px;
@@ -889,57 +779,6 @@ body {
 .date-input::placeholder {
   color: #999;
   font-size: 16px;
-}
-
-/* Убедимся, что на мобильных устройствах поле даты выглядит как текстовое поле */
-@media (max-width: 768px) {
-  .date-input {
-    font-size: 15px;
-    height: 45px;
-  }
-  .date-input::-webkit-input-placeholder {
-    font-size: 15px;
-  }
-  .date-input::-moz-placeholder {
-    font-size: 15px;
-  }
-  .date-input::placeholder {
-    font-size: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .date-input {
-    font-size: 14px;
-    height: 44px;
-    padding: 0 12px;
-  }
-  .date-input::-webkit-input-placeholder {
-    font-size: 14px;
-  }
-  .date-input::-moz-placeholder {
-    font-size: 14px;
-  }
-  .date-input::placeholder {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 360px) {
-  .date-input {
-    font-size: 13px;
-    height: 42px;
-    padding: 0 10px;
-  }
-  .date-input::-webkit-input-placeholder {
-    font-size: 13px;
-  }
-  .date-input::-moz-placeholder {
-    font-size: 13px;
-  }
-  .date-input::placeholder {
-    font-size: 13px;
-  }
 }
 
 /* Улучшенный индикатор загрузки для подсказок */
@@ -981,11 +820,12 @@ body {
 input, button, .info-block, .notification {
   transition: all 0.3s ease;
 }
+
 /* Мобильная адаптация */
 @media (max-width: 1024px) {
   .search-container {
     flex-wrap: wrap;
-    margin-top: 80px; /* Уменьшил отступ сверху */
+    margin-top: 80px;
     gap: 15px;
     padding: 20px;
   }
@@ -1007,14 +847,14 @@ input, button, .info-block, .notification {
 
 @media (max-width: 768px) {
   body {
-    padding-top: 60px; /* Уменьшил отступ для body */
+    padding-top: 60px;
   }
 
   .search-container {
-    margin-top: 20px; /* Ещё уменьшил отступ */
+    margin-top: 20px;
     padding: 15px;
     border-radius: 8px;
-    width: calc(100% - 30px); /* Добавил отступы по бокам */
+    width: calc(100% - 30px);
     margin-left: auto;
     margin-right: auto;
   }
@@ -1052,17 +892,31 @@ input, button, .info-block, .notification {
     flex-direction: column;
     gap: 5px;
   }
+
+  .date-input {
+    font-size: 15px;
+    height: 45px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 15px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 15px;
+  }
+  .date-input::placeholder {
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 480px) {
   body {
-    padding-top: 60px; /* Фиксированный отступ для навбара */
+    padding-top: 60px;
   }
 
   .search-container {
-    margin-top: 90px; /* Минимальный отступ сверху */
+    margin-top: 90px;
     padding: 12px;
-    width: calc(100% - 24px); /* Уменьшил ширину контейнера */
+    width: calc(100% - 24px);
   }
   
   .input-container input,
@@ -1113,9 +967,23 @@ input, button, .info-block, .notification {
   .footer-bottom {
     font-size: 11px;
   }
+
+  .date-input {
+    font-size: 14px;
+    height: 44px;
+    padding: 0 12px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 14px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 14px;
+  }
+  .date-input::placeholder {
+    font-size: 14px;
+  }
 }
 
-/* Дополнительные медиа-запросы для очень маленьких экранов */
 @media (max-width: 360px) {
   .search-container {
     margin-top: 5px;
@@ -1140,5 +1008,26 @@ input, button, .info-block, .notification {
   .info-block {
     padding: 15px 10px;
   }
+
+  .date-input {
+    font-size: 13px;
+    height: 42px;
+    padding: 0 10px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 13px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 13px;
+  }
+  .date-input::placeholder {
+    font-size: 13px;
+  }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
