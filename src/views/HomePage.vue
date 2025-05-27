@@ -835,7 +835,6 @@ body {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 /* Стили для поля даты */
 .date-input {
   width: 100%;
@@ -848,12 +847,84 @@ body {
   background-color: white;
   color: #333;
   transition: border-color 0.3s;
+  -webkit-appearance: none; /* Убираем стандартный стиль для iOS */
+  -moz-appearance: none; /* Убираем стандартный стиль для Firefox */
+  appearance: none; /* Убираем стандартный стиль для других браузеров */
 }
 
 .date-input:focus {
   border-color: rgba(0, 66, 129, 0.8);
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 66, 129, 0.1);
+}
+
+/* Стили для placeholder */
+.date-input::-webkit-input-placeholder {
+  color: #999;
+  font-size: 16px;
+}
+.date-input::-moz-placeholder {
+  color: #999;
+  font-size: 16px;
+}
+.date-input:-ms-input-placeholder {
+  color: #999;
+  font-size: 16px;
+}
+.date-input::placeholder {
+  color: #999;
+  font-size: 16px;
+}
+
+/* Убедимся, что на мобильных устройствах поле даты выглядит как текстовое поле */
+@media (max-width: 768px) {
+  .date-input {
+    font-size: 15px;
+    height: 45px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 15px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 15px;
+  }
+  .date-input::placeholder {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .date-input {
+    font-size: 14px;
+    height: 44px;
+    padding: 0 12px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 14px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 14px;
+  }
+  .date-input::placeholder {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .date-input {
+    font-size: 13px;
+    height: 42px;
+    padding: 0 10px;
+  }
+  .date-input::-webkit-input-placeholder {
+    font-size: 13px;
+  }
+  .date-input::-moz-placeholder {
+    font-size: 13px;
+  }
+  .date-input::placeholder {
+    font-size: 13px;
+  }
 }
 
 /* Улучшенный индикатор загрузки для подсказок */
