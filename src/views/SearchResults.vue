@@ -1,4 +1,3 @@
-
 <template>
   <div class="search-results-container">
     <AppNavbar />
@@ -21,7 +20,7 @@
         <div class="modal-content">
           <button class="modal-close" @click="closeModal" aria-label="Закрыть">×</button>
 
-          <template v-if="!showPaymentConfirmation && !showCodeInput">
+          <template v-if="!showPaymentConfirmation">
             <h3>Оплата поездки</h3>
 
             <div class="safety-notification">
@@ -37,92 +36,13 @@
               </div>
             </div>
 
-            <!-- Card Payment Form -->
-            <div class="payment-form">
-              <div class="form-group">
-                <label for="card-number">Номер карты</label>
-                <input
-                  id="card-number"
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  v-model="paymentData.cardNumber"
-                  maxlength="19"
-                  @input="formatCardNumber"
-                  :class="{ 'input-error': paymentData.cardError }"
-                  @blur="validateCardNumber"
-                  autocomplete="cc-number"
-                />
-                <p v-if="paymentData.cardError" class="error-text">{{ paymentData.cardError }}</p>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group half-width">
-                  <label for="expiry-date">Срок действия</label>
-                  <input
-                    id="expiry-date"
-                    type="text"
-                    placeholder="ММ/ГГ"
-                    v-model="paymentData.expiryDate"
-                    maxlength="5"
-                    @input="formatExpiryDate"
-                    :class="{ 'input-error': paymentData.expiryError }"
-                    @blur="validateExpiryDate"
-                    autocomplete="cc-exp"
-                  />
-                  <p v-if="paymentData.expiryError" class="error-text">{{ paymentData.expiryError }}</p>
-                </div>
-                <div class="form-group half-width">
-                  <label for="cvv">CVV/CVC</label>
-                  <input
-                    id="cvv"
-                    type="password"
-                    placeholder="•••"
-                    v-model="paymentData.cvv"
-                    maxlength="3"
-                    :class="{ 'input-error': paymentData.cvvError }"
-                    @blur="validateCvv"
-                    autocomplete="cc-csc"
-                  />
-                  <p v-if="paymentData.cvvError" class="error-text">{{ paymentData.cvvError }}</p>
-                </div>
-              </div>
-
-              <button
-                class="btn-pay"
-                @click="initiatePayment"
-                :disabled="isPaymentLoading || !isPaymentValid"
-              >
-                {{ isPaymentLoading ? 'Обработка...' : 'Оплатить' }}
-              </button>
-              <p v-if="paymentData.paymentError" class="error-text">{{ paymentData.paymentError }}</p>
+            <!-- Tinkoff Widget Integration -->
+            <div id="tinkoff-widget-container" ref="tinkoffWidgetContainer"></div>
+            
+            <div v-if="paymentError" class="error-message">
+              {{ paymentError }}
             </div>
           </template>
-
-          <!-- Code Verification -->
-          <div v-if="showCodeInput" class="code-confirmation">
-            <h3>Подтверждение оплаты</h3>
-            <p>Код подтверждения отправлен на ваш номер или email.</p>
-            <div class="form-group">
-              <label for="confirmation-code">Код подтверждения</label>
-              <input
-                id="confirmation-code"
-                type="text"
-                v-model="paymentData.confirmationCode"
-                maxlength="6"
-                placeholder="123456"
-                :class="{ 'input-error': paymentData.codeError }"
-                :disabled="isPaymentLoading"
-              />
-              <p v-if="paymentData.codeError" class="error-text">{{ paymentData.codeError }}</p>
-            </div>
-            <button
-              class="btn-confirm"
-              @click="confirmPayment"
-              :disabled="isPaymentLoading || !paymentData.confirmationCode"
-            >
-              {{ isPaymentLoading ? 'Подтверждение...' : 'Подтвердить' }}
-            </button>
-          </div>
 
           <!-- Payment Confirmation -->
           <div v-if="showPaymentConfirmation" class="confirmation-screen">
@@ -132,9 +52,8 @@
               <p><strong>Сумма:</strong> {{ currentBookingTrip.cost }} ₽</p>
               <p><strong>Номер транзакции:</strong> {{ transactionId }}</p>
               <p><strong>Дата:</strong> {{ transactionDate }}</p>
-              <p><strong>Способ оплаты:</strong> Карта **** {{ paymentData.cardNumber.slice(-4) }}</p>
             </div>
-            <button class="btn-close" @click="closeModal">Закрыть</button>
+            <button class="btn-close" @click="completeBooking">Перейти к поездке</button>
           </div>
         </div>
       </div>
@@ -277,7 +196,7 @@
           <div class="trip-actions">
             <button
               class="btn-primary"
-              @click="bookTrip(trip)"
+              @click="initiateBooking(trip)"
               :disabled="trip.available_seats < searchParams.passengers"
             >
               {{ trip.available_seats >= searchParams.passengers ? 'Забронировать' : 'Недостаточно мест' }}
@@ -369,27 +288,16 @@ export default {
       showPassengersModal: false,
       showOnlyMyBookings: false,
       showPaymentModal: false,
-      showCodeInput: false,
       showPaymentConfirmation: false,
       currentBookingTrip: null,
       passengers: [],
       currentLocation: "",
       modalLocationType: "departure",
-      isPaymentLoading: false,
-      paymentData: {
-        cardNumber: "",
-        expiryDate: "",
-        cvv: "",
-        confirmationCode: "",
-        cardError: "",
-        expiryError: "",
-        cvvError: "",
-        codeError: "",
-        paymentError: "",
-      },
+      paymentError: "",
       transactionId: "",
       transactionDate: "",
       locale: "ru-RU",
+      tinkoffWidget: null,
     };
   },
   computed: {
@@ -400,16 +308,6 @@ export default {
     },
     totalBookedSeats() {
       return this.filteredPassengers.reduce((sum, p) => sum + p.seats_booked, 0);
-    },
-    isPaymentValid() {
-      return (
-        !this.paymentData.cardError &&
-        !this.paymentData.expiryError &&
-        !this.paymentData.cvvError &&
-        this.paymentData.cardNumber &&
-        this.paymentData.expiryDate &&
-        this.paymentData.cvv
-      );
     },
   },
   watch: {
@@ -426,6 +324,12 @@ export default {
   created() {
     this.loadSearchParams();
     this.fetchTrips();
+  },
+  beforeUnmount() {
+    // Очищаем виджет при размонтировании компонента
+    if (this.tinkoffWidget) {
+      this.tinkoffWidget.destroy();
+    }
   },
   methods: {
     async loadSearchParams() {
@@ -550,197 +454,175 @@ export default {
       const cases = [2, 0, 1, 1, 1, 2];
       return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[Math.min(number % 10, 5)]];
     },
-    async bookTrip(trip) {
+    async initiateBooking(trip) {
       const token = Cookies.get("token");
       if (!token) {
         this.$router.push("/login");
         return;
       }
+      
       this.currentBookingTrip = trip;
       this.showPaymentModal = true;
+      
+      // Загружаем скрипт Tinkoff Widget асинхронно
+      await this.loadTinkoffWidgetScript();
+      
+      // Инициализируем виджет после загрузки скрипта
+      this.$nextTick(() => {
+        this.initializeTinkoffWidget();
+      });
     },
-    validateCardNumber() {
-      const cleaned = this.paymentData.cardNumber.replace(/\s/g, "");
-      if (!cleaned) {
-        this.paymentData.cardError = "Введите номер карты";
-        return;
-      }
-      if (!/^\d{16}$/.test(cleaned)) {
-        this.paymentData.cardError = "Введите 16 цифр";
-        return;
-      }
-      let sum = 0;
-      let isEven = false;
-      for (let i = cleaned.length - 1; i >= 0; i--) {
-        let digit = parseInt(cleaned[i], 10);
-        if (isEven) {
-          digit *= 2;
-          if (digit > 9) digit -= 9;
+    loadTinkoffWidgetScript() {
+      return new Promise((resolve, reject) => {
+        if (window.tinkoffWidget) {
+          resolve();
+          return;
         }
-        sum += digit;
-        isEven = !isEven;
+        
+        const script = document.createElement('script');
+        script.src = 'https://securepay.tinkoff.ru/html/payForm/js/tinkoff_v2.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    },
+    initializeTinkoffWidget() {
+      // Очищаем предыдущий виджет, если он был
+      if (this.tinkoffWidget) {
+        this.tinkoffWidget.destroy();
       }
-      this.paymentData.cardError = sum % 10 === 0 ? "" : "Неверный номер карты";
+      
+      // Получаем данные пользователя для платежа
+      this.getUserData().then(userData => {
+        // Генерируем уникальный ID заказа
+        const orderId = `TRIP-${this.currentBookingTrip.id}-${Date.now()}`;
+        
+        // Создаем новый экземпляр виджета
+        this.tinkoffWidget = new window.tinkoffWidget({
+          terminalKey: API_CONFIG.TINKOFF_TERMINAL_KEY, // Ваш TerminalKey из API Tinkoff
+          frameId: 'tinkoff-widget-container',
+          amount: this.currentBookingTrip.cost * 100, // Сумма в копейках
+          orderId: orderId,
+          description: `Поездка из ${this.currentBookingTrip.departure_location} в ${this.currentBookingTrip.arrival_location}`,
+          language: 'ru',
+          customerKey: userData.user_id,
+          email: userData.email,
+          phone: userData.phone,
+          payType: 'O', // O - одностадийная оплата
+          receipt: {
+            Email: userData.email,
+            Phone: userData.phone,
+            Taxation: 'usn_income',
+            Items: [
+              {
+                Name: 'Поездка',
+                Price: this.currentBookingTrip.cost * 100,
+                Quantity: 1,
+                Amount: this.currentBookingTrip.cost * 100,
+                Tax: 'none',
+              }
+            ]
+          },
+          onSuccess: (data) => this.handlePaymentSuccess(data),
+          onFail: (data) => this.handlePaymentFailure(data),
+        });
+        
+        // Отображаем виджет
+        this.tinkoffWidget.open();
+      }).catch(error => {
+        this.paymentError = "Ошибка загрузки платежной формы. Пожалуйста, попробуйте позже.";
+        console.error("Ошибка инициализации платежного виджета:", error);
+      });
     },
-    validateExpiryDate() {
-      const match = this.paymentData.expiryDate.match(/^(\d{2})\/(\d{2})$/);
-      if (!match) {
-        this.paymentData.expiryError = "Формат: ММ/ГГ";
-        return;
-      }
-      const month = parseInt(match[1], 10);
-      const year = parseInt(match[2], 10) + 2000;
-      const now = new Date();
-      const expiry = new Date(year, month - 1);
-      this.paymentData.expiryError = month >= 1 && month <= 12 && expiry >= now ? "" : "Неверная дата";
-    },
-    validateCvv() {
-      this.paymentData.cvvError = /^\d{3}$/.test(this.paymentData.cvv) ? "" : "Введите 3 цифры";
-    },
-    formatCardNumber() {
-      this.paymentData.cardNumber = this.paymentData.cardNumber
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim();
-    },
-    formatExpiryDate() {
-      this.paymentData.expiryDate = this.paymentData.expiryDate
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d)/, "$1/$2")
-        .substring(0, 5);
-    },
-    async initiatePayment() {
-      if (!this.isPaymentValid) {
-        this.$notify({ title: "Ошибка", text: "Проверьте данные карты", type: "error" });
-        return;
-      }
-
-      this.isPaymentLoading = true;
+    async getUserData() {
       try {
         const token = Cookies.get("token");
-        const userResponse = await axios.get(API_CONFIG.BASE_URL + "/user/profile", {
+        const response = await axios.get(API_CONFIG.BASE_URL + "/user/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const user = userResponse.data.user;
-
-        // Step 1: Initiate payment with Tinkoff
-        const paymentResponse = await axios.post(
-          API_CONFIG.BASE_URL + "/payment/initiate",
-          {
-            amount: this.currentBookingTrip.cost * 100, // Tinkoff expects amount in kopecks
-            currency: "RUB",
-            orderId: `ORDER-${Date.now()}`,
-            customerEmail: user.email,
-            customerPhone: user.phone,
-            cardNumber: this.paymentData.cardNumber.replace(/\s/g, ""),
-            expiryDate: this.paymentData.expiryDate,
-            cvv: this.paymentData.cvv,
-            description: `Payment for trip ${this.currentBookingTrip.id}`,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (paymentResponse.data.success && paymentResponse.data.requiresConfirmation) {
-          // Step 2: Send SMS with verification code
-          await axios.post(
-            API_CONFIG.BASE_URL + "/sms/send",
-            {
-              phone: user.phone,
-              message: `Ваш код подтверждения оплаты: ${paymentResponse.data.verificationCode}`,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          this.transactionId = paymentResponse.data.paymentId;
-          this.showCodeInput = true;
-        } else if (paymentResponse.data.success) {
-          // Payment succeeded without confirmation (unlikely for real scenarios)
-          this.transactionId = paymentResponse.data.paymentId;
-          this.transactionDate = new Date().toLocaleString(this.locale);
-          await this.createBookingAndChat();
-          this.showPaymentConfirmation = true;
-        } else {
-          throw new Error(paymentResponse.data.message || "Ошибка инициации платежа");
-        }
+        return response.data.user;
       } catch (error) {
-        this.paymentData.paymentError = error.message || "Ошибка оплаты";
-        this.$notify({ title: "Ошибка", text: this.paymentData.paymentError, type: "error" });
-      } finally {
-        this.isPaymentLoading = false;
+        console.error("Ошибка получения данных пользователя:", error);
+        // Возвращаем данные по умолчанию, если не удалось получить
+        return {
+          user_id: Cookies.get("user_id") || "unknown",
+          email: "no-email@example.com",
+          phone: "+79000000000",
+        };
       }
     },
-    async confirmPayment() {
-      if (!/^\d{6}$/.test(this.paymentData.confirmationCode)) {
-        this.paymentData.codeError = "Введите 6-значный код";
-        return;
-      }
-
-      this.isPaymentLoading = true;
+    handlePaymentSuccess(paymentData) {
+      this.transactionId = paymentData.PaymentId;
+      this.transactionDate = new Date().toLocaleString(this.locale);
+      this.showPaymentConfirmation = true;
+      
+      // Здесь можно отправить данные о платеже на ваш сервер
+      this.sendPaymentConfirmation(paymentData);
+    },
+    handlePaymentFailure(paymentData) {
+      this.paymentError = "Ошибка оплаты. Пожалуйста, попробуйте другой способ оплаты.";
+      console.error("Ошибка платежа:", paymentData);
+    },
+    async sendPaymentConfirmation(paymentData) {
       try {
         const token = Cookies.get("token");
-        const confirmResponse = await axios.post(
+        await axios.post(
           API_CONFIG.BASE_URL + "/payment/confirm",
           {
-            paymentId: this.transactionId,
-            confirmationCode: this.paymentData.confirmationCode,
+            trip_id: this.currentBookingTrip.id,
+            payment_id: paymentData.PaymentId,
+            amount: this.currentBookingTrip.cost,
+            status: "succeeded",
+            payment_data: paymentData,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        if (confirmResponse.data.success) {
-          this.transactionDate = new Date().toLocaleString(this.locale);
-          await this.createBookingAndChat();
-          this.showCodeInput = false;
-          this.showPaymentConfirmation = true;
-        } else {
-          throw new Error(confirmResponse.data.message || "Неверный код подтверждения");
-        }
       } catch (error) {
-        this.paymentData.codeError = error.message || "Ошибка подтверждения";
-        this.$notify({ title: "Ошибка", text: this.paymentData.codeError, type: "error" });
-      } finally {
-        this.isPaymentLoading = false;
+        console.error("Ошибка подтверждения платежа:", error);
       }
     },
-    async createBookingAndChat() {
-      const token = Cookies.get("token");
-      const trip = this.currentBookingTrip;
-
-      // Create chat
-      const chatResponse = await axios.post(
-        API_CONFIG.BASE_URL + "/chat/create",
-        { trip_id: trip.id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const chatId = chatResponse.data.chatId;
-
-      // Create booking
-      const bookingResponse = await axios.post(
-        API_CONFIG.BASE_URL + "/booking/create",
-        {
-          trip_id: trip.id,
-          chat_id: chatId,
-          seats_booked: this.searchParams.passengers,
-          transaction_id: this.transactionId,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedTrip = bookingResponse.data.trip;
-      const index = this.trips.findIndex((t) => t.id === updatedTrip.id);
-      if (index !== -1) {
-        this.trips.splice(index, 1, updatedTrip);
-        this.sortTrips();
+    async completeBooking() {
+      try {
+        const token = Cookies.get("token");
+        const trip = this.currentBookingTrip;
+        
+        // Создаем чат
+        const chatResponse = await axios.post(
+          API_CONFIG.BASE_URL + "/chat/create",
+          { trip_id: trip.id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const chatId = chatResponse.data.chatId;
+        
+        // Создаем бронирование
+        await axios.post(
+          API_CONFIG.BASE_URL + "/booking/create",
+          {
+            trip_id: trip.id,
+            chat_id: chatId,
+            seats_booked: this.searchParams.passengers,
+            transaction_id: this.transactionId,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        // Обновляем список поездок
+        await this.fetchTrips();
+        
+        // Закрываем модальное окно
+        this.closeModal();
+        
+        // Перенаправляем в чат
+        this.$router.push(`/chat/${chatId}`);
+        
+      } catch (error) {
+        this.$notify({
+          title: "Ошибка",
+          text: "Не удалось завершить бронирование",
+          type: "error",
+        });
+        console.error("Ошибка завершения бронирования:", error);
       }
-
-      this.$notify({
-        title: "Успех!",
-        text: `Забронировано ${this.searchParams.passengers} мест`,
-        type: "success",
-      });
-
-      // Redirect to chat
-      this.$router.push(`/chat/${trip.driver_id}`);
     },
     async showPassengers(trip, locationType) {
       this.modalLocationType = locationType;
@@ -769,22 +651,17 @@ export default {
     closeModal() {
       this.showPaymentModal = false;
       this.showPassengersModal = false;
-      this.showCodeInput = false;
       this.showPaymentConfirmation = false;
-      this.paymentData = {
-        cardNumber: "",
-        expiryDate: "",
-        cvv: "",
-        confirmationCode: "",
-        cardError: "",
-        expiryError: "",
-        cvvError: "",
-        codeError: "",
-        paymentError: "",
-      };
+      this.paymentError = "";
       this.currentBookingTrip = null;
       this.transactionId = "";
       this.transactionDate = "";
+      
+      // Уничтожаем виджет при закрытии модального окна
+      if (this.tinkoffWidget) {
+        this.tinkoffWidget.destroy();
+        this.tinkoffWidget = null;
+      }
     },
     showTripDetails(trip) {
       this.$router.push(`/trip/${trip.id}`);
@@ -807,6 +684,14 @@ export default {
 </script>
 
 <style scoped>
+/* Все стили остаются такими же, как в предыдущей версии */
+/* Добавим только стили для Tinkoff Widget */
+
+#tinkoff-widget-container {
+  margin: 20px 0;
+  min-height: 400px;
+}
+
 :root {
   --primary-color: #3498db;
   --secondary-color: #ecf0f1;
