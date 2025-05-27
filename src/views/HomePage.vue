@@ -51,7 +51,7 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
-        <label for="date-input" class="input-label" :class="{ 'active': drivingDate || !isDatePlaceholder }">Дата</label>
+        <label for="date-input" class="input-label" :class="{ 'active': drivingDate }">Дата</label>
         <input 
           id="date-input"
           type="date" 
@@ -191,8 +191,7 @@ export default {
              this.drivingDate && 
              this.isFromAddressValid && 
              this.isToAddressValid && 
-             !this.dateError && 
-             !this.isDatePlaceholder;
+             !this.dateError;
     },
   },
   methods: {
@@ -219,7 +218,7 @@ export default {
         let message = "Пожалуйста, укажите все данные для поиска:";
         if (!this.fromLocation) message += "\n- Откуда";
         if (!this.toLocation) message += "\n- Куда";
-        if (!this.drivingDate || this.isDatePlaceholder) message += "\n- Дата";
+        if (!this.drivingDate) message += "\n- Дата";
         if (!this.isFromAddressValid) message += "\n- Выберите корректный адрес отправления";
         if (!this.isToAddressValid) message += "\n- Выберите корректный адрес назначения";
         if (this.dateError) message += `\n- ${this.dateError}`;
@@ -465,7 +464,7 @@ export default {
   background-color: rgba(0, 66, 129, 0.1);
   border-radius: 12px;
   max-width: 1200px;
-  margin: 100px auto 0 auto;
+  margin: 20px auto 0 auto;
   box-shadow: 0 4px 20px rgba(0, 66, 129, 0.1);
   flex-wrap: wrap;
 }
@@ -482,7 +481,7 @@ export default {
 .input-container input {
   width: 100%;
   height: 50px;
-  padding: 0 15px;
+  padding: 10px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
@@ -514,6 +513,7 @@ export default {
   font-size: 16px;
   pointer-events: none;
   transition: all 0.2s ease;
+  opacity: 1;
 }
 
 .input-label.active {
@@ -523,6 +523,39 @@ export default {
   color: rgba(0, 66, 129, 0.8);
   background-color: white;
   padding: 0 5px;
+  opacity: 1;
+}
+
+/* Стили для поля даты */
+.date-input {
+  width: 100%;
+  height: 50px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: white;
+  color: #333;
+  transition: border-color 0.3s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.date-input:focus {
+  border-color: rgba(0, 66, 129, 0.8);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 66, 129, 0.1);
+}
+
+.date-input:invalid:not(:focus) + .input-label {
+  opacity: 1;
+}
+
+.date-input:focus + .input-label,
+.date-input:not(:invalid) + .input-label {
+  opacity: 0;
 }
 
 /* Стили для счётчика пассажиров */
@@ -751,64 +784,6 @@ export default {
   gap: 20px;
 }
 
-/* Стили для поля даты */
-.date-input {
-  width: 100%;
-  height: 50px;
-  padding: 0 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  box-sizing: border-box;
-  background-color: white;
-  color: #333;
-  transition: border-color 0.3s;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-.date-input:focus {
-  border-color: rgba(0, 66, 129, 0.8);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 66, 129, 0.1);
-}
-
-/* Улучшенный индикатор загрузки для подсказок */
-.suggestions-loading {
-  position: relative;
-  padding: 12px 15px;
-  color: #666;
-}
-
-.suggestions-loading:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 15px;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(0, 66, 129, 0.2);
-  border-top-color: rgba(0, 66, 129, 0.8);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Ховер-эффекты для информационных блоков */
-.info-block {
-  cursor: default;
-}
-
-.info-block img {
-  transition: transform 0.3s, opacity 0.3s;
-}
-
-.info-block:hover img {
-  transform: scale(1.1);
-  opacity: 1;
-}
-
 /* Плавные переходы */
 input, button, .info-block, .notification, .input-label {
   transition: all 0.3s ease;
@@ -822,7 +797,7 @@ input, button, .info-block, .notification, .input-label {
 
   .search-container {
     flex-wrap: wrap;
-    margin-top: 50px;
+    margin-top: 20px;
     gap: 15px;
     padding: 20px;
   }
@@ -856,7 +831,7 @@ input, button, .info-block, .notification, .input-label {
   }
 
   .search-container {
-    margin-top: 20px;
+    margin-top: 15px;
     padding: 15px;
     border-radius: 8px;
     width: calc(100% - 30px);
@@ -901,6 +876,7 @@ input, button, .info-block, .notification, .input-label {
   .date-input {
     font-size: 15px;
     height: 45px;
+    padding: 10px 15px;
   }
   .input-label {
     font-size: 15px;
@@ -917,7 +893,7 @@ input, button, .info-block, .notification, .input-label {
   }
 
   .search-container {
-    margin-top: 90px;
+    margin-top: 10px;
     padding: 12px;
     width: calc(100% - 24px);
   }
@@ -974,7 +950,7 @@ input, button, .info-block, .notification, .input-label {
   .date-input {
     font-size: 14px;
     height: 44px;
-    padding: 0 12px;
+    padding: 10px 12px;
   }
   .input-label {
     font-size: 14px;
@@ -993,7 +969,7 @@ input, button, .info-block, .notification, .input-label {
   }
   
   .input-container input {
-    padding: 0 10px;
+    padding: 10px 10px;
     font-size: 13px;
   }
   
@@ -1013,7 +989,7 @@ input, button, .info-block, .notification, .input-label {
   .date-input {
     font-size: 13px;
     height: 42px;
-    padding: 0 10px;
+    padding: 10px 10px;
   }
   .input-label {
     font-size: 13px;
