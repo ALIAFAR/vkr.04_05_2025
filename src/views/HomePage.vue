@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page-container">
     <AppNavbar />
 
     <div class="search-container">
@@ -51,9 +51,10 @@
 
       <!-- Поле "Дата" -->
       <div class="input-container">
+        <label for="date-input" class="input-label" :class="{ 'active': drivingDate || !isDatePlaceholder }">Дата</label>
         <input 
+          id="date-input"
           type="date" 
-          placeholder="Дата" 
           v-model="drivingDate" 
           :min="minDate"
           class="date-input"
@@ -180,7 +181,7 @@ export default {
       loadingToSuggestions: false,
       isSearching: false,
       debounceTimer: null,
-      isDatePlaceholder: true // Флаг для отслеживания состояния placeholder
+      isDatePlaceholder: true
     };
   },
   computed: {
@@ -379,9 +380,7 @@ export default {
     },
 
     onDateFocus() {
-      if (this.isDatePlaceholder) {
-        this.drivingDate = "";
-      }
+      this.isDatePlaceholder = false;
     },
 
     onDateBlur() {
@@ -394,13 +393,11 @@ export default {
 </script>
 
 <style scoped>
-/* Основные стили для страницы */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Основной контейнер для всей страницы */
+.page-container {
   background-color: #f5f7fa;
-  margin: 0;
+  min-height: 100vh;
   padding-top: 80px;
-  color: #333;
 }
 
 /* Уведомления */
@@ -507,6 +504,27 @@ body {
   display: block;
 }
 
+/* Стили для метки даты */
+.input-label {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.input-label.active {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  color: rgba(0, 66, 129, 0.8);
+  background-color: white;
+  padding: 0 5px;
+}
+
 /* Стили для счётчика пассажиров */
 .passenger-control {
   display: flex;
@@ -519,14 +537,6 @@ body {
   border: 1px solid #ddd;
   min-width: 180px;
   position: relative;
-}
-
-.passenger-label {
-  position: absolute;
-  top: -20px;
-  left: 0;
-  font-size: 12px;
-  color: #666;
 }
 
 .passenger-btn {
@@ -764,23 +774,6 @@ body {
   box-shadow: 0 0 0 2px rgba(0, 66, 129, 0.1);
 }
 
-.date-input::-webkit-input-placeholder {
-  color: #999;
-  font-size: 16px;
-}
-.date-input::-moz-placeholder {
-  color: #999;
-  font-size: 16px;
-}
-.date-input:-ms-input-placeholder {
-  color: #999;
-  font-size: 16px;
-}
-.date-input::placeholder {
-  color: #999;
-  font-size: 16px;
-}
-
 /* Улучшенный индикатор загрузки для подсказок */
 .suggestions-loading {
   position: relative;
@@ -817,12 +810,16 @@ body {
 }
 
 /* Плавные переходы */
-input, button, .info-block, .notification {
+input, button, .info-block, .notification, .input-label {
   transition: all 0.3s ease;
 }
 
 /* Мобильная адаптация */
 @media (max-width: 1024px) {
+  .page-container {
+    padding-top: 80px;
+  }
+
   .search-container {
     flex-wrap: wrap;
     margin-top: 80px;
@@ -843,10 +840,18 @@ input, button, .info-block, .notification {
   .info-block {
     flex: 1 1 calc(50% - 15px);
   }
+
+  .input-label {
+    font-size: 15px;
+  }
+  .input-label.active {
+    font-size: 11px;
+    top: -12px;
+  }
 }
 
 @media (max-width: 768px) {
-  body {
+  .page-container {
     padding-top: 60px;
   }
 
@@ -897,19 +902,17 @@ input, button, .info-block, .notification {
     font-size: 15px;
     height: 45px;
   }
-  .date-input::-webkit-input-placeholder {
+  .input-label {
     font-size: 15px;
   }
-  .date-input::-moz-placeholder {
-    font-size: 15px;
-  }
-  .date-input::placeholder {
-    font-size: 15px;
+  .input-label.active {
+    font-size: 11px;
+    top: -12px;
   }
 }
 
 @media (max-width: 480px) {
-  body {
+  .page-container {
     padding-top: 60px;
   }
 
@@ -973,14 +976,12 @@ input, button, .info-block, .notification {
     height: 44px;
     padding: 0 12px;
   }
-  .date-input::-webkit-input-placeholder {
+  .input-label {
     font-size: 14px;
   }
-  .date-input::-moz-placeholder {
-    font-size: 14px;
-  }
-  .date-input::placeholder {
-    font-size: 14px;
+  .input-label.active {
+    font-size: 10px;
+    top: -10px;
   }
 }
 
@@ -1014,14 +1015,12 @@ input, button, .info-block, .notification {
     height: 42px;
     padding: 0 10px;
   }
-  .date-input::-webkit-input-placeholder {
+  .input-label {
     font-size: 13px;
   }
-  .date-input::-moz-placeholder {
-    font-size: 13px;
-  }
-  .date-input::placeholder {
-    font-size: 13px;
+  .input-label.active {
+    font-size: 10px;
+    top: -10px;
   }
 }
 
