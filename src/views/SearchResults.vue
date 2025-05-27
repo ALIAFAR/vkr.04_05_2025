@@ -573,7 +573,10 @@ const paymentMixin = {
         .substring(0, 5);
     },
     async validatePayment() {
-      if (this.paymentData.method === "card" && !this.isPaymentValid) return;
+      if (this.paymentData.method === "card" && !this.isPaymentValid) {
+        this.$notify({ title: "Ошибка", text: "Проверьте данные карты", type: "error" });
+        return;
+      }
       this.isPaymentLoading = true;
       this.paymentData.retryCount++;
       try {
@@ -616,10 +619,12 @@ const paymentMixin = {
 
         if (response.data.requires3DS && this.paymentData.method === "card") {
           this.show3DSModal = true;
-        } else {
+        } else if (response.data.success) {
           this.transactionId = response.data.transactionId || `TXN-${Date.now()}`;
           this.transactionDate = new Date().toLocaleString(this.locale);
           this.showPaymentConfirmation = true;
+        } else {
+          throw new Error(response.data.message || "Ошибка обработки оплаты");
         }
       } catch (error) {
         let errorMessage = "Оплата не удалась";
@@ -637,6 +642,8 @@ const paymentMixin = {
           }
         } else if (error.message === "Apple Pay недоступен") {
           errorMessage = "Apple Pay недоступен";
+        } else {
+          errorMessage = error.message || "Ошибка сервера";
         }
         this.paymentData.paymentError = errorMessage;
         this.$notify({ title: "Ошибка", text: errorMessage, type: "error" });
@@ -651,14 +658,25 @@ const paymentMixin = {
       }
       this.isPaymentLoading = true;
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        this.transactionId = `TXN-${Date.now()}`;
-        this.transactionDate = new Date().toLocaleString(this.locale);
-        this.show3DSModal = false;
-        this.showPaymentConfirmation = true;
+        const response = await axios.post(
+          API_CONFIG.BASE_URL + "/payment/confirm-3ds",
+          {
+            transactionId: this.transactionId,
+            threeDSCode: this.paymentData.threeDSCode,
+          },
+          { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
+        );
+        if (response.data.success) {
+          this.transactionId = response.data.transactionId || this.transactionId;
+          this.transactionDate = new Date().toLocaleString(this.locale);
+          this.show3DSModal = false;
+          this.showPaymentConfirmation = true;
+        } else {
+          throw new Error(response.data.message || "Ошибка подтверждения 3D Secure");
+        }
       } catch (error) {
-        this.paymentData.threeDSError = "Ошибка подтверждения 3D Secure";
-        this.$notify({ title: "Ошибка", text: "Ошибка подтверждения 3D Secure", type: "error" });
+        this.paymentData.threeDSError = error.message || "Ошибка подтверждения 3D Secure";
+        this.$notify({ title: "Ошибка", text: this.paymentData.threeDSError, type: "error" });
       } finally {
         this.isPaymentLoading = false;
       }
