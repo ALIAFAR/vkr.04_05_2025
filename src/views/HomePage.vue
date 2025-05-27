@@ -49,18 +49,20 @@
         <div v-if="loadingToSuggestions" class="suggestions-loading">Загрузка...</div>
       </div>
 
-      <!-- Поле "Дата" -->
-      <div class="input-container">
-        <input 
-          type="date" 
-          placeholder="Дата" 
-          v-model="drivingDate" 
-          :min="minDate"
-          class="date-input"
-          @change="validateDate"
-        />
-        <span v-if="dateError" class="error-message">{{ dateError }}</span>
-      </div>
+        <!-- Поле "Дата" -->
+        <div class="input-container">
+          <input 
+            type="date" 
+            placeholder="Дата" 
+            v-model="drivingDate" 
+            :min="minDate"
+            class="date-input"
+            @change="validateDate"
+            @focus="onDateFocus"
+            @blur="onDateBlur"
+          />
+          <span v-if="dateError" class="error-message">{{ dateError }}</span>
+        </div>
 
       <!-- Счётчик пассажиров (+ 1 -) -->
       <div class="passenger-control">
@@ -177,7 +179,8 @@ export default {
       loadingFromSuggestions: false,
       loadingToSuggestions: false,
       isSearching: false,
-      debounceTimer: null
+      debounceTimer: null,
+      isDatePlaceholder: true // Флаг для отслеживания состояния placeholder
     };
   },
   computed: {
@@ -187,7 +190,8 @@ export default {
              this.drivingDate && 
              this.isFromAddressValid && 
              this.isToAddressValid && 
-             !this.dateError;
+             !this.dateError && 
+             !this.isDatePlaceholder;
     },
   },
   methods: {
@@ -214,7 +218,7 @@ export default {
         let message = "Пожалуйста, укажите все данные для поиска:";
         if (!this.fromLocation) message += "\n- Откуда";
         if (!this.toLocation) message += "\n- Куда";
-        if (!this.drivingDate) message += "\n- Дата";
+        if (!this.drivingDate || this.isDatePlaceholder) message += "\n- Дата";
         if (!this.isFromAddressValid) message += "\n- Выберите корректный адрес отправления";
         if (!this.isToAddressValid) message += "\n- Выберите корректный адрес назначения";
         if (this.dateError) message += `\n- ${this.dateError}`;
@@ -226,7 +230,6 @@ export default {
       this.isSearching = true;
       this.showNotification("Ищем лучшие маршруты для вас...", "info");
 
-      // Имитация загрузки (в реальном приложении здесь будет API запрос)
       try {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
@@ -257,20 +260,20 @@ export default {
       
       if (selectedDate < today) {
         this.dateError = "Нельзя выбрать прошедшую дату";
+        this.isDatePlaceholder = false;
         return false;
       }
       
       this.dateError = "";
+      this.isDatePlaceholder = false;
       return true;
     },
 
     showNotification(message, type, duration = 3000) {
       if (!message || !type) return;
       
-      // Закрываем предыдущее уведомление
       this.notificationVisible = false;
       
-      // Даем время для анимации закрытия
       setTimeout(() => {
         this.notificationMessage = message;
         this.notificationType = type;
@@ -303,7 +306,6 @@ export default {
           this.loadingToSuggestions = true;
         }
         
-        // Добавляем задержку для уменьшения количества запросов
         await new Promise(resolve => setTimeout(resolve, 300));
         
         const response = await fetch(SUGGESTIONS_URL, {
@@ -374,10 +376,23 @@ export default {
       setTimeout(() => {
         this.showToSuggestions = false;
       }, 200);
+    },
+
+    onDateFocus() {
+      if (this.isDatePlaceholder) {
+        this.drivingDate = "";
+      }
+    },
+
+    onDateBlur() {
+      if (!this.drivingDate) {
+        this.isDatePlaceholder = true;
+      }
     }
   },
 };
 </script>
+
 
 <style scoped>
 /* Основные стили для страницы */
