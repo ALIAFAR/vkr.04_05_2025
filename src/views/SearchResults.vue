@@ -1,3 +1,4 @@
+
 <template>
   <div class="search-results-container">
     <AppNavbar />
@@ -9,7 +10,7 @@
       <div class="search-params-container">
         <div class="search-params">
           <p><strong>Откуда:</strong> {{ searchParams.from }}</p>
-          <p><strong>Куда:</strong> {{ destination }}</p>
+          <p><strong>Куда:</strong> {{ searchParams.to }}</p>
           <p><strong>Дата:</strong> {{ formatDate(searchParams.date) }}</p>
           <p><strong>Места:</strong> {{ searchParams.passengers }}</p>
         </div>
@@ -20,8 +21,8 @@
         <div class="modal-content">
           <button class="modal-close" @click="closeModal" aria-label="Закрыть">×</button>
 
-          <template v-if="!showPaymentConfirmation && !show3DSModal">
-            <h3>Оплата</h3>
+          <template v-if="!showPaymentConfirmation && !showCodeInput">
+            <h3>Оплата поездки</h3>
 
             <div class="safety-notification">
               <div class="safety-icon">⚠️</div>
@@ -36,148 +37,88 @@
               </div>
             </div>
 
-            <!-- Payment Method Selector -->
-            <div class="payment-methods">
-              <button
-                class="payment-method"
-                :class="{ active: paymentData.method === 'card' }"
-                @click="selectPaymentMethod('card')"
-              >
-                <i class="fas fa-credit-card"></i> Карта
-              </button>
-              <button
-                class="payment-method"
-                :class="{ active: paymentData.method === 'applepay' }"
-                @click="selectPaymentMethod('applepay')"
-                :disabled="!isApplePayAvailable"
-                :title="isApplePayAvailable ? '' : 'Apple Pay недоступен на этом устройстве'"
-              >
-                <i class="fab fa-apple-pay"></i> Apple Pay
-              </button>
-              <button
-                class="payment-method"
-                :class="{ active: paymentData.method === 'sberpay' }"
-                @click="selectPaymentMethod('sberpay')"
-              >
-                <i class="fas fa-ruble-sign"></i> SberPay
-              </button>
-            </div>
-
             <!-- Card Payment Form -->
-            <transition name="fade">
-              <div v-if="paymentData.method === 'card'" class="payment-form">
-                <div class="form-group">
-                  <label for="card-number">Номер карты</label>
-                  <div class="card-input-wrapper">
-                    <span class="card-type-icon">
-                      <i :class="cardTypeIcon"></i>
-                    </span>
-                    <input
-                      id="card-number"
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      v-model="paymentData.cardNumber"
-                      maxlength="19"
-                      @input="debouncedValidateCardNumber"
-                      :class="{ 'input-error': paymentData.cardError }"
-                      aria-describedby="card-error"
-                      autocomplete="cc-number"
-                    />
-                  </div>
-                  <p v-if="paymentData.cardError" id="card-error" class="error-text">{{ paymentData.cardError }}</p>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group half-width">
-                    <label for="expiry-date">Срок действия</label>
-                    <input
-                      id="expiry-date"
-                      type="text"
-                      placeholder="ММ/ГГ"
-                      v-model="paymentData.expiryDate"
-                      maxlength="5"
-                      @input="debouncedValidateExpiryDate"
-                      :class="{ 'input-error': paymentData.expiryError }"
-                      aria-describedby="expiry-error"
-                      autocomplete="cc-exp"
-                    />
-                    <p v-if="paymentData.expiryError" id="expiry-error" class="error-text">{{ paymentData.expiryError }}</p>
-                  </div>
-                  <div class="form-group half-width">
-                    <label for="cvv">CVV/CVC</label>
-                    <input
-                      id="cvv"
-                      type="password"
-                      placeholder="•••"
-                      v-model="paymentData.cvv"
-                      maxlength="3"
-                      @input="debouncedValidateCvv"
-                      :class="{ 'input-error': paymentData.cvvError }"
-                      aria-describedby="cvv-error"
-                      autocomplete="cc-csc"
-                    />
-                    <p v-if="paymentData.cvvError" id="cvv-error" class="error-text">{{ paymentData.cvvError }}</p>
-                  </div>
-                </div>
-
-                <div class="payment-actions">
-                  <button
-                    class="btn-primary"
-                    @click="validatePayment"
-                    :disabled="isPaymentLoading || !isPaymentValid || paymentData.retryCount >= 3"
-                  >
-                    {{ isPaymentLoading ? 'Обработка...' : 'Оплатить' }}
-                  </button>
-                  <button
-                    v-if="paymentData.paymentError && paymentData.retryCount < 3"
-                    class="btn-secondary"
-                    @click="retryPayment"
-                  >
-                    Повторить оплату
-                  </button>
-                </div>
-                <p v-if="paymentData.paymentError" class="error-text" aria-live="polite">
-                  {{ paymentData.paymentError }} (Попытка {{ paymentData.retryCount }}/3)
-                </p>
+            <div class="payment-form">
+              <div class="form-group">
+                <label for="card-number">Номер карты</label>
+                <input
+                  id="card-number"
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  v-model="paymentData.cardNumber"
+                  maxlength="19"
+                  @input="formatCardNumber"
+                  :class="{ 'input-error': paymentData.cardError }"
+                  @blur="validateCardNumber"
+                  autocomplete="cc-number"
+                />
+                <p v-if="paymentData.cardError" class="error-text">{{ paymentData.cardError }}</p>
               </div>
-            </transition>
 
-            <!-- Apple Pay / SberPay Placeholder -->
-            <transition name="fade">
-              <div v-if="paymentData.method !== 'card'" class="alternative-payment">
-                <p>Нажмите кнопку ниже для оплаты через {{ paymentData.method === 'applepay' ? 'Apple Pay' : 'SberPay' }}.</p>
-                <button
-                  class="btn-primary"
-                  @click="validatePayment"
-                  :disabled="isPaymentLoading"
-                >
-                  {{ isPaymentLoading ? 'Обработка...' : `Оплатить через ${paymentData.method === 'applepay' ? 'Apple Pay' : 'SberPay'}` }}
-                </button>
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <label for="expiry-date">Срок действия</label>
+                  <input
+                    id="expiry-date"
+                    type="text"
+                    placeholder="ММ/ГГ"
+                    v-model="paymentData.expiryDate"
+                    maxlength="5"
+                    @input="formatExpiryDate"
+                    :class="{ 'input-error': paymentData.expiryError }"
+                    @blur="validateExpiryDate"
+                    autocomplete="cc-exp"
+                  />
+                  <p v-if="paymentData.expiryError" class="error-text">{{ paymentData.expiryError }}</p>
+                </div>
+                <div class="form-group half-width">
+                  <label for="cvv">CVV/CVC</label>
+                  <input
+                    id="cvv"
+                    type="password"
+                    placeholder="•••"
+                    v-model="paymentData.cvv"
+                    maxlength="3"
+                    :class="{ 'input-error': paymentData.cvvError }"
+                    @blur="validateCvv"
+                    autocomplete="cc-csc"
+                  />
+                  <p v-if="paymentData.cvvError" class="error-text">{{ paymentData.cvvError }}</p>
+                </div>
               </div>
-            </transition>
+
+              <button
+                class="btn-pay"
+                @click="initiatePayment"
+                :disabled="isPaymentLoading || !isPaymentValid"
+              >
+                {{ isPaymentLoading ? 'Обработка...' : 'Оплатить' }}
+              </button>
+              <p v-if="paymentData.paymentError" class="error-text">{{ paymentData.paymentError }}</p>
+            </div>
           </template>
 
-          <!-- 3D Secure Modal -->
-          <div v-if="show3DSModal" class="confirmation-screen">
-            <h3>Подтверждение 3D Secure</h3>
-            <p>Введите код подтверждения, отправленный на ваш телефон или email.</p>
-            <div v-if="isPaymentLoading" class="loading-spinner"></div>
+          <!-- Code Verification -->
+          <div v-if="showCodeInput" class="code-confirmation">
+            <h3>Подтверждение оплаты</h3>
+            <p>Код подтверждения отправлен на ваш номер или email.</p>
             <div class="form-group">
-              <label for="3ds-code">Код подтверждения</label>
+              <label for="confirmation-code">Код подтверждения</label>
               <input
-                id="3ds-code"
+                id="confirmation-code"
                 type="text"
-                v-model="paymentData.threeDSCode"
+                v-model="paymentData.confirmationCode"
                 maxlength="6"
-                :class="{ 'input-error': paymentData.threeDSError }"
+                placeholder="123456"
+                :class="{ 'input-error': paymentData.codeError }"
                 :disabled="isPaymentLoading"
               />
-              <p v-if="paymentData.threeDSError" class="error-text">{{ paymentData.threeDSError }}</p>
+              <p v-if="paymentData.codeError" class="error-text">{{ paymentData.codeError }}</p>
             </div>
             <button
-              class="btn-primary"
-              @click="confirm3DS"
-              :disabled="isPaymentLoading || !paymentData.threeDSCode"
+              class="btn-confirm"
+              @click="confirmPayment"
+              :disabled="isPaymentLoading || !paymentData.confirmationCode"
             >
               {{ isPaymentLoading ? 'Подтверждение...' : 'Подтвердить' }}
             </button>
@@ -191,38 +132,9 @@
               <p><strong>Сумма:</strong> {{ currentBookingTrip.cost }} ₽</p>
               <p><strong>Номер транзакции:</strong> {{ transactionId }}</p>
               <p><strong>Дата:</strong> {{ transactionDate }}</p>
-              <p><strong>Способ оплаты:</strong> {{ paymentMethodDisplay }} **** {{ paymentData.method === 'card' ? paymentData.cardNumber.slice(-4) : 'XXXX' }}</p>
+              <p><strong>Способ оплаты:</strong> Карта **** {{ paymentData.cardNumber.slice(-4) }}</p>
             </div>
-            <button class="btn-primary" @click="proceedToBooking">Продолжить</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Booking Confirmation Modal -->
-      <div v-if="showBookingModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-          <button class="modal-close" @click="closeModal" aria-label="Закрыть">×</button>
-          <h3>Подтверждение бронирования</h3>
-
-          <div class="booking-details">
-            <h4>Детали поездки:</h4>
-            <p><strong>Маршрут:</strong> {{ currentBookingTrip.departure_location }} → {{ currentBookingTrip.arrival_location }}</p>
-            <p><strong>Дата:</strong> {{ formatDateTime(currentBookingTrip.departure_time) }}</p>
-            <p><strong>Места:</strong> {{ searchParams.passengers }}</p>
-            <p><strong>Стоимость:</strong> {{ currentBookingTrip.cost }} ₽</p>
-            <p><strong>Водитель:</strong> {{ currentBookingTrip.name }} {{ currentBookingTrip.surname }}</p>
-            <p><strong>Автомобиль:</strong> {{ currentBookingTrip.brand }} {{ currentBookingTrip.mark }} ({{ currentBookingTrip.car_year }})</p>
-          </div>
-
-          <div class="booking-actions">
-            <button class="btn-secondary" @click="closeModal">Отмена</button>
-            <button
-              class="btn-primary"
-              @click="confirmBooking"
-              :disabled="isBookingLoading"
-            >
-              {{ isBookingLoading ? 'Бронирование...' : 'Подтвердить' }}
-            </button>
+            <button class="btn-close" @click="closeModal">Закрыть</button>
           </div>
         </div>
       </div>
@@ -405,7 +317,7 @@
                 <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
                 <div class="passenger-meta">
                   <span class="passenger-gender" :class="passenger.gender">
-                    {{ passenger.gender === 'male' ? 'Мужчина' : passenger.gender === 'female' ? 'Женщина' : 'Не указан' }}
+                    {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
                   </span>
                   <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
                   <span v-if="passenger.passenger_rating" class="passenger-rating">
@@ -440,253 +352,9 @@ import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { API_CONFIG } from "@/config/api";
-import debounce from "lodash.debounce";
-
-const paymentMixin = {
-  data() {
-    return {
-      paymentData: {
-        method: "card",
-        cardNumber: "",
-        expiryDate: "",
-        cvv: "",
-        cardError: "",
-        expiryError: "",
-        cvvError: "",
-        threeDSCode: "",
-        threeDSError: "",
-        paymentError: "",
-        retryCount: 0,
-      },
-      cardType: "",
-      cardTypeIcon: "",
-      transactionId: "",
-      transactionDate: "",
-      isPaymentLoading: false,
-    };
-  },
-  computed: {
-    isPaymentValid() {
-      if (this.paymentData.method !== "card") return true;
-      return (
-        !this.paymentData.cardError &&
-        !this.paymentData.expiryError &&
-        !this.paymentData.cvvError &&
-        this.paymentData.cardNumber &&
-        this.paymentData.expiryDate &&
-        this.paymentData.cvv
-      );
-    },
-    paymentMethodDisplay() {
-      switch (this.paymentData.method) {
-        case "applepay":
-          return "Apple Pay";
-        case "sberpay":
-          return "SberPay";
-        default:
-          return this.cardType || "Карта";
-      }
-    },
-    isApplePayAvailable() {
-      return typeof window.ApplePaySession !== "undefined";
-    },
-  },
-  methods: {
-    selectPaymentMethod(method) {
-      this.paymentData.method = method;
-      this.resetPaymentErrors();
-    },
-    resetPaymentErrors() {
-      this.paymentData.cardError = "";
-      this.paymentData.expiryError = "";
-      this.paymentData.cvvError = "";
-      this.paymentData.threeDSError = "";
-      this.paymentData.paymentError = "";
-    },
-    retryPayment() {
-      this.resetPaymentErrors();
-      this.paymentData.cardNumber = "";
-      this.paymentData.expiryDate = "";
-      this.paymentData.cvv = "";
-    },
-    detectCardType() {
-      const cleaned = this.paymentData.cardNumber.replace(/\s/g, "");
-      if (/^4/.test(cleaned)) {
-        this.cardType = "Visa";
-        this.cardTypeIcon = "fas fa-cc-visa";
-      } else if (/^5[1-5]/.test(cleaned)) {
-        this.cardType = "MasterCard";
-        this.cardTypeIcon = "fas fa-cc-mastercard";
-      } else {
-        this.cardType = "";
-        this.cardTypeIcon = "";
-      }
-    },
-    validateCardNumber() {
-      const cleaned = this.paymentData.cardNumber.replace(/\s/g, "");
-      if (!cleaned) {
-        this.paymentData.cardError = "Введите номер карты";
-        return;
-      }
-      if (!/^\d{16}$/.test(cleaned)) {
-        this.paymentData.cardError = "Введите 16 цифр";
-        return;
-      }
-      let sum = 0;
-      let isEven = false;
-      for (let i = cleaned.length - 1; i >= 0; i--) {
-        let digit = parseInt(cleaned[i], 10);
-        if (isEven) {
-          digit *= 2;
-          if (digit > 9) digit -= 9;
-        }
-        sum += digit;
-        isEven = !isEven;
-      }
-      this.paymentData.cardError = sum % 10 === 0 ? "" : "Неверный номер карты";
-    },
-    validateExpiryDate() {
-      const match = this.paymentData.expiryDate.match(/^(\d{2})\/(\d{2})$/);
-      if (!match) {
-        this.paymentData.expiryError = "Формат: ММ/ГГ";
-        return;
-      }
-      const month = parseInt(match[1], 10);
-      const year = parseInt(match[2], 10) + 2000;
-      const now = new Date();
-      const expiry = new Date(year, month - 1);
-      this.paymentData.expiryError = month >= 1 && month <= 12 && expiry >= now ? "" : "Неверная дата";
-    },
-    validateCvv() {
-      this.paymentData.cvvError = /^\d{3}$/.test(this.paymentData.cvv) ? "" : "Введите 3 цифры";
-    },
-    formatCardNumber() {
-      this.paymentData.cardNumber = this.paymentData.cardNumber
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim();
-    },
-    formatExpiryDate() {
-      this.paymentData.expiryDate = this.paymentData.expiryDate
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d)/, "$1/$2")
-        .substring(0, 5);
-    },
-    async validatePayment() {
-      if (this.paymentData.method === "card" && !this.isPaymentValid) {
-        this.$notify({ title: "Ошибка", text: "Проверьте данные карты", type: "error" });
-        return;
-      }
-      this.isPaymentLoading = true;
-      this.paymentData.retryCount++;
-      try {
-        let response;
-        if (this.paymentData.method === "card") {
-          response = await axios.post(
-            API_CONFIG.BASE_URL + "/payment/process",
-            {
-              cardNumber: this.paymentData.cardNumber.replace(/\s/g, ""),
-              expiryDate: this.paymentData.expiryDate,
-              cvv: this.paymentData.cvv,
-              amount: this.currentBookingTrip.cost,
-              currency: "RUB",
-              tripId: this.currentBookingTrip.id,
-            },
-            { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
-          );
-        } else if (this.paymentData.method === "applepay") {
-          if (!this.isApplePayAvailable) throw new Error("Apple Pay недоступен");
-          response = await axios.post(
-            API_CONFIG.BASE_URL + "/payment/applepay",
-            {
-              amount: this.currentBookingTrip.cost,
-              currency: "RUB",
-              tripId: this.currentBookingTrip.id,
-            },
-            { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
-          );
-        } else if (this.paymentData.method === "sberpay") {
-          response = await axios.post(
-            API_CONFIG.BASE_URL + "/payment/sberpay",
-            {
-              amount: this.currentBookingTrip.cost,
-              currency: "RUB",
-              tripId: this.currentBookingTrip.id,
-            },
-            { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
-          );
-        }
-
-        if (response.data.requires3DS && this.paymentData.method === "card") {
-          this.show3DSModal = true;
-        } else if (response.data.success) {
-          this.transactionId = response.data.transactionId || `TXN-${Date.now()}`;
-          this.transactionDate = new Date().toLocaleString(this.locale);
-          this.showPaymentConfirmation = true;
-        } else {
-          throw new Error(response.data.message || "Ошибка обработки оплаты");
-        }
-      } catch (error) {
-        let errorMessage = "Оплата не удалась";
-        if (error.response?.data?.code) {
-          switch (error.response.data.code) {
-            case "INSUFFICIENT_FUNDS":
-              errorMessage = "Недостаточно средств";
-              break;
-            case "INVALID_CARD":
-              errorMessage = "Неверные данные карты";
-              break;
-            case "DECLINED":
-              errorMessage = "Оплата отклонена";
-              break;
-          }
-        } else if (error.message === "Apple Pay недоступен") {
-          errorMessage = "Apple Pay недоступен";
-        } else {
-          errorMessage = error.message || "Ошибка сервера";
-        }
-        this.paymentData.paymentError = errorMessage;
-        this.$notify({ title: "Ошибка", text: errorMessage, type: "error" });
-      } finally {
-        this.isPaymentLoading = false;
-      }
-    },
-    async confirm3DS() {
-      if (!/^\d{6}$/.test(this.paymentData.threeDSCode)) {
-        this.paymentData.threeDSError = "Введите 6-значный код";
-        return;
-      }
-      this.isPaymentLoading = true;
-      try {
-        const response = await axios.post(
-          API_CONFIG.BASE_URL + "/payment/confirm-3ds",
-          {
-            transactionId: this.transactionId,
-            threeDSCode: this.paymentData.threeDSCode,
-          },
-          { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
-        );
-        if (response.data.success) {
-          this.transactionId = response.data.transactionId || this.transactionId;
-          this.transactionDate = new Date().toLocaleString(this.locale);
-          this.show3DSModal = false;
-          this.showPaymentConfirmation = true;
-        } else {
-          throw new Error(response.data.message || "Ошибка подтверждения 3D Secure");
-        }
-      } catch (error) {
-        this.paymentData.threeDSError = error.message || "Ошибка подтверждения 3D Secure";
-        this.$notify({ title: "Ошибка", text: this.paymentData.threeDSError, type: "error" });
-      } finally {
-        this.isPaymentLoading = false;
-      }
-    },
-  },
-};
 
 export default {
   components: { AppNavbar },
-  mixins: [paymentMixin],
   data() {
     return {
       searchParams: { from: "", to: "", date: "", passengers: 1 },
@@ -701,15 +369,26 @@ export default {
       showPassengersModal: false,
       showOnlyMyBookings: false,
       showPaymentModal: false,
-      showBookingModal: false,
+      showCodeInput: false,
       showPaymentConfirmation: false,
-      show3DSModal: false,
       currentBookingTrip: null,
       passengers: [],
       currentLocation: "",
       modalLocationType: "departure",
-      isBookingLoading: false,
-      destination: "",
+      isPaymentLoading: false,
+      paymentData: {
+        cardNumber: "",
+        expiryDate: "",
+        cvv: "",
+        confirmationCode: "",
+        cardError: "",
+        expiryError: "",
+        cvvError: "",
+        codeError: "",
+        paymentError: "",
+      },
+      transactionId: "",
+      transactionDate: "",
       locale: "ru-RU",
     };
   },
@@ -721,6 +400,16 @@ export default {
     },
     totalBookedSeats() {
       return this.filteredPassengers.reduce((sum, p) => sum + p.seats_booked, 0);
+    },
+    isPaymentValid() {
+      return (
+        !this.paymentData.cardError &&
+        !this.paymentData.expiryError &&
+        !this.paymentData.cvvError &&
+        this.paymentData.cardNumber &&
+        this.paymentData.expiryDate &&
+        this.paymentData.cvv
+      );
     },
   },
   watch: {
@@ -737,9 +426,6 @@ export default {
   created() {
     this.loadSearchParams();
     this.fetchTrips();
-    this.debouncedValidateCardNumber = debounce(this.validateCardNumber, 300);
-    this.debouncedValidateExpiryDate = debounce(this.validateExpiryDate, 300);
-    this.debouncedValidateCvv = debounce(this.validateCvv, 300);
   },
   methods: {
     async loadSearchParams() {
@@ -753,7 +439,6 @@ export default {
             date: parsed.date || parsed.trip_date || "",
             passengers: parsed.passengers || parsed.seats_needed || 1,
           };
-          this.destination = this.searchParams.to;
         }
       } catch (error) {
         console.error("Ошибка загрузки параметров поиска:", error);
@@ -836,17 +521,13 @@ export default {
     },
     formatDate(dateString) {
       if (!dateString) return "";
-      const options = this.locale === "en-US"
-        ? { year: "numeric", month: "short", day: "numeric" }
-        : { year: "numeric", month: "long", day: "numeric" };
+      const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(dateString).toLocaleDateString(this.locale, options);
     },
     formatDateTime(datetimeString) {
       if (!datetimeString) return "";
       const date = new Date(datetimeString);
-      const options = this.locale === "en-US"
-        ? { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true }
-        : { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+      const options = { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
       return date.toLocaleString(this.locale, options);
     },
     calculateAge(birthDate) {
@@ -878,59 +559,188 @@ export default {
       this.currentBookingTrip = trip;
       this.showPaymentModal = true;
     },
-    proceedToBooking() {
-      this.showPaymentModal = false;
-      this.showPaymentConfirmation = false;
-      this.showBookingModal = true;
+    validateCardNumber() {
+      const cleaned = this.paymentData.cardNumber.replace(/\s/g, "");
+      if (!cleaned) {
+        this.paymentData.cardError = "Введите номер карты";
+        return;
+      }
+      if (!/^\d{16}$/.test(cleaned)) {
+        this.paymentData.cardError = "Введите 16 цифр";
+        return;
+      }
+      let sum = 0;
+      let isEven = false;
+      for (let i = cleaned.length - 1; i >= 0; i--) {
+        let digit = parseInt(cleaned[i], 10);
+        if (isEven) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+        isEven = !isEven;
+      }
+      this.paymentData.cardError = sum % 10 === 0 ? "" : "Неверный номер карты";
     },
-    async confirmBooking() {
-      this.isBookingLoading = true;
+    validateExpiryDate() {
+      const match = this.paymentData.expiryDate.match(/^(\d{2})\/(\d{2})$/);
+      if (!match) {
+        this.paymentData.expiryError = "Формат: ММ/ГГ";
+        return;
+      }
+      const month = parseInt(match[1], 10);
+      const year = parseInt(match[2], 10) + 2000;
+      const now = new Date();
+      const expiry = new Date(year, month - 1);
+      this.paymentData.expiryError = month >= 1 && month <= 12 && expiry >= now ? "" : "Неверная дата";
+    },
+    validateCvv() {
+      this.paymentData.cvvError = /^\d{3}$/.test(this.paymentData.cvv) ? "" : "Введите 3 цифры";
+    },
+    formatCardNumber() {
+      this.paymentData.cardNumber = this.paymentData.cardNumber
+        .replace(/\s/g, "")
+        .replace(/(\d{4})/g, "$1 ")
+        .trim();
+    },
+    formatExpiryDate() {
+      this.paymentData.expiryDate = this.paymentData.expiryDate
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "$1/$2")
+        .substring(0, 5);
+    },
+    async initiatePayment() {
+      if (!this.isPaymentValid) {
+        this.$notify({ title: "Ошибка", text: "Проверьте данные карты", type: "error" });
+        return;
+      }
+
+      this.isPaymentLoading = true;
       try {
         const token = Cookies.get("token");
-        const trip = this.currentBookingTrip;
+        const userResponse = await axios.get(API_CONFIG.BASE_URL + "/user/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const user = userResponse.data.user;
 
-        const chatResponse = await axios.post(
-          API_CONFIG.BASE_URL + "/chat/create",
-          { trip_id: trip.id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const chat_id = chatResponse.data.chatId;
-
-        const bookingResponse = await axios.post(
-          API_CONFIG.BASE_URL + "/booking/create",
+        // Step 1: Initiate payment with Tinkoff
+        const paymentResponse = await axios.post(
+          API_CONFIG.BASE_URL + "/payment/initiate",
           {
-            trip_id: trip.id,
-            chat_id,
-            seats_booked: this.searchParams.passengers,
-            transaction_id: this.transactionId,
+            amount: this.currentBookingTrip.cost * 100, // Tinkoff expects amount in kopecks
+            currency: "RUB",
+            orderId: `ORDER-${Date.now()}`,
+            customerEmail: user.email,
+            customerPhone: user.phone,
+            cardNumber: this.paymentData.cardNumber.replace(/\s/g, ""),
+            expiryDate: this.paymentData.expiryDate,
+            cvv: this.paymentData.cvv,
+            description: `Payment for trip ${this.currentBookingTrip.id}`,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const updatedTrip = bookingResponse.data.trip;
-        const index = this.trips.findIndex((t) => t.id === updatedTrip.id);
-        if (index !== -1) {
-          this.trips.splice(index, 1, updatedTrip);
-          this.sortTrips();
+        if (paymentResponse.data.success && paymentResponse.data.requiresConfirmation) {
+          // Step 2: Send SMS with verification code
+          await axios.post(
+            API_CONFIG.BASE_URL + "/sms/send",
+            {
+              phone: user.phone,
+              message: `Ваш код подтверждения оплаты: ${paymentResponse.data.verificationCode}`,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          this.transactionId = paymentResponse.data.paymentId;
+          this.showCodeInput = true;
+        } else if (paymentResponse.data.success) {
+          // Payment succeeded without confirmation (unlikely for real scenarios)
+          this.transactionId = paymentResponse.data.paymentId;
+          this.transactionDate = new Date().toLocaleString(this.locale);
+          await this.createBookingAndChat();
+          this.showPaymentConfirmation = true;
+        } else {
+          throw new Error(paymentResponse.data.message || "Ошибка инициации платежа");
         }
-
-        this.$notify({
-          title: "Успех!",
-          text: `Забронировано ${this.searchParams.passengers} мест`,
-          type: "success",
-        });
-
-        this.closeModal();
-        this.$router.push(`/chat/${trip.driver_id}`);
       } catch (error) {
-        this.$notify({
-          title: "Ошибка",
-          text: this.getErrorMessage(error),
-          type: "error",
-        });
+        this.paymentData.paymentError = error.message || "Ошибка оплаты";
+        this.$notify({ title: "Ошибка", text: this.paymentData.paymentError, type: "error" });
       } finally {
-        this.isBookingLoading = false;
+        this.isPaymentLoading = false;
       }
+    },
+    async confirmPayment() {
+      if (!/^\d{6}$/.test(this.paymentData.confirmationCode)) {
+        this.paymentData.codeError = "Введите 6-значный код";
+        return;
+      }
+
+      this.isPaymentLoading = true;
+      try {
+        const token = Cookies.get("token");
+        const confirmResponse = await axios.post(
+          API_CONFIG.BASE_URL + "/payment/confirm",
+          {
+            paymentId: this.transactionId,
+            confirmationCode: this.paymentData.confirmationCode,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (confirmResponse.data.success) {
+          this.transactionDate = new Date().toLocaleString(this.locale);
+          await this.createBookingAndChat();
+          this.showCodeInput = false;
+          this.showPaymentConfirmation = true;
+        } else {
+          throw new Error(confirmResponse.data.message || "Неверный код подтверждения");
+        }
+      } catch (error) {
+        this.paymentData.codeError = error.message || "Ошибка подтверждения";
+        this.$notify({ title: "Ошибка", text: this.paymentData.codeError, type: "error" });
+      } finally {
+        this.isPaymentLoading = false;
+      }
+    },
+    async createBookingAndChat() {
+      const token = Cookies.get("token");
+      const trip = this.currentBookingTrip;
+
+      // Create chat
+      const chatResponse = await axios.post(
+        API_CONFIG.BASE_URL + "/chat/create",
+        { trip_id: trip.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const chatId = chatResponse.data.chatId;
+
+      // Create booking
+      const bookingResponse = await axios.post(
+        API_CONFIG.BASE_URL + "/booking/create",
+        {
+          trip_id: trip.id,
+          chat_id: chatId,
+          seats_booked: this.searchParams.passengers,
+          transaction_id: this.transactionId,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedTrip = bookingResponse.data.trip;
+      const index = this.trips.findIndex((t) => t.id === updatedTrip.id);
+      if (index !== -1) {
+        this.trips.splice(index, 1, updatedTrip);
+        this.sortTrips();
+      }
+
+      this.$notify({
+        title: "Успех!",
+        text: `Забронировано ${this.searchParams.passengers} мест`,
+        type: "success",
+      });
+
+      // Redirect to chat
+      this.$router.push(`/chat/${trip.driver_id}`);
     },
     async showPassengers(trip, locationType) {
       this.modalLocationType = locationType;
@@ -958,28 +768,23 @@ export default {
     },
     closeModal() {
       this.showPaymentModal = false;
-      this.showBookingModal = false;
       this.showPassengersModal = false;
+      this.showCodeInput = false;
       this.showPaymentConfirmation = false;
-      this.show3DSModal = false;
       this.paymentData = {
-        method: "card",
         cardNumber: "",
         expiryDate: "",
         cvv: "",
+        confirmationCode: "",
         cardError: "",
         expiryError: "",
         cvvError: "",
-        threeDSCode: "",
-        threeDSError: "",
+        codeError: "",
         paymentError: "",
-        retryCount: 0,
       };
       this.currentBookingTrip = null;
       this.transactionId = "";
       this.transactionDate = "";
-      this.cardType = "";
-      this.cardTypeIcon = "";
     },
     showTripDetails(trip) {
       this.$router.push(`/trip/${trip.id}`);
@@ -1040,48 +845,6 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 10px;
   font-size: 14px;
-}
-
-.payment-methods {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.payment-method {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: #fff;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.payment-method.active {
-  border-color: var(--primary-color);
-  background: #e6f3ff;
-}
-
-.payment-method:hover:not(:disabled) {
-  background: #f5f9fd;
-}
-
-.payment-method:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.payment-method i {
-  margin-right: 8px;
-  font-size: 16px;
-}
-
-.payment-actions {
-  display: flex;
-  gap: 10px;
 }
 
 .sort-filter-container {
@@ -1364,12 +1127,6 @@ h1 {
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   position: relative;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-close {
@@ -1430,19 +1187,6 @@ h1 {
   margin-top: 20px;
 }
 
-.card-input-wrapper {
-  position: relative;
-}
-
-.card-type-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  color: #666;
-}
-
 .form-group {
   margin-bottom: 20px;
 }
@@ -1477,10 +1221,6 @@ input:focus {
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-#card-number {
-  padding-left: 40px;
-}
-
 .input-error {
   border-color: var(--error-color);
 }
@@ -1491,24 +1231,56 @@ input:focus {
   margin-top: 5px;
 }
 
-.alternative-payment {
+.btn-pay {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-pay:hover {
+  background-color: #27ae60;
+}
+
+.btn-pay:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.code-confirmation {
   text-align: center;
   padding: 20px;
+}
+
+.code-confirmation input {
+  width: 150px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.btn-confirm {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-confirm:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
 }
 
 .confirmation-screen {
   text-align: center;
   padding: 20px;
-}
-
-.loading-spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid var(--primary-color);
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  margin: 15px auto;
 }
 
 .confirmation-icon {
@@ -1542,22 +1314,13 @@ input:focus {
   font-size: 14px;
 }
 
-.booking-details {
-  background: var(--secondary-color);
-  padding: 15px;
+.btn-close {
+  padding: 10px 20px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
   border-radius: 6px;
-  margin-bottom: 20px;
-}
-
-.booking-details p {
-  margin: 6px 0;
-  font-size: 14px;
-}
-
-.booking-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  cursor: pointer;
 }
 
 .passengers-list {
@@ -1689,16 +1452,6 @@ input:focus {
   transform: translateY(-10px);
 }
 
-.fade-enter-active,
-.fade-exit-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-exit-to {
-  opacity: 0;
-}
-
 @media (max-width: 768px) {
   .search-results {
     padding: 15px;
@@ -1734,18 +1487,6 @@ input:focus {
     gap: 20px;
   }
   .half-width {
-    width: 100%;
-  }
-  .booking-actions {
-    flex-direction: column;
-  }
-  .booking-actions button {
-    width: 100%;
-  }
-  .payment-methods {
-    flex-direction: column;
-  }
-  .payment-method {
     width: 100%;
   }
 }
