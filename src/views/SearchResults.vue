@@ -17,17 +17,17 @@
 
       <!-- Payment Modal -->
       <div v-if="showPaymentModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-          <button class="modal-close" @click="closeModal" aria-label="Закрыть">×</button>
+        <div class="modal-content" role="dialog" aria-labelledby="payment-modal-title">
+          <button class="modal-close" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
 
           <template v-if="!showPaymentConfirmation">
-            <h3>Оплата поездки</h3>
+            <h3 id="payment-modal-title">Оплата поездки</h3>
 
             <div class="safety-notification">
               <div class="safety-icon">⚠️</div>
               <div class="safety-content">
                 <h4>Безопасность превыше всего!</h4>
-                <ul class="safety-check Instructor">
+                <ul class="safety-checklist">
                   <li>Убедитесь, что номер автомобиля совпадает с приложением</li>
                   <li>Проверьте марку и модель автомобиля</li>
                   <li>Подтвердите личность водителя</li>
@@ -48,8 +48,11 @@
                   maxlength="19"
                   @input="formatCardNumber"
                   :class="{ 'input-error': paymentErrors.cardNumber }"
+                  aria-describedby="card-number-error"
                 />
-                <div v-if="paymentErrors.cardNumber" class="error-text">{{ paymentErrors.cardNumber }}</div>
+                <div v-if="paymentErrors.cardNumber" id="card-number-error" class="error-text">
+                  {{ paymentErrors.cardNumber }}
+                </div>
               </div>
               <div class="form-row">
                 <div class="form-group half-width">
@@ -62,8 +65,11 @@
                     maxlength="5"
                     @input="formatExpiry"
                     :class="{ 'input-error': paymentErrors.expiry }"
+                    aria-describedby="card-expiry-error"
                   />
-                  <div v-if="paymentErrors.expiry" class="error-text">{{ paymentErrors.expiry }}</div>
+                  <div v-if="paymentErrors.expiry" id="card-expiry-error" class="error-text">
+                    {{ paymentErrors.expiry }}
+                  </div>
                 </div>
                 <div class="form-group half-width">
                   <label for="card-cvv">CVV</label>
@@ -75,15 +81,20 @@
                     maxlength="3"
                     @input="formatCvv"
                     :class="{ 'input-error': paymentErrors.cvv }"
+                    aria-describedby="card-cvv-error"
                   />
-                  <div v-if="paymentErrors.cvv" class="error-text">{{ paymentErrors.cvv }}</div>
+                  <div v-if="paymentErrors.cvv" id="card-cvv-error" class="error-text">
+                    {{ paymentErrors.cvv }}
+                  </div>
                 </div>
               </div>
               <button
                 class="btn-pay"
                 @click="processDemoPayment"
                 :disabled="isPaymentProcessing"
+                aria-label="Оплатить поездку"
               >
+                <span v-if="isPaymentProcessing" class="spinner small"></span>
                 {{ isPaymentProcessing ? 'Обработка...' : 'Оплатить' }}
               </button>
               <div v-if="paymentError" class="error-message">
@@ -101,7 +112,9 @@
               <p><strong>Номер транзакции:</strong> {{ transactionId }}</p>
               <p><strong>Дата:</strong> {{ transactionDate }}</p>
             </div>
-            <button class="btn-close" @click="completeBooking">Перейти к поездке</button>
+            <button class="btn-close" @click="completeBooking" aria-label="Перейти к поездке">
+              Перейти к поездке
+            </button>
           </div>
         </div>
       </div>
@@ -110,8 +123,8 @@
       <div class="sort-filter-container">
         <div class="sort-controls">
           <div class="sort-select">
-            <label>Сортировать по:</label>
-            <select v-model="sortBy" @change="sortTrips">
+            <label for="sort-by">Сортировать по:</label>
+            <select id="sort-by" v-model="sortBy" @change="sortTrips" aria-label="Сортировать результаты">
               <option value="default">По умолчанию</option>
               <option value="experience">Стаж вождения</option>
               <option value="rating">Рейтинг</option>
@@ -121,10 +134,10 @@
             <span class="sort-icon">▼</span>
           </div>
         </div>
-        <div class="filter-toggle" @click="toggleFilters">
+        <button class="filter-toggle" @click="toggleFilters" aria-label="Открыть фильтры">
           <span>Фильтры</span>
           <span class="filter-icon">⚙️</span>
-        </div>
+        </button>
       </div>
 
       <!-- Additional Filters -->
@@ -132,23 +145,23 @@
         <div v-if="showFilters" class="additional-filters">
           <div class="filter-options">
             <label class="filter-option">
-              <input type="checkbox" v-model="filters.pets" />
+              <input type="checkbox" v-model="filters.pets" aria-label="Разрешены животные" />
               <span class="filter-icon">🐾</span>
               <span>Разрешены животные</span>
             </label>
             <label class="filter-option">
-              <input type="checkbox" v-model="filters.luggage" />
+              <input type="checkbox" v-model="filters.luggage" aria-label="Багаж" />
               <span class="filter-icon">🧳</span>
               <span>Багаж</span>
             </label>
             <label class="filter-option">
-              <input type="checkbox" v-model="filters.big_size_luggage" />
+              <input type="checkbox" v-model="filters.big_size_luggage" aria-label="Крупногабаритный багаж" />
               <span class="filter-icon">🧳</span>
               <span>Крупногабаритный багаж</span>
             </label>
             <label class="filter-option">
-              <input type="checkbox" v-model="filters.childSeat" />
-              <span clas="filter-icon">👶</span>
+              <input type="checkbox" v-model="filters.childSeat" aria-label="Детское кресло" />
+              <span class="filter-icon">👶</span>
               <span>Детское кресло</span>
             </label>
           </div>
@@ -164,20 +177,20 @@
       <!-- Error Message -->
       <div v-if="error" class="error-message">
         {{ error }}
-        <button @click="fetchTrips" class="btn-primary">Повторить</button>
+        <button @click="fetchTrips" class="btn-primary" aria-label="Повторить загрузку">Повторить</button>
       </div>
 
       <!-- Trip List -->
       <div class="trip-list">
         <div v-if="!loading && filteredTrips.length === 0" class="no-trips">
           <p>Поездки не найдены.</p>
-          <button @click="resetFilters" class="btn-primary">Сбросить фильтры</button>
+          <button @click="resetFilters" class="btn-primary" aria-label="Сбросить фильтры">Сбросить фильтры</button>
         </div>
 
         <div v-else v-for="(trip, index) in filteredTrips" :key="index" class="trip-item">
           <div class="trip-header">
             <div class="driver-info">
-              <router-link :to="`/driver/${trip.driver_id}`">
+              <router-link :to="`/driver/${trip.driver_id}`" :aria-label="`Профиль водителя ${trip.name} ${trip.surname}`">
                 <img
                   :src="trip.avatarUrl || '/images/default-avatar.jpg'"
                   alt="Аватар водителя"
@@ -204,9 +217,13 @@
             <div class="detail-row">
               <div class="detail-label">Маршрут:</div>
               <div class="detail-value route-info">
-                <span class="location-link" @click="showPassengers(trip, 'departure')">{{ trip.departure_location }}</span>
+                <button class="location-link" @click="showPassengers(trip, 'departure')" :aria-label="`Пассажиры на отправление из ${trip.departure_location}`">
+                  {{ trip.departure_location }}
+                </button>
                 <span class="route-arrow">→</span>
-                <span class="location-link" @click="showPassengers(trip, 'arrival')">{{ trip.arrival_location }}</span>
+                <button class="location-link" @click="showPassengers(trip, 'arrival')" :aria-label="`Пассажиры на прибытие в ${trip.arrival_location}`">
+                  {{ trip.arrival_location }}
+                </button>
               </div>
             </div>
             <div class="detail-row">
@@ -246,24 +263,26 @@
               class="btn-primary"
               @click="initiateBooking(trip)"
               :disabled="trip.available_seats < searchParams.passengers"
+              :aria-label="trip.available_seats >= searchParams.passengers ? 'Забронировать поездку' : 'Недостаточно мест'"
             >
               {{ trip.available_seats >= searchParams.passengers ? 'Забронировать' : 'Недостаточно мест' }}
             </button>
-            <button class="btn-secondary" @click="showTripDetails(trip)">Подробности</button>
+            <button class="btn-secondary" @click="showTripDetails(trip)" aria-label="Подробности поездки">Подробности</button>
           </div>
         </div>
       </div>
 
       <!-- Passengers Modal -->
       <div v-if="showPassengersModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-          <button class="modal-close" @click="closeModal" aria-label="Закрыть">×</button>
-          <h3>Пассажиры ({{ modalLocationType === 'departure' ? 'Отправление' : 'Прибытие' }})</h3>
+        <div class="modal-content" role="dialog" aria-labelledby="passengers-modal-title">
+          <button class="modal-close" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
+          <h3 id="passengers-modal-title">Пассажиры ({{ modalLocationType === 'departure' ? 'Отправление' : 'Прибытие' }})</h3>
           <p class="location-info">{{ currentLocation }}</p>
 
           <div class="passengers-filter">
             <label>
-              <input type="checkbox" v-model="showOnlyMyBookings" /> Показать только мои бронирования
+              <input type="checkbox" v-model="showOnlyMyBookings" aria-label="Показать только мои бронирования" />
+              Показать только мои бронирования
             </label>
           </div>
 
@@ -272,7 +291,7 @@
               <p>Пассажиры не забронированы.</p>
             </div>
             <div v-else v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
-              <router-link :to="`/profile/${passenger.user_id}`">
+              <router-link :to="`/profile/${passenger.user_id}`" :aria-label="`Профиль пассажира ${passenger.name} ${passenger.surname}`">
                 <img
                   :src="passenger.avatarUrl || '/images/default-avatar.jpg'"
                   alt="Аватар пассажира"
@@ -308,7 +327,7 @@
       </div>
 
       <div class="back-button-container">
-        <button class="btn-secondary" @click="goBack">← Назад</button>
+        <button class="btn-secondary" @click="goBack" aria-label="Вернуться назад">← Назад</button>
       </div>
     </div>
   </div>
@@ -555,31 +574,28 @@ export default {
       };
       let isValid = true;
 
-      // Validate card number (simple Luhn algorithm check)
       const cardNumber = this.paymentDetails.cardNumber.replace(/\s/g, "");
       if (!/^\d{16}$/.test(cardNumber)) {
-        this.paymentErrors.cardNumber = "Номер карты должен содержать 16 цифр";
+        this.paymentErrors.cardNumber = "Введите 16-значный номер карты";
         isValid = false;
       }
 
-      // Validate expiry
       const expiry = this.paymentDetails.expiry;
       if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-        this.paymentErrors.expiry = "Укажите срок действия в формате ММ/ГГ";
+        this.paymentErrors.expiry = "Введите срок действия в формате ММ/ГГ";
         isValid = false;
       } else {
         const [month, year] = expiry.split("/").map(Number);
         const currentYear = new Date().getFullYear() % 100;
         const currentMonth = new Date().getMonth() + 1;
         if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
-          this.paymentErrors.expiry = "Срок действия карты истек или неверный";
+          this.paymentErrors.expiry = "Срок действия истек или неверный";
           isValid = false;
         }
       }
 
-      // Validate CVV
       if (!/^\d{3}$/.test(this.paymentDetails.cvv)) {
-        this.paymentErrors.cvv = "CVV должен содержать 3 цифры";
+        this.paymentErrors.cvv = "Введите 3-значный CVV код";
         isValid = false;
       }
 
@@ -593,20 +609,15 @@ export default {
       this.isPaymentProcessing = true;
       this.paymentError = "";
 
-      // Simulate API call for payment processing
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
-
-        // Mock payment success (for demo purposes)
+        await new Promise((resolve) => setTimeout(resolve, 1500));
         const paymentData = {
           PaymentId: `DEMO-${Date.now()}`,
           Status: "succeeded",
         };
-
-        // Handle success
         this.handlePaymentSuccess(paymentData);
       } catch (error) {
-        this.paymentError = "Ошибка обработки платежа. Попробуйте снова.";
+        this.paymentError = "Не удалось обработать платеж. Попробуйте снова.";
         this.isPaymentProcessing = false;
         console.error("Ошибка демо-оплаты:", error);
       }
@@ -616,8 +627,6 @@ export default {
       this.transactionDate = new Date().toLocaleString(this.locale);
       this.showPaymentConfirmation = true;
       this.isPaymentProcessing = false;
-
-      // Send payment confirmation to server
       this.sendPaymentConfirmation(paymentData);
     },
     async sendPaymentConfirmation(paymentData) {
@@ -643,7 +652,6 @@ export default {
         const token = Cookies.get("token");
         const trip = this.currentBookingTrip;
 
-        // Create chat
         const chatResponse = await axios.post(
           API_CONFIG.BASE_URL + "/chat/create",
           { trip_id: trip.id },
@@ -651,7 +659,6 @@ export default {
         );
         const chatId = chatResponse.data.chatId;
 
-        // Create booking
         await axios.post(
           API_CONFIG.BASE_URL + "/booking/create",
           {
@@ -663,13 +670,8 @@ export default {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Refresh trips
         await this.fetchTrips();
-
-        // Close modal
         this.closeModal();
-
-        // Redirect to chat
         this.$router.push(`/chat/${chatId}`);
       } catch (error) {
         this.$notify({
@@ -735,190 +737,238 @@ export default {
 </script>
 
 <style scoped>
-/* Existing styles remain unchanged, only adding or modifying payment-related styles */
+/* Enhanced styles with improved UX and design */
 :root {
   --primary-color: #3498db;
-  --secondary-color: #ecf0f1;
+  --secondary-color: #f5f7fa;
   --success-color: #2ecc71;
   --error-color: #e74c3c;
-  --text-color: #333;
-  --border-color: #ddd;
-  --background-color: #fff;
+  --text-color: #2d3436;
+  --border-color: #e0e0e0;
+  --background-color: #ffffff;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
 }
 
 .search-results-container {
   font-family: 'Lora', sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
 }
 
 .search-results {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 20px;
 }
 
 h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 24px;
   color: var(--text-color);
+  text-align: center;
 }
 
 .search-params-container {
-  background: var(--secondary-color);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+  background: var(--background-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
 }
 
 .search-params {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  font-size: 14px;
+  gap: 16px;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.search-params p {
+  margin: 0;
+  line-height: 1.6;
 }
 
 .sort-filter-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 16px;
 }
 
 .sort-select {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-select label {
+  font-size: 16px;
+  color: var(--text-color);
 }
 
 .sort-select select {
-  padding: 8px 30px 8px 12px;
+  padding: 10px 36px 10px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
-  appearance: none;
+  background: var(--background-color);
+  transition: var(--transition);
+}
+
+.sort-select select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  outline: none;
 }
 
 .sort-icon {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 12px;
+  font-size: 14px;
+  color: var(--text-color);
 }
 
 .filter-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: var(--secondary-color);
-  border-radius: 4px;
+  padding: 10px 16px;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 16px;
+  color: var(--primary-color);
+  transition: var(--transition);
 }
 
 .filter-toggle:hover {
-  background: #e0e0e0;
+  background: var(--secondary-color);
+  border-color: var(--primary-color);
 }
 
 .additional-filters {
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border-color);
+  background: var(--background-color);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
 }
 
 .filter-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 16px;
 }
 
 .filter-option {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.filter-option input {
+  width: 18px;
+  height: 18px;
   cursor: pointer;
 }
 
 .trip-list {
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
 .trip-item {
+  background: var(--background-color);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  transition: box-shadow 0.3s;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
 }
 
 .trip-item:hover {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .trip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
 }
 
 .driver-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .driver-avatar {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--border-color);
 }
 
 .driver-name {
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text-color);
 }
 
 .driver-rating {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 14px;
-  color: #666;
+  color: #636e72;
 }
 
 .star {
-  color: #ffc107;
+  color: #f1c40f;
 }
 
 .car-info {
-  font-size: 14px;
-  color: #555;
+  font-size: 16px;
+  color: #636e72;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .trip-details {
   display: grid;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .detail-label {
-  color: #666;
+  color: #636e72;
   min-width: 120px;
+  font-weight: 500;
 }
 
 .detail-value {
@@ -930,80 +980,87 @@ h1 {
 .route-info {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   justify-content: flex-end;
 }
 
 .location-link {
   color: var(--primary-color);
+  background: none;
+  border: none;
   cursor: pointer;
+  font-size: 16px;
+  transition: var(--transition);
 }
 
 .location-link:hover {
   text-decoration: underline;
+  color: #2980b9;
 }
 
 .route-arrow {
-  color: #999;
+  color: #b2bec3;
 }
 
 .seats-price-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px dashed var(--border-color);
 }
 
 .seats-info {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  font-size: 16px;
 }
 
 .price-value {
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 20px;
   color: var(--success-color);
 }
 
 .price-per-person {
-  font-size: 12px;
-  color: #888;
+  font-size: 14px;
+  color: #636e72;
 }
 
 .trip-features {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .feature-tag {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: #e8f4fd;
   color: #135c8d;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .trip-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .btn-primary,
 .btn-secondary {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
   flex: 1;
   text-align: center;
 }
@@ -1016,21 +1073,24 @@ h1 {
 
 .btn-primary:hover {
   background: #2980b9;
+  transform: translateY(-2px);
 }
 
 .btn-primary:disabled {
-  background: #95a5a6;
+  background: #b2bec3;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
-  background: #fff;
+  background: var(--background-color);
   color: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  border: 2px solid var(--primary-color);
 }
 
 .btn-secondary:hover {
-  background: #f5f9fd;
+  background: #e8f4fd;
+  transform: translateY(-2px);
 }
 
 .modal-overlay {
@@ -1039,7 +1099,7 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1048,81 +1108,98 @@ h1 {
 
 .modal-content {
   background: var(--background-color);
-  border-radius: 8px;
-  padding: 25px;
+  border-radius: 16px;
+  padding: 32px;
   max-width: 600px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .modal-close {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
+  top: 16px;
+  right: 16px;
+  background: #dfe6e9;
   border: none;
-  font-size: 24px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
   cursor: pointer;
-  color: #777;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
 }
 
 .modal-close:hover {
-  color: var(--text-color);
+  background: #b2bec3;
+  color: #fff;
 }
 
 .safety-notification {
-  background: #fff8e1;
-  border-left: 4px solid #ffc107;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 4px;
+  background: #fff3cd;
+  border-left: 4px solid #ffca28;
+  padding: 20px;
+  margin-bottom: 24px;
+  border-radius: 8px;
   display: flex;
-  gap: 15px;
+  gap: 16px;
 }
 
 .safety-icon {
-  font-size: 24px;
-  color: #ff9800;
+  font-size: 28px;
+  color: #e67e22;
 }
 
 .safety-content h4 {
-  margin: 0 0 10px;
-  color: #e65100;
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #d35400;
 }
 
 .safety-checklist {
-  padding-left: 20px;
-  margin: 10px 0;
+  padding-left: 24px;
+  margin: 12px 0;
 }
 
 .safety-checklist li {
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 10px;
+  font-size: 16px;
   position: relative;
-  padding-left: 15px;
+  padding-left: 16px;
+  color: var(--text-color);
 }
 
 .safety-checklist li::before {
   content: "•";
-  color: #ff9800;
+  color: #e67e22;
   position: absolute;
   left: 0;
 }
 
 .payment-form {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-row {
   display: flex;
-  gap: 15px;
+  gap: 16px;
 }
 
 .half-width {
@@ -1132,65 +1209,85 @@ h1 {
 label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #555;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color);
 }
 
 input {
   width: 100%;
-  padding: 12px;
+  padding: 12px 16px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 16px;
+  background: #f9f9f9;
+  transition: var(--transition);
 }
 
 input:focus {
   border-color: var(--primary-color);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .input-error {
   border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
 .error-text {
   color: var(--error-color);
-  font-size: 12px;
-  margin-top: 5px;
+  font-size: 14px;
+  margin-top: 6px;
 }
 
 .btn-pay {
   width: 100%;
   padding: 14px;
-  background-color: var(--success-color);
-  color: white;
+  background: var(--success-color);
+  color: #fff;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
 }
 
 .btn-pay:hover {
-  background-color: #27ae60;
+  background: #27ae60;
+  transform: translateY(-2px);
 }
 
 .btn-pay:disabled {
-  background-color: #95a5a6;
+  background: #b2bec3;
   cursor: not-allowed;
+  transform: none;
+}
+
+.spinner.small {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.8s linear infinite;
 }
 
 .confirmation-screen {
   text-align: center;
-  padding: 20px;
+  padding: 24px;
 }
 
 .confirmation-icon {
   width: 80px;
   height: 80px;
-  margin: 0 auto 20px;
+  margin: 0 auto 24px;
   background: var(--success-color);
   color: #fff;
   border-radius: 50%;
@@ -1198,125 +1295,148 @@ input:focus {
   align-items: center;
   justify-content: center;
   font-size: 40px;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
 }
 
 .confirmation-text {
-  color: #666;
-  margin-bottom: 25px;
+  color: var(--text-color);
+  font-size: 18px;
+  margin-bottom: 24px;
 }
 
 .receipt-summary {
   background: var(--secondary-color);
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
   text-align: left;
 }
 
 .receipt-summary p {
-  margin: 6px 0;
-  font-size: 14px;
+  margin: 8px 0;
+  font-size: 16px;
+  color: var(--text-color);
 }
 
 .btn-close {
-  padding: 10px 20px;
-  background-color: #f1f1f1;
-  color: #333;
-  border: none;
-  border-radius: 6px;
+  padding: 12px 24px;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-close:hover {
+  background: #dfe6e9;
+  transform: translateY(-2px);
 }
 
 .passengers-list {
-  margin: 15px 0;
+  margin: 20px 0;
 }
 
 .passenger-item {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.passenger-item:hover {
+  background: var(--secondary-color);
+  border-radius: 8px;
 }
 
 .passenger-avatar {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
+  border: 2px solid var(--border-color);
 }
 
 .passenger-name {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text-color);
 }
 
 .passenger-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #666;
+  gap: 12px;
+  font-size: 14px;
+  color: #636e72;
 }
 
 .passenger-gender.male {
   background: #e3f2fd;
   color: #1565c0;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 .passenger-gender.female {
   background: #fce4ec;
   color: #ad1457;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 .passenger-rating {
-  color: #ff9800;
+  color: #f1c40f;
 }
 
 .passenger-details {
   display: flex;
-  gap: 15px;
-  font-size: 13px;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-color);
 }
 
 .passenger-comment {
   font-size: 14px;
-  color: #666;
+  color: #636e72;
   font-style: italic;
-  padding: 10px;
-  background: #f9f9f9;
-  border-radius: 5px;
-  margin-top: 5px;
+  padding: 12px;
+  background: var(--secondary-color);
+  border-radius: 8px;
+  margin-top: 8px;
 }
 
 .no-passengers {
   text-align: center;
-  padding: 20px;
-  color: #777;
+  padding: 24px;
+  color: #636e72;
+  font-size: 16px;
 }
 
 .passengers-summary {
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
   border-top: 1px solid var(--border-color);
-  font-size: 14px;
+  font-size: 16px;
+  color: var(--text-color);
 }
 
 .loading-indicator {
   text-align: center;
-  padding: 30px;
+  padding: 40px;
 }
 
 .spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid var(--primary-color);
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
 }
 
 @keyframes spin {
@@ -1328,20 +1448,22 @@ input:focus {
 .error-message {
   background: #ffebee;
   color: var(--error-color);
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
   text-align: center;
+  font-size: 16px;
 }
 
 .no-trips {
   text-align: center;
-  padding: 30px;
-  color: #777;
+  padding: 40px;
+  color: #636e72;
+  font-size: 16px;
 }
 
 .back-button-container {
-  margin-top: 20px;
+  margin-top: 24px;
   text-align: center;
 }
 
@@ -1353,12 +1475,12 @@ input:focus {
 .slide-fade-enter-from,
 .slide-fade-exit-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-12px);
 }
 
 @media (max-width: 768px) {
   .search-results {
-    padding: 15px;
+    padding: 20px 15px;
   }
   .search-params {
     grid-template-columns: 1fr;
@@ -1376,7 +1498,7 @@ input:focus {
   }
   .detail-row {
     flex-direction: column;
-    gap: 3px;
+    gap: 6px;
   }
   .detail-value {
     text-align: left;
@@ -1384,14 +1506,17 @@ input:focus {
   .seats-price-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
   .form-row {
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
   .half-width {
     width: 100%;
+  }
+  .modal-content {
+    padding: 24px;
   }
 }
 </style>
