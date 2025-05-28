@@ -1099,26 +1099,135 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7); /* Увеличил прозрачность фона */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(4px); /* Добавил размытие для лучшего выделения модалки */
 }
 
 .modal-content {
-  background: var(--background-color);
+  background: #ffffff; /* Чистый белый фон */
   border-radius: 16px;
   padding: 32px;
   max-width: 600px;
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Более выраженная тень */
   position: relative;
   animation: fadeIn 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Тонкая граница */
+}
+/* Улучшенные стили для текста внутри модалки */
+#payment-modal-title,
+#passengers-modal-title {
+  color: #2d3436;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
+.location-info {
+  color: #636e72;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+/* Улучшенные стили для контента */
+.safety-notification {
+  background: #fff8e6; /* Более светлый фон */
+  border-left: 4px solid #ffb74d;
+  padding: 20px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+}
+
+.safety-content h4 {
+  color: #e65100; /* Более темный оранжевый */
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.safety-checklist li {
+  color: #424242; /* Темно-серый для лучшей читаемости */
+}
+
+/* Улучшенные стили для формы оплаты */
+.payment-form {
+  background: #f5f5f5;
+  padding: 24px;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.form-group label {
+  color: #424242; /* Темный текст для меток */
+  font-weight: 600;
+}
+
+input {
+  background: #ffffff !important; /* Белый фон для инпутов */
+  border: 1px solid #e0e0e0;
+}
+
+/* Улучшенные стили для списка пассажиров */
+.passengers-list {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.passenger-item {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Улучшенные стили для подтверждения оплаты */
+.confirmation-screen {
+  background: #f5f5f5;
+  padding: 32px;
+  border-radius: 12px;
+}
+
+.confirmation-text {
+  color: #2d3436;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.receipt-summary {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 24px 0;
+}
+
+.receipt-summary p {
+  color: #424242;
+  font-size: 16px;
+}
+
+/* Улучшенная кнопка закрытия */
+.modal-close {
+  background: #f5f5f5;
+  color: #424242;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: #e0e0e0;
+  color: #212121;
+}
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
