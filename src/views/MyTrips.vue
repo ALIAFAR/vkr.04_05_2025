@@ -117,8 +117,7 @@
       <div v-if="!isLoadingTrips && !errorLoadingTrips && userTrips.length === 0" class="no-trips">
         <span class="no-trips-icon">🚍</span>
         <p>У вас нет опубликованных поездок.</p>
-        <button class="create-trip-btn" @click="publish-trip-page" aria-label="Создать новую поездку">
-          Создать поездку
+        <button class="create-trip-btn" @click="publish-trip" aria-label="Создать новую поездку">
         </button>
       </div>
 
