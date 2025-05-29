@@ -115,7 +115,7 @@
       </div>
 
       <div v-if="!isLoadingTrips && !errorLoadingTrips && userTrips.length === 0" class="no-trips">
-        <span class="no-trips-icon">📍</span>
+        <span class="no-trips-icon">🚍</span>
         <p>У вас нет опубликованных поездок.</p>
         <button class="create-trip-btn" @click="goToCreateTrip" aria-label="Создать новую поездку">
           Создать поездку
@@ -123,7 +123,7 @@
       </div>
 
       <button class="back-button" @click="goToHome" aria-label="Вернуться на главную">
-        Вернуться на главную
+        Назад
       </button>
 
       <!-- Модальное окно редактирования -->
@@ -155,14 +155,14 @@
                 </div>
               </div>
               <div class="add-stop">
-                <input id="new-stop" v-model="newStop" placeholder="Добавить остановку" aria-label="Новая остановка">
+                <input id="new-stop" type="text" v-model="newStop" placeholder="Добавить остановку" aria-label="New Stop">
                 <button type="button" class="add-stop-button" @click="addStop" aria-label="Добавить остановку">
                   +
                 </button>
               </div>
             </div>
             <div class="modal-actions">
-              <button type="button" class="cancel-button" @click="closeModal">Отмена</button>
+              <button type="button" class="cancel-btn" @click="closeModal">Отмена</button>
               <button type="submit" class="save-button">Сохранить</button>
             </div>
           </form>
@@ -184,7 +184,7 @@
               <input id="new-time" type="time" v-model="rescheduleData.newTime" required aria-label="Новое время поездки">
             </div>
             <div class="modal-actions">
-              <button type="button" class="cancel-button" @click="closeModal">Отмена</button>
+              <button type="button" class="cancel-btn" @click="closeModal">Отмена</button>
               <button type="submit" class="save-button">Перенести</button>
             </div>
           </form>
@@ -576,7 +576,6 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        // TODO: Replace with actual endpoint for canceling passenger booking
         await axios.delete(API_CONFIG.BASE_URL + `/trip/${this.selectedTripId}/passenger/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -585,7 +584,6 @@ export default {
 
         await this.notifyPassengers(this.selectedTripId, 'Пассажир отменил бронирование.');
 
-        // Refresh passenger list and trip data
         await this.showPassengers(this.selectedTripId);
         await this.loadUserTrips();
         this.$toast.success('Бронирование успешно отменено.');
@@ -599,7 +597,6 @@ export default {
       try {
         const token = Cookies.get('token');
         
-        // TODO: Replace with correct notification endpoint
         await axios.post(API_CONFIG.BASE_URL + '/trip/notify', {
           trip_id: tripId,
           message: message
@@ -646,6 +643,7 @@ export default {
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
+  --danger-hover: #dc2626;
 }
 
 .dark-mode {
@@ -659,6 +657,7 @@ export default {
   --success-color: #34d399;
   --warning-color: #facc15;
   --danger-color: #f87171;
+  --danger-hover: #dc2626;
 }
 
 .trip-details {
@@ -799,9 +798,30 @@ export default {
   color: white;
 }
 
-.action-button.cancel, .action-button.cancel-booking {
+.action-button.cancel {
   background-color: var(--danger-color);
   color: white;
+  border: 1px solid var(--danger-color);
+}
+
+.action-button.cancel-booking {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 600;
+  padding: 8px 14px;
+  min-width: 140px;
+  margin-top: 8px;
+}
+
+.action-button.cancel:hover,
+.action-button.cancel-booking:hover,
+.action-button.cancel:focus-visible,
+.action-button.cancel-booking:focus-visible {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .action-button:hover,
@@ -913,14 +933,19 @@ export default {
 
 .modal {
   position: relative;
-  background: var(--container-bg);
+  background: #ffffff;
   padding: 24px;
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
   transform: scale(1);
+  opacity: 1;
+}
+
+.dark-mode .modal {
+  background: #1e293b;
 }
 
 .modal-close-button {
@@ -989,7 +1014,7 @@ export default {
   margin-top: 24px;
 }
 
-.cancel-button {
+.cancel-btn {
   padding: 10px 16px;
   background: var(--border-color);
   color: var(--text-color);
@@ -1000,13 +1025,18 @@ export default {
   transition: all 0.2s ease;
 }
 
-.cancel-button:hover,
-.cancel-button:focus-visible {
+.cancel-btn:hover,
+.cancel-btn:focus-visible {
   background: #e2e8f0;
   transform: translateY(-1px);
 }
 
-.cancel-button:focus-visible {
+.dark-mode .cancel-btn:hover,
+.dark-mode .cancel-btn:focus-visible {
+  background: #475569;
+}
+
+.cancel-btn:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
@@ -1070,7 +1100,7 @@ export default {
 
 .remove-stop:hover,
 .remove-stop:focus-visible {
-  background: #dc2626;
+  background: var(--danger-hover);
   transform: scale(1.1);
 }
 
@@ -1121,14 +1151,19 @@ export default {
 /* Пассажиры */
 .modal-content {
   position: relative;
-  background: var(--container-bg);
+  background: #ffffff;
   padding: 24px;
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+}
+
+.dark-mode .modal-content {
+  background: #1e293b;
 }
 
 .passengers-filter {
@@ -1271,7 +1306,7 @@ export default {
 @media (max-width: 768px) {
   .trip-details {
     padding: 16px;
-    margin: 70px auto 20px;
+    margin: 70px auto;
     width: 95%;
   }
 
@@ -1301,6 +1336,7 @@ export default {
   }
 
   .modal {
+    padding: flex;
     padding: 20px;
   }
 
@@ -1320,7 +1356,7 @@ export default {
   }
 
   .section-title {
-    font-size: 1.1rem;
+    font-size: 1.1em;
   }
 
   .detail-item p,
