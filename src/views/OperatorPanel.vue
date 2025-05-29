@@ -187,7 +187,7 @@ export default {
     async saveDataToDatabase() {
       console.log(this.uploadedData)
       try {
-        const response = await axios.post(API_CONFIG.BASE_URL+'/api/save-data', {
+        const response = await axios.post(API_CONFIG.BASE_URL+'/operator/create-users', {
           data: this.uploadedData,
         });
 
