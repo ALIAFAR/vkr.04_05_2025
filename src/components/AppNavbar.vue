@@ -16,26 +16,21 @@
       
       <div class="menu" :class="{'mobile-menu-active': isMobileMenuOpen}">
         <button class="menu-item" @click="navWithClose('/booking')">
-          <span class="menu-icon">🚗</span>
           <span class="menu-text">Бронирование</span>
         </button>
         <button class="menu-item my-trips-button" @click="navWithClose({ name: 'my-trips-page' })">
-          <span class="menu-icon">📋</span>
           <span class="menu-text">Мои поездки</span>
         </button>
         <button class="menu-item" @click="goToPublishTrip">
-          <span class="menu-icon">➕</span>
           <span class="menu-text">Опубликовать</span>
         </button>
 
         <!-- Кнопки входа и регистрации для мобильных -->
         <template v-if="!isAuthenticated && windowWidth <= 768">
           <button class="menu-item mobile-auth-btn" @click="navWithClose('/registration')">
-            <span class="menu-icon">📝</span>
             <span class="menu-text">Регистрация</span>
           </button>
           <button class="menu-item mobile-auth-btn" @click="navWithClose('/login')">
-            <span class="menu-icon">🔑</span>
             <span class="menu-text">Вход</span>
           </button>
         </template>
@@ -44,7 +39,7 @@
         <button class="menu-item theme-toggle" @click="toggleTheme" aria-label="Переключить тему">
           <span v-if="isDarkTheme" class="theme-icon">☀️</span>
           <span v-else class="theme-icon">🌙</span>
-          <span class="theme-text">{{ isDarkTheme ? 'Светлая тема' : 'Тёмная тема' }}</span>
+          <span class="theme-text">{{ isDarkTheme  }}</span>
         </button>
 
         <!-- Профиль -->
@@ -62,25 +57,20 @@
           <div v-if="isProfileDropdownVisible" class="dropdown-menu">
             <template v-if="isAuthenticated">
               <button @click="navWithClose('/personal-information')">
-                <span class="dropdown-icon">👤</span>
                 Профиль
               </button>
               <button @click="navWithClose('/chat')">
-                <span class="dropdown-icon">💬</span>
                 Чаты
               </button>
               <button @click="confirmLogout">
-                <span class="dropdown-icon">🚪</span>
                 Выход
               </button>
             </template>
             <template v-else>
               <button @click="navWithClose('/registration')">
-                <span class="dropdown-icon">📝</span>
                 Регистрация
               </button>
               <button @click="navWithClose('/login')">
-                <span class="dropdown-icon">🔑</span>
                 Вход
               </button>
             </template>
