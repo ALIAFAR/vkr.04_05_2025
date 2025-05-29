@@ -173,52 +173,14 @@
 </template>
 
 <script>
+import axios from 'axios';
+import { API_CONFIG } from '@/config/api';
+import Cookies from 'js-cookie';
+
 export default {
   data() {
     return {
-      users: [
-        {
-          fullName: "Иванов Иван Иванович",
-          birthDate: "15.05.1990",
-          licenseIssueDate: "10.09.2015",
-          licenseNumber: "1234 567890",
-          rating: 4.5,
-          isConfirmed: false,
-          cars: ["Toyota Camry", "Honda Civic"],
-          createdTrips: [
-            { route: "Москва → Санкт-Петербург", date: "10.10.2023", status: "Завершено" },
-          ],
-          passengerTrips: [
-            { route: "Казань → Уфа", date: "15.10.2023", status: "В процессе" },
-          ],
-        },
-        {
-          fullName: "Петров Петр Петрович",
-          birthDate: "20.11.1985",
-          licenseIssueDate: "05.03.2010",
-          licenseNumber: "9876 543210",
-          rating: 3.8,
-          isConfirmed: true,
-          cars: [],
-          createdTrips: [],
-          passengerTrips: [
-            { route: "Новосибирск → Омск", date: "20.10.2023", status: "Завершено" },
-          ],
-        },
-        {
-          fullName: "Сидорова Мария Сергеевна",
-          birthDate: "30.07.1995",
-          licenseIssueDate: "12.12.2018",
-          licenseNumber: "4567 890123",
-          rating: 5.0,
-          isConfirmed: false,
-          cars: ["Ford Focus"],
-          createdTrips: [
-            { route: "Екатеринбург → Челябинск", date: "25.10.2023", status: "В процессе" },
-          ],
-          passengerTrips: [],
-        },
-      ],
+      users: [],
       isProfileDropdownVisible: false,
       isLogoutConfirmVisible: false,
       isMobileMenuVisible: false,
@@ -226,7 +188,9 @@ export default {
       searchQuery: "",
       selectedUser: null,
       showUnconfirmedFirst: false,
-      windowWidth: window.innerWidth
+      windowWidth: window.innerWidth,
+      isLoading: false,
+      error: null
     };
   },
   computed: {
@@ -253,6 +217,172 @@ export default {
     },
   },
   methods: {
+    getAuthHeader() {
+      const token = Cookies.get('token');
+      return {
+        'Authorization': `Bearer ${token}`
+      };
+    },
+
+    async fetchUsers() {
+      this.isLoading = true;
+      this.error = null;
+      
+      try {
+        const response = await axios.get(`${API_CONFIG.BASE_URL}/operator/users`, {
+          headers: this.getAuthHeader()
+        });
+        
+        if (response.data.success) {
+          this.users = response.data.users.map(user => ({
+            ...user,
+            fullName: `${user.surname} ${user.name} ${user.middlename || ''}`.trim(),
+            isConfirmed: user.status
+          }));
+        } else {
+          throw new Error(response.data.message || 'Не удалось загрузить пользователей');
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки пользователей:', error);
+        this.error = error.response?.data?.message || error.message;
+        // Если ошибка 401 (не авторизован), перенаправляем на страницу входа
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async approveUser(user) {
+      try {
+        const response = await axios.put(
+          `${API_CONFIG.BASE_URL}/operator/users/${user.id}/approve`,
+          {},
+          {
+            headers: this.getAuthHeader()
+          }
+        );
+        
+        if (response.data.success) {
+          user.isConfirmed = true;
+          this.$toast.success(`Пользователь ${user.fullName} подтвержден`);
+        } else {
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        console.error('Ошибка подтверждения пользователя:', error);
+        this.$toast.error(error.response?.data?.message || 'Ошибка подтверждения');
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      }
+    },
+
+    async rejectUser(user) {
+      try {
+        const response = await axios.put(
+          `${API_CONFIG.BASE_URL}/operator/users/${user.id}/reject`,
+          {},
+          {
+            headers: this.getAuthHeader()
+          }
+        );
+        
+        if (response.data.success) {
+          user.isConfirmed = false;
+          this.$toast.success(`Пользователь ${user.fullName} отклонен`);
+        } else {
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        console.error('Ошибка отклонения пользователя:', error);
+        this.$toast.error(error.response?.data?.message || 'Ошибка отклонения');
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      }
+    },
+
+    async deleteUser(user) {
+      if (!confirm(`Вы уверены, что хотите удалить пользователя ${user.fullName}?`)) return;
+      
+      try {
+        const response = await axios.delete(
+          `${API_CONFIG.BASE_URL}/operator/users/${user.id}`,
+          {
+            headers: this.getAuthHeader()
+          }
+        );
+        
+        if (response.data.success) {
+          this.users = this.users.filter(u => u.id !== user.id);
+          this.$toast.success(`Пользователь ${user.fullName} удален`);
+        } else {
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        console.error('Ошибка удаления пользователя:', error);
+        this.$toast.error(error.response?.data?.message || 'Ошибка удаления');
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      }
+    },
+
+    async blockUser(user) {
+      try {
+        const response = await axios.put(
+          `${API_CONFIG.BASE_URL}/operator/users/${user.id}/block`,
+          {},
+          {
+            headers: this.getAuthHeader()
+          }
+        );
+        
+        if (response.data.success) {
+          user.isBlocked = true;
+          this.$toast.success(`Пользователь ${user.fullName} заблокирован`);
+        } else {
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        console.error('Ошибка блокировки пользователя:', error);
+        this.$toast.error(error.response?.data?.message || 'Ошибка блокировки');
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      }
+    },
+
+    async openUserDetails(user) {
+      try {
+        const response = await axios.get(
+          `${API_CONFIG.BASE_URL}/operator/users/${user.id}/trips`,
+          {
+            headers: this.getAuthHeader()
+          }
+        );
+        
+        if (response.data.success) {
+          this.selectedUser = {
+            ...user,
+            createdTrips: response.data.createdTrips || [],
+            passengerTrips: response.data.passengerTrips || []
+          };
+        } else {
+          throw new Error(response.data.message);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки поездок:', error);
+        this.$toast.error(error.response?.data?.message || 'Ошибка загрузки данных');
+        if (error.response?.status === 401) {
+          this.$router.push('/login');
+        }
+      }
+    },
+
+    // Остальные методы остаются без изменений
     handleCheckboxChange() {
       this.filteredUsers;
     },
@@ -304,38 +434,16 @@ export default {
       this.closeMobileMenu();
     },
     logout() {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userRole");
+      Cookies.remove('token');
+      Cookies.remove('userRole');
       this.isLogoutConfirmVisible = false;
       this.$router.push("/");
     },
     cancelLogout() {
       this.isLogoutConfirmVisible = false;
     },
-    approveUser(user) {
-      user.isConfirmed = true;
-      alert(`Данные пользователя ${user.fullName} подтверждены.`);
-    },
-    rejectUser(user) {
-      user.isConfirmed = false;
-      alert(`Данные пользователя ${user.fullName} отклонены.`);
-    },
-    deleteUser(user) {
-      const index = this.users.findIndex(u => u === user);
-      if (index !== -1) {
-        this.users.splice(index, 1);
-        alert(`Пользователь ${user.fullName} удален.`);
-      }
-    },
-    blockUser(user) {
-      user.isBlocked = true;
-      alert(`Пользователь ${user.fullName} заблокирован.`);
-    },
     sortByRating() {
       this.sortRatingOrder = this.sortRatingOrder === "asc" ? "desc" : "asc";
-    },
-    openUserDetails(user) {
-      this.selectedUser = user;
     },
     closeUserDetails() {
       this.selectedUser = null;
@@ -348,6 +456,7 @@ export default {
     }
   },
   mounted() {
+    this.fetchUsers();
     document.addEventListener("click", this.handleOutsideClick);
     window.addEventListener('resize', this.handleResize);
   },

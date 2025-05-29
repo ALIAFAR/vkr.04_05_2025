@@ -189,7 +189,10 @@ export default {
       try {
         const response = await axios.post(API_CONFIG.BASE_URL+'/operator/create-users', {
           data: this.uploadedData,
-        });
+        },{
+        headers: {
+          'Authorization': `Bearer ${Cookies.get('token')}`
+        }});
 
         if (response.data.success) {
           alert('Данные успешно сохранены в базе данных!');
