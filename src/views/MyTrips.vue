@@ -642,7 +642,7 @@ export default {
   --accent-hover: #003366;
   --success-color: #10b981;
   --warning-color: #f59e0b;
-  --danger-color: #ff3333;
+  --danger-color: #ff1a1a; /* Brighter red for better contrast */
   --danger-hover: #cc0000;
 }
 
@@ -656,8 +656,8 @@ export default {
   --accent-hover: #3b82f6;
   --success-color: #34d399;
   --warning-color: #facc15;
-  --danger-color: #ff4444; /* Brighter red for dark mode */
-  --danger-hover: #bb0000; /* Darker hover for dark mode */
+  --danger-color: #ff5555; /* Brighter red for dark mode */
+  --danger-hover: #bb0000;
 }
 
 .trip-details {
@@ -803,10 +803,11 @@ export default {
   background-color: var(--danger-color);
   color: white;
   border: 1px solid var(--danger-color);
-  font-weight: 600;
+  font-weight: 700; /* Increased from 600 for bolder text */
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Enhanced text readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger default shadow */
+  min-width: 120px; /* Increased from 100px for better visibility */
 }
 
 .action-button.cancel-booking {
