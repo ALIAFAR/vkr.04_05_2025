@@ -1083,7 +1083,87 @@ export default {
   border-radius: 8px;
   font-size: 0.95rem;
 }
+.trip-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
 
+.action-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  text-align: center;
+  flex: 1;
+}
+
+.action-button.edit {
+  background-color: var(--warning-color);
+  color: #1a202c;
+}
+
+.action-button.reschedule {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.action-button.cancel {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+}
+
+.action-button.cancel-booking {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 600;
+  padding: 8px 14px;
+  min-width: 140px;
+  margin-top: 8px;
+}
+
+/* Улучшенные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .trip-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .action-button {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+/* Анимация при наведении */
+.action-button:hover,
+.action-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
+}
+
+.action-button.cancel:hover,
+.action-button.cancel-booking:hover,
+.action-button.cancel:focus-visible,
+.action-button.cancel-booking:focus-visible {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+.action-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
 .remove-stop {
   background: var(--danger-color);
   color: white;
