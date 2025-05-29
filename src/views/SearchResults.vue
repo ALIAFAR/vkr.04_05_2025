@@ -287,7 +287,14 @@
           </div>
 
           <div class="passengers-list">
-            <div v-if="filteredPassengers.length === 0" class="no-passengers">
+            <div v-if="isLoadingPassengers" class="loading-indicator">
+              <div class="spinner"></div>
+              <p>Загрузка пассажиров...</p>
+            </div>
+            <div v-else-if="errorLoadingPassengers" class="error-message">
+              {{ errorLoadingPassengers }}
+            </div>
+            <div v-else-if="filteredPassengers.length === 0" class="no-passengers">
               <p>Пассажиры не забронированы.</p>
             </div>
             <div v-else v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
@@ -303,7 +310,7 @@
                 <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
                 <div class="passenger-meta">
                   <span class="passenger-gender" :class="passenger.gender">
-                    {{ passenger.gender === 'male' ? 'Мужчина' : 'Женщина' }}
+                    {{ passenger.gender === 'male' ? 'Мужчина' : passenger.gender === 'female' ? 'Женщина' : 'Не указано' }}
                   </span>
                   <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
                   <span v-if="passenger.passenger_rating" class="passenger-rating">
@@ -311,8 +318,8 @@
                   </span>
                 </div>
                 <div class="passenger-details">
-                  <span class="passenger-seats">Места: {{ passenger.department }}</span>
-                  <span class="passenger-price">{{ passenger.position }} ₽</span>
+                  <span class="passenger-seats">Места: {{ passenger.seats_booked || 1 }}</span>
+                  <span class="passenger-price">{{ passenger.cost || 'Не указано' }} ₽</span>
                 </div>
                 <div v-if="passenger.comment" class="passenger-comment">"{{ passenger.comment }}"</div>
               </div>
@@ -378,6 +385,8 @@ export default {
         cvv: "",
       },
       isPaymentProcessing: false,
+      isLoadingPassengers: false,
+      errorLoadingPassengers: null,
     };
   },
   computed: {
@@ -387,7 +396,7 @@ export default {
         : this.passengers;
     },
     totalBookedSeats() {
-      return this.filteredPassengers.reduce((sum, p) => sum + p.seats_booked, 0);
+      return this.filteredPassengers.reduce((sum, p) => sum + (p.seats_booked || 0), 0);
     },
   },
   watch: {
@@ -420,6 +429,7 @@ export default {
         }
       } catch (error) {
         console.error("Ошибка загрузки параметров поиска:", error);
+        this.error = "Не удалось загрузить параметры поиска";
       }
     },
     async fetchTrips() {
@@ -443,7 +453,7 @@ export default {
             this.error = "Поездки не найдены. Попробуйте изменить параметры поиска.";
           }
         } else {
-          this.error = "Неверный ответ сервера";
+          this.error = response.data.message || "Неверный ответ сервера";
         }
       } catch (error) {
         this.error = this.getErrorMessage(error);
@@ -498,27 +508,35 @@ export default {
       this.applyFilters();
     },
     formatDate(dateString) {
-      if (!dateString) return "";
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Date(dateString).toLocaleDateString(this.locale, options);
+      if (!dateString || isNaN(new Date(dateString).getTime())) return "Не указано";
+      return new Date(dateString).toLocaleDateString(this.locale, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
     },
     formatDateTime(datetimeString) {
-      if (!datetimeString) return "";
+      if (!datetimeString || isNaN(new Date(datetimeString).getTime())) return "Не указано";
       const date = new Date(datetimeString);
-      const options = { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-      return date.toLocaleString(this.locale, options);
+      return date.toLocaleString(this.locale, {
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     },
     calculateAge(birthDate) {
-      if (!birthDate) return "Не указан";
-      return new Date().getFullYear() - new Date(birthDate).getFullYear();
+      if (!birthDate || isNaN(new Date(birthDate).getTime())) return "Не указан";
+      const age = new Date().getFullYear() - new Date(birthDate).getFullYear();
+      return age >= 0 ? age : "Неверная дата";
     },
     calculateDrivingExperience(licenseDate) {
-      if (!licenseDate) return "Не указан";
+      if (!licenseDate || isNaN(new Date(licenseDate).getTime())) return "Не указан";
       const experience = new Date().getFullYear() - new Date(licenseDate).getFullYear();
-      return experience === 0 ? "Менее года" : `${experience} ${this.declension(experience, ["год", "года", "лет"])}`;
+      return experience <= 0 ? "Менее года" : `${experience} ${this.declension(experience, ["год", "года", "лет"])}`;
     },
     calculateTravelTime(departure, arrival) {
-      if (!departure || !arrival) return "";
+      if (!departure || !arrival || isNaN(new Date(departure).getTime()) || isNaN(new Date(arrival).getTime())) return "Не указано";
       const diff = new Date(arrival) - new Date(departure);
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -539,16 +557,8 @@ export default {
       this.resetPaymentForm();
     },
     resetPaymentForm() {
-      this.paymentDetails = {
-        cardNumber: "",
-        expiry: "",
-        cvv: "",
-      };
-      this.paymentErrors = {
-        cardNumber: "",
-        expiry: "",
-        cvv: "",
-      };
+      this.paymentDetails = { cardNumber: "", expiry: "", cvv: "" };
+      this.paymentErrors = { cardNumber: "", expiry: "", cvv: "" };
       this.paymentError = "";
       this.isPaymentProcessing = false;
     },
@@ -570,11 +580,7 @@ export default {
       this.paymentDetails.cvv = this.paymentDetails.cvv.replace(/\D/g, "").slice(0, 3);
     },
     validatePaymentDetails() {
-      this.paymentErrors = {
-        cardNumber: "",
-        expiry: "",
-        cvv: "",
-      };
+      this.paymentErrors = { cardNumber: "", expiry: "", cvv: "" };
       let isValid = true;
 
       const cardNumber = this.paymentDetails.cardNumber.replace(/\s/g, "");
@@ -605,9 +611,7 @@ export default {
       return isValid;
     },
     async processDemoPayment() {
-      if (!this.validatePaymentDetails()) {
-        return;
-      }
+      if (!this.validatePaymentDetails()) return;
 
       this.isPaymentProcessing = true;
       this.paymentError = "";
@@ -625,12 +629,12 @@ export default {
         console.error("Ошибка демо-оплаты:", error);
       }
     },
-    handlePaymentSuccess(paymentData) {
+    async handlePaymentSuccess(paymentData) {
       this.transactionId = paymentData.PaymentId;
       this.transactionDate = new Date().toLocaleString(this.locale);
       this.showPaymentConfirmation = true;
       this.isPaymentProcessing = false;
-      this.sendPaymentConfirmation(paymentData);
+      await this.sendPaymentConfirmation(paymentData);
     },
     async sendPaymentConfirmation(paymentData) {
       try {
@@ -648,6 +652,7 @@ export default {
         );
       } catch (error) {
         console.error("Ошибка подтверждения платежа:", error);
+        this.paymentError = "Ошибка подтверждения платежа";
       }
     },
     async completeBooking() {
@@ -662,19 +667,33 @@ export default {
         );
         const chatId = chatResponse.data.chatId;
 
-        await axios.post(
+        const bookingResponse = await axios.post(
           API_CONFIG.BASE_URL + "/booking/create",
           {
             trip_id: trip.id,
             chat_id: chatId,
             seats_booked: this.searchParams.passengers,
             transaction_id: this.transactionId,
+            departure_location: trip.departure_location,
+            arrival_location: trip.arrival_location,
+            departure_time: trip.departure_time,
+            stops: trip.stops || [],
+            driver_id: trip.driver_id || null,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Вызываем событие bookingCreated для обновления списка в BookedTrips.vue
-        emitter.emit('bookingCreated');
+        // Эмитируем событие с полными данными бронирования
+        emitter.emit('bookingCreated', {
+          booking_id: bookingResponse.data.booking_id,
+          trip_id: trip.id,
+          departure_location: trip.departure_location,
+          arrival_location: trip.arrival_location,
+          departure_time: trip.departure_time,
+          seats_booked: this.searchParams.passengers,
+          stops: trip.stops || [],
+          driver_id: trip.driver_id,
+        });
 
         await this.fetchTrips();
         this.closeModal();
@@ -691,6 +710,8 @@ export default {
     async showPassengers(trip, locationType) {
       this.modalLocationType = locationType;
       this.currentLocation = locationType === "departure" ? trip.departure_location : trip.arrival_location;
+      this.isLoadingPassengers = true;
+      this.errorLoadingPassengers = null;
       try {
         const response = await axios.get(API_CONFIG.BASE_URL + "/user/get-all", {
           params: { trip_id: trip.id },
@@ -702,14 +723,19 @@ export default {
           surname: p.surname || "",
           gender: p.gender || "unknown",
           passenger_rating: p.passenger_rating ? parseFloat(p.passenger_rating) : null,
-          seats_booked: p.seats_booked,
-          department: p.department,
-          birthday: p.birthday,
-          position: p.position || "?",
+          seats_booked: p.seats_booked || 1,
+          birthday: p.birthday || null,
+          cost: p.cost || trip.cost,
+          user_id: p.user_id || null,
+          comment: p.comment || "",
+          avatarUrl: p.avatarUrl || "/images/default-avatar.jpg",
         }));
         this.showPassengersModal = true;
       } catch (error) {
-        this.$notify({ title: "Ошибка", text: "Не удалось загрузить пассажиров", type: "error" });
+        this.errorLoadingPassengers = "Не удалось загрузить пассажиров";
+        this.$notify({ title: "Ошибка", text: this.errorLoadingPassengers, type: "error" });
+      } finally {
+        this.isLoadingPassengers = false;
       }
     },
     closeModal() {
@@ -721,6 +747,8 @@ export default {
       this.transactionId = "";
       this.transactionDate = "";
       this.resetPaymentForm();
+      this.passengers = [];
+      this.errorLoadingPassengers = null;
     },
     showTripDetails(trip) {
       this.$router.push(`/trip/${trip.id}`);
@@ -743,7 +771,6 @@ export default {
 </script>
 
 <style scoped>
-/* Enhanced styles with improved UX and design */
 :root {
   --primary-color: #3498db;
   --secondary-color: #f5f7fa;
@@ -757,7 +784,7 @@ export default {
 }
 
 .search-results-container {
-  font-family: 'Lora', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #f8f9fa;
   min-height: 100vh;
 }
@@ -964,12 +991,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  line-height: 1.6;
-}
 
 .detail-label {
   color: #636e72;
@@ -1129,7 +1150,7 @@ h1 {
 
 #payment-modal-title,
 #passengers-modal-title {
-  color: #2d3436;
+  color: var(--text-color);
   font-size: 24px;
   margin-bottom: 20px;
   text-align: center;
@@ -1201,7 +1222,7 @@ input {
 }
 
 .confirmation-text {
-  color: #2d3436;
+  color: var(--text-color);
   font-size: 20px;
   font-weight: 600;
 }
