@@ -330,7 +330,7 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Ответ API /booking/get-booked:", response.data);
+        console.log("Ответ API /booking/get-booked:", response.data.bookedTrips);
 
         const trips = Array.isArray(response.data.bookedTrips) ? response.data.bookedTrips : [];
         this.bookedTrips = trips.map(trip => ({
