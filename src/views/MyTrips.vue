@@ -246,6 +246,15 @@
                   <div v-if="passenger.comment" class="passenger-comment">
                     "{{ passenger.comment }}"
                   </div>
+                  <div v-if="passenger.user_id === currentUserId" class="passenger-actions">
+                    <button 
+                      class="action-button cancel-booking" 
+                      @click.stop="confirmCancelPassenger(passenger.user_id)"
+                      aria-label="Отменить бронирование"
+                    >
+                      Отменить бронирование
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -299,7 +308,7 @@ export default {
       modalLocationType: 'departure',
       currentLocation: '',
       showOnlyMyBookings: false,
-      currentUserId: null // Store current user ID
+      currentUserId: null
     };
   },
   computed: {
@@ -329,7 +338,6 @@ export default {
         const token = Cookies.get('token');
         if (!token) return;
 
-        // Placeholder: Assume an endpoint to fetch user profile
         const response = await axios.get(API_CONFIG.BASE_URL + '/user/profile', {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
@@ -421,6 +429,7 @@ export default {
         const token = Cookies.get('token');
         this.isLoadingPassengers = true;
         this.errorLoadingPassengers = false;
+        this.selectedTripId = tripId;
         
         const response = await axios.get(
           API_CONFIG.BASE_URL + '/user/get-all',
@@ -465,6 +474,7 @@ export default {
       this.newStop = '';
       this.currentTripPassengers = [];
       this.errorLoadingPassengers = false;
+      this.selectedTripId = null;
     },
 
     addStop() {
@@ -553,6 +563,35 @@ export default {
       } catch (error) {
         console.error("Ошибка при отмене поездки:", error);
         this.$toast.error('Ошибка при отмене поездки');
+      }
+    },
+
+    confirmCancelPassenger(userId) {
+      if (confirm('Вы уверены, что хотите отменить ваше бронирование?')) {
+        this.cancelPassengerBooking(userId);
+      }
+    },
+
+    async cancelPassengerBooking(userId) {
+      try {
+        const token = Cookies.get('token');
+        
+        // TODO: Replace with actual endpoint for canceling passenger booking
+        await axios.delete(API_CONFIG.BASE_URL + `/trip/${this.selectedTripId}/passenger/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.notifyPassengers(this.selectedTripId, 'Пассажир отменил бронирование.');
+
+        // Refresh passenger list and trip data
+        await this.showPassengers(this.selectedTripId);
+        await this.loadUserTrips();
+        this.$toast.success('Бронирование успешно отменено.');
+      } catch (error) {
+        console.error("Ошибка при отмене бронирования:", error);
+        this.$toast.error('Ошибка при отмене бронирования');
       }
     },
 
@@ -760,7 +799,7 @@ export default {
   color: white;
 }
 
-.action-button.cancel {
+.action-button.cancel, .action-button.cancel-booking {
   background-color: var(--danger-color);
   color: white;
 }
@@ -860,12 +899,16 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
+}
+
+.dark-mode .modal-overlay {
+  background-color: #1e293b;
 }
 
 .modal {
@@ -875,7 +918,7 @@ export default {
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
   transition: transform 0.3s ease;
   transform: scale(1);
 }
@@ -1085,7 +1128,7 @@ export default {
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
 }
 
 .passengers-filter {
@@ -1178,6 +1221,12 @@ export default {
   color: var(--secondary-color);
   font-style: italic;
   margin-top: 4px;
+}
+
+.passenger-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .passengers-summary {
