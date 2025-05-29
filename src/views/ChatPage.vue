@@ -55,7 +55,7 @@
 import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
 import Cookies from 'js-cookie';
-import { API_CONFIG } from '@/config/api'
+import { API_CONFIG } from '@/config/api';
 
 export default {
   components: {
@@ -72,6 +72,8 @@ export default {
       currentUserId: null,
       companionId: null,
       showScrollButton: false,
+      reconnectAttempts: 0,
+      maxReconnectAttempts: 5,
     };
   },
   async created() {
@@ -91,7 +93,7 @@ export default {
     async loadChat(chatId) {
       try {
         const response = await axios.get(
-          API_CONFIG.BASE_URL +`/chat/${chatId}`,
+          `${API_CONFIG.BASE_URL}/chat/${chatId}`,
           {
             headers: {
               'Authorization': `Bearer ${Cookies.get("token")}`
@@ -104,46 +106,72 @@ export default {
           : this.chat.passenger_id;
       } catch (error) {
         console.error("Ошибка при загрузке данных о чате:", error);
+        alert("Не удалось загрузить данные чата. Попробуйте позже.");
       }
     },
     async loadMessages(chatId) {
       try {
-        const response = await axios.get(API_CONFIG.BASE_URL +`/chat/${chatId}/messages`);
+        const response = await axios.get(`${API_CONFIG.BASE_URL}/chat/${chatId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${Cookies.get("token")}`
+          }
+        });
         this.messages = response.data.map(msg => ({
           ...msg,
           isCurrentUser: msg.sender_id === this.currentUserId,
           senderName: msg.sender_id === this.currentUserId ? 'Вы' : 'Собеседник'
         }));
-        this.scrollToBottom();
+        this.$nextTick(() => this.scrollToBottom());
       } catch (error) {
         console.error("Ошибка при загрузке сообщений:", error);
+        alert("Не удалось загрузить сообщения. Попробуйте позже.");
       }
     },
-    initWebSocket() {
-      this.socket = new WebSocket(API_CONFIG.WS_URL);
+    initWebSocket(chatId) {
+      const connect = () => {
+        this.socket = new WebSocket(`${API_CONFIG.WS_URL}/chat/${chatId}`);
 
-      this.socket.onopen = () => {
-        console.log('WebSocket соединение установлено');
-        this.socket.send(JSON.stringify({
-          type: 'auth',
-          user_id: this.currentUserId
-        }));
+        this.socket.onopen = () => {
+          console.log('WebSocket соединение установлено');
+          this.reconnectAttempts = 0; // Reset attempts on successful connection
+          this.socket.send(JSON.stringify({
+            type: 'auth',
+            token: Cookies.get('token'), // Send token for authentication
+            user_id: this.currentUserId
+          }));
+        };
+
+        this.socket.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'message') {
+              this.handleNewMessage(message);
+            }
+          } catch (error) {
+            console.error('Ошибка обработки WebSocket сообщения:', error);
+          }
+        };
+
+        this.socket.onclose = (event) => {
+          console.log('WebSocket соединение закрыто:', event);
+          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            setTimeout(() => {
+              console.log(`Попытка переподключения ${this.reconnectAttempts + 1}...`);
+              this.reconnectAttempts++;
+              connect();
+            }, 3000);
+          } else {
+            console.error('Достигнуто максимальное количество попыток переподключения.');
+            alert('Не удалось подключиться к чату. Проверьте соединение.');
+          }
+        };
+
+        this.socket.onerror = (error) => {
+          console.error('WebSocket ошибка:', error);
+        };
       };
 
-      this.socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.type === 'message') {
-          this.handleNewMessage(message);
-        }
-      };
-
-      this.socket.onclose = () => {
-        console.log('WebSocket соединение закрыто');
-      };
-
-      this.socket.onerror = (error) => {
-        console.error('WebSocket ошибка:', error);
-      };
+      connect();
     },
     handleNewMessage(message) {
       this.messages.push({
@@ -151,33 +179,59 @@ export default {
         isCurrentUser: message.sender_id === this.currentUserId,
         senderName: message.sender_id === this.currentUserId ? 'Вы' : 'Собеседник'
       });
-      this.scrollToBottom();
+      this.$nextTick(() => this.scrollToBottom());
     },
     async sendMessage() {
-      if (this.newMessage.trim() && this.socket && this.socket.readyState === WebSocket.OPEN) {
-        try {
-          const messageData = {
-            type: 'message',
-            chat_id: this.$route.params.id,
-            sender_id: this.currentUserId,
-            content: this.newMessage
-          };
+      if (!this.newMessage.trim()) {
+        alert("Сообщение не может быть пустым!");
+        return;
+      }
 
-          this.socket.send(JSON.stringify(messageData));
-          
-          this.messages.push({
+      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+        alert("Нет соединения с сервером. Попробуйте позже.");
+        return;
+      }
+
+      try {
+        const messageData = {
+          type: 'message',
+          chat_id: parseInt(this.$route.params.id),
+          sender_id: this.currentUserId,
+          content: this.newMessage,
+          sent_at: new Date().toISOString()
+        };
+
+        // Send via WebSocket
+        this.socket.send(JSON.stringify(messageData));
+
+        // Optionally persist to backend via HTTP
+        await axios.post(
+          `${API_CONFIG.BASE_URL}/chat/${this.$route.params.id}/messages`,
+          {
             content: this.newMessage,
-            sender_id: this.currentUserId,
-            isCurrentUser: true,
-            senderName: 'Вы',
-            sent_at: new Date().toISOString()
-          });
-          
-          this.newMessage = "";
-          this.scrollToBottom();
-        } catch (error) {
-          console.error("Ошибка при отправке сообщения:", error);
-        }
+            sender_id: this.currentUserId
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${Cookies.get("token")}`
+            }
+          }
+        );
+
+        // Add message to UI immediately (optimistic update)
+        this.messages.push({
+          content: this.newMessage,
+          sender_id: this.currentUserId,
+          isCurrentUser: true,
+          senderName: 'Вы',
+          sent_at: new Date().toISOString()
+        });
+
+        this.newMessage = "";
+        this.$nextTick(() => this.scrollToBottom());
+      } catch (error) {
+        console.error("Ошибка при отправке сообщения:", error);
+        alert("Не удалось отправить сообщение. Попробуйте снова.");
       }
     },
     scrollToBottom() {
