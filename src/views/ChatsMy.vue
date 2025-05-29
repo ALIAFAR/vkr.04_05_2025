@@ -10,6 +10,7 @@
             placeholder="Поиск чатов..." 
             v-model="searchQuery"
             class="search-input"
+            aria-label="Поиск чатов"
           >
           <span class="search-icon">🔍</span>
         </div>
@@ -22,34 +23,43 @@
           class="chat-item"
           :class="{ 'active-chat': activeChatId === chat.id }"
           @click="selectChat(chat)"
+          role="button"
+          tabindex="0"
+          @keydown.enter="selectChat(chat)"
         >
           <div class="chat-content">
-            <div class="route-info">
-              <span class="route">
-                {{ chat.departure_location }} → {{ chat.arrival_location }}
-              </span>
-              <span class="trip-datetime">
-                {{ formatDate(chat.departure_time) }} в {{ formatTime(chat.departure_time) }}
-              </span>
+            <div class="chat-avatar">
+              <span class="avatar-icon">🚗</span>
             </div>
-            
-            <div class="chat-meta">
-              <span class="last-message" v-if="chat.last_message">
-                {{ truncateMessage(chat.last_message.text, 40) }}
-              </span>
-              <span 
-                v-if="chat.unread_count > 0" 
-                class="unread-badge"
-              >
-                {{ chat.unread_count }}
-              </span>
+            <div class="chat-details">
+              <div class="route-info">
+                <span class="route">
+                  {{ chat.departure_location }} → {{ chat.arrival_location }}
+                </span>
+                <span class="trip-datetime">
+                  {{ formatDate(chat.departure_time) }} в {{ formatTime(chat.departure_time) }}
+                </span>
+              </div>
+              
+              <div class="chat-meta">
+                <span class="last-message" v-if="chat.last_message">
+                  {{ truncateMessage(chat.last_message.text, 40) }}
+                </span>
+                <span 
+                  v-if="chat.unread_count > 0" 
+                  class="unread-badge"
+                >
+                  {{ chat.unread_count }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <div v-if="filteredChats.length === 0" class="empty-state">
+          <span class="empty-icon">💬</span>
           <p>У вас пока нет активных чатов</p>
-          <button class="refresh-btn" @click="loadChats">
+          <button class="refresh-btn" @click="loadChats" aria-label="Обновить список чатов">
             Обновить список
           </button>
         </div>
@@ -152,36 +162,59 @@ export default {
 </script>
 
 <style scoped>
+/* Базовые стили */
 .chat-page {
-  background-color: #f5f7fa;
+  background-color: var(--bg-color);
   min-height: 100vh;
-  padding-bottom: 30px;
+  padding-bottom: 40px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Переменные для темы, синхронизированные с AppNavbar */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1a1a1a;
+  --container-bg: #ffffff;
+  --border-color: #e5e7eb;
+  --accent-color: #004281;
+  --accent-hover: #003366;
+  --secondary-color: #6b7280;
+}
+
+.dark-theme {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --container-bg: #1e293b;
+  --border-color: #475569;
+  --accent-color: #60a5fa;
+  --accent-hover: #3b82f6;
+  --secondary-color: #94a3b8;
 }
 
 .chat-container {
   max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 80px;
+  margin: 80px auto 0;
+  padding: 24px;
+  background: var(--container-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .chat-header {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .section-title {
-  font-size: 1.8rem;
-  color: #2c3e50;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
   margin: 0;
-  font-weight: 700;
   text-align: center;
 }
 
@@ -194,28 +227,30 @@ export default {
 
 .search-input {
   width: 100%;
-  padding: 12px 20px 12px 45px;
-  border: 1px solid #e0e0e0;
-  border-radius: 30px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background-color: #f8f9fa;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: var(--container-bg);
+  color: var(--text-color);
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-  background-color: white;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: var(--bg-color);
 }
 
 .search-icon {
   position: absolute;
-  left: 20px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #95a5a6;
-  font-size: 1.1rem;
+  color: var(--secondary-color);
+  font-size: 1rem;
+  pointer-events: none;
 }
 
 .chat-list {
@@ -226,29 +261,53 @@ export default {
 
 .chat-item {
   padding: 16px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
+  background: var(--container-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .chat-item:hover {
-  background-color: #f8fafd;
+  background-color: var(--menu-item-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #d0d0d0;
+  border-color: var(--accent-color);
+}
+
+.chat-item:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 .active-chat {
-  border-left: 4px solid #3498db;
-  background-color: #f5f9ff !important;
+  border-left: 4px solid var(--accent-color);
+  background-color: rgba(59, 130, 246, 0.05) !important;
 }
 
-.chat-content {
+.chat-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-icon {
+  font-size: 1.25rem;
+}
+
+.chat-details {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .route-info {
@@ -259,8 +318,8 @@ export default {
 
 .route {
   font-weight: 600;
-  color: #2c3e50;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -268,7 +327,7 @@ export default {
 
 .trip-datetime {
   font-size: 0.85rem;
-  color: #7f8c8d;
+  color: var(--secondary-color);
   font-weight: 500;
 }
 
@@ -280,60 +339,72 @@ export default {
 }
 
 .last-message {
-  color: #636e72;
-  font-size: 0.92rem;
+  color: var(--secondary-color);
+  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 80%;
+  max-width: 75%;
 }
 
 .unread-badge {
-  background-color: #e74c3c;
+  background-color: #ef4444;
   color: white;
-  border-radius: 12px;
-  min-width: 22px;
-  height: 22px;
+  border-radius: 50%;
+  min-width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 600;
   padding: 0 6px;
   margin-left: 8px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 50px 20px;
-  color: #7f8c8d;
+  padding: 60px 20px;
+  color: var(--secondary-color);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.7;
 }
 
 .empty-state p {
   margin: 0;
   font-size: 1.1rem;
-  color: #95a5a6;
+  font-weight: 500;
 }
 
 .refresh-btn {
-  background-color: #3498db;
+  background-color: var(--accent-color);
   color: white;
   border: none;
   padding: 10px 24px;
-  border-radius: 24px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.refresh-btn:hover {
-  background-color: #2980b9;
+.refresh-btn:hover,
+.refresh-btn:focus-visible {
+  background-color: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(41, 128, 185, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
@@ -342,7 +413,7 @@ export default {
     margin-top: 70px;
     border-radius: 0;
     box-shadow: none;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
   }
   
   .section-title {
@@ -351,6 +422,11 @@ export default {
   
   .chat-item {
     padding: 14px;
+  }
+
+  .chat-avatar {
+    width: 36px;
+    height: 36px;
   }
 
   .route {
@@ -362,8 +438,14 @@ export default {
   }
 
   .last-message {
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     max-width: 70%;
+  }
+
+  .unread-badge {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
   }
 }
 
@@ -373,12 +455,21 @@ export default {
   }
 
   .search-input {
-    padding: 10px 16px 10px 40px;
-    font-size: 0.95rem;
+    padding: 10px 16px 10px 36px;
+    font-size: 0.9rem;
+  }
+
+  .search-icon {
+    left: 10px;
   }
 
   .chat-item {
     padding: 12px;
+  }
+
+  .chat-avatar {
+    width: 32px;
+    height: 32px;
   }
 
   .route {
@@ -390,13 +481,21 @@ export default {
   }
 
   .last-message {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .unread-badge {
-    min-width: 20px;
-    height: 20px;
-    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-icon {
+    font-size: 2rem;
   }
 }
 </style>
