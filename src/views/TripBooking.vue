@@ -5,7 +5,7 @@
     <div class="booking-details">
       <div class="details-header">
         <h1>Мои забронированные поездки</h1>
-        <button class="refresh-button" @click="loadBookedTrips" aria-label="Обновить список поездок">
+        <button class="refresh-button" @click="loadBookedTrips(true)" aria-label="Обновить список поездок">
           Обновить
         </button>
       </div>
@@ -20,7 +20,7 @@
       <div v-if="error && !loading" class="error-state">
         <span class="error-icon">⚠️</span>
         <p>{{ error }}</p>
-        <button class="retry-button" @click="loadBookedTrips" aria-label="Попробовать снова">
+        <button class="retry-button" @click="loadBookedTrips(true)" aria-label="Попробовать снова">
           Попробовать снова
         </button>
       </div>
@@ -32,8 +32,8 @@
         </div>
         <div v-else>
           <div 
-            v-for="(trip, index) in bookedTrips" 
-            :key="index" 
+            v-for="trip in bookedTrips" 
+            :key="trip.booking_id" 
             class="trip-item"
           >
             <div class="trip-content">
@@ -215,20 +215,25 @@ export default {
     },
   },
   created() {
-    this.loadBookedTrips();
-    emitter.on('bookingCreated', this.loadBookedTrips);
+    this.loadBookedTrips(true);
+    emitter.on('bookingCreated', () => this.loadBookedTrips(true));
   },
   beforeUnmount() {
-    emitter.off('bookingCreated', this.loadBookedTrips);
+    emitter.off('bookingCreated', () => this.loadBookedTrips(true));
   },
   methods: {
-    async loadBookedTrips() {
+    async loadBookedTrips(force = false) {
+      if (!force && this.bookedTrips.length && !this.error) return; // Пропускаем, если данные уже загружены
       this.loading = true;
       this.error = null;
       try {
         const token = Cookies.get('token');
         if (!token) {
-          this.error = "Пользователь не авторизован";
+          this.$notify({
+            title: "Ошибка",
+            text: "Пожалуйста, войдите в систему",
+            type: "error",
+          });
           this.$router.push("/login");
           return;
         }
@@ -237,21 +242,18 @@ export default {
           headers: { "Authorization": `Bearer ${token}` },
         });
 
-        this.bookedTrips = response.data.bookedTrips.map(trip => ({
+        const trips = Array.isArray(response.data.bookedTrips) ? response.data.bookedTrips : [];
+        this.bookedTrips = trips.map(trip => ({
           id_trip: trip.id_trip,
           booking_id: trip.booking_id,
-          from: trip.departure_location || trip.from,
-          to: trip.arrival_location || trip.to,
+          from: trip.departure_location || trip.from || 'Не указано',
+          to: trip.arrival_location || trip.to || 'Не указано',
           departuredate: trip.departure_date || trip.departure_time,
-          departuretime: trip.departure_time?.split('T')[1]?.slice(0, 5) || trip.departuretime,
-          cost: trip.cost || trip.price,
+          departuretime: trip.departure_time?.split('T')[1]?.slice(0, 5) || trip.departuretime || 'Не указано',
+          cost: trip.cost || trip.price || 0,
           stops: trip.stops?.join(', ') || 'Без остановок',
           driver_id: trip.driver_id,
         }));
-
-        if (!this.bookedTrips.length) {
-          this.error = "У вас нет забронированных поездок";
-        }
       } catch (error) {
         console.error("Ошибка при загрузке забронированных поездок:", error);
         this.error = error.response?.data?.message || "Ошибка загрузки поездок";
@@ -323,7 +325,7 @@ export default {
             text: 'Бронирование отменено',
             type: 'success',
           });
-          await this.loadBookedTrips();
+          await this.loadBookedTrips(true);
         }
       } catch (error) {
         console.error('Ошибка при отмене бронирования:', error);
