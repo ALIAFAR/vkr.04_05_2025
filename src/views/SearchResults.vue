@@ -338,6 +338,9 @@ import AppNavbar from "@/components/AppNavbar.vue";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { API_CONFIG } from "@/config/api";
+import mitt from 'mitt';
+
+const emitter = mitt();
 
 export default {
   components: { AppNavbar },
@@ -669,6 +672,9 @@ export default {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // Вызываем событие bookingCreated для обновления списка в BookedTrips.vue
+        emitter.emit('bookingCreated');
 
         await this.fetchTrips();
         this.closeModal();
@@ -1099,28 +1105,28 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7); /* Увеличил прозрачность фона */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px); /* Добавил размытие для лучшего выделения модалки */
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: #ffffff; /* Чистый белый фон */
+  background: #ffffff;
   border-radius: 16px;
   padding: 32px;
   max-width: 600px;
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Более выраженная тень */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   position: relative;
   animation: fadeIn 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Тонкая граница */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-/* Улучшенные стили для текста внутри модалки */
+
 #payment-modal-title,
 #passengers-modal-title {
   color: #2d3436;
@@ -1136,9 +1142,8 @@ h1 {
   font-size: 16px;
 }
 
-/* Улучшенные стили для контента */
 .safety-notification {
-  background: #fff8e6; /* Более светлый фон */
+  background: #fff8e6;
   border-left: 4px solid #ffb74d;
   padding: 20px;
   margin-bottom: 24px;
@@ -1148,16 +1153,15 @@ h1 {
 }
 
 .safety-content h4 {
-  color: #e65100; /* Более темный оранжевый */
+  color: #e65100;
   margin: 0 0 12px;
   font-size: 18px;
 }
 
 .safety-checklist li {
-  color: #424242; /* Темно-серый для лучшей читаемости */
+  color: #424242;
 }
 
-/* Улучшенные стили для формы оплаты */
 .payment-form {
   background: #f5f5f5;
   padding: 24px;
@@ -1166,16 +1170,15 @@ h1 {
 }
 
 .form-group label {
-  color: #424242; /* Темный текст для меток */
+  color: #424242;
   font-weight: 600;
 }
 
 input {
-  background: #ffffff !important; /* Белый фон для инпутов */
+  background: #ffffff !important;
   border: 1px solid #e0e0e0;
 }
 
-/* Улучшенные стили для списка пассажиров */
 .passengers-list {
   background: #f5f5f5;
   padding: 16px;
@@ -1191,7 +1194,6 @@ input {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Улучшенные стили для подтверждения оплаты */
 .confirmation-screen {
   background: #f5f5f5;
   padding: 32px;
@@ -1216,7 +1218,6 @@ input {
   font-size: 16px;
 }
 
-/* Улучшенная кнопка закрытия */
 .modal-close {
   background: #f5f5f5;
   color: #424242;
@@ -1228,6 +1229,7 @@ input {
   background: #e0e0e0;
   color: #212121;
 }
+
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
