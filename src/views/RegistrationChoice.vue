@@ -1,11 +1,13 @@
 <template>
-  <AppNavbar />
-  <div class="login-container">
+  <div class="registration-container">
+    <AppNavbar />
+
+    <!-- Основной контент -->
     <div class="form-container">
-      <h1>Регистрация</h1>
-      <form @submit.prevent="handleLogin">
+      <h1 class="form-title">Регистрация</h1>
+      <form @submit.prevent="handleLogin" aria-label="Форма регистрации">
         <div class="input-group">
-          <label for="email">Почта</label>
+          <label for="email" class="input-label">Почта</label>
           <input
             type="email"
             id="email"
@@ -13,43 +15,64 @@
             required
             placeholder="Введите ваш e-mail"
             :class="{ 'input-error': email && !isValidEmail }"
+            aria-describedby="emailError"
           />
-          <p v-if="email && !isValidEmail" class="error-text">
+          <p v-if="email && !isValidEmail" id="emailError" class="error-text">
             Неверный формат e-mail
           </p>
         </div>
 
         <div class="input-group">
-  <label for="temporaryPassword">Временный пароль</label>
-  <div class="password-input-container">
-    <input
-      type="password"
-      id="temporaryPassword"
-      v-model="temporaryPassword"
-      required
-      placeholder="Введите временный пароль"
-      :class="{ 'input-error': temporaryPassword && !isValidPassword }"
-      ref="passwordInput"
-    />
-    <span class="toggle-password" @click="togglePasswordVisibility">
-      <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
-    </span>
-  </div>
-  <p v-if="temporaryPassword && !isValidPassword" class="error-text">
-    Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы (!@#$%^&*).
-  </p>
-</div>
+          <label for="temporaryPassword" class="input-label">Временный пароль</label>
+          <div class="password-input-container">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="temporaryPassword"
+              v-model="temporaryPassword"
+              required
+              placeholder="Введите временный пароль"
+              :class="{ 'input-error': temporaryPassword && !isValidPassword }"
+              ref="passwordInput"
+              aria-describedby="passwordError"
+            />
+            <span
+              class="toggle-password"
+              @click="togglePasswordVisibility"
+              role="button"
+              aria-label="Переключить видимость пароля"
+            >
+              <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+            </span>
+          </div>
+          <p
+            v-if="temporaryPassword && !isValidPassword"
+            id="passwordError"
+            class="error-text"
+          >
+            Пароль должен содержать минимум 8 символов, включая заглавные и
+            строчные буквы, цифры и специальные символы (!@#$%^&*).
+          </p>
+        </div>
 
-        <button type="submit" :disabled="isLoading || isSubmitting" class="btn-login">
+        <button
+          type="submit"
+          :disabled="isLoading || isSubmitting"
+          class="btn-submit"
+          :class="{ 'btn-loading': isLoading }"
+        >
           {{ isLoading ? 'Загрузка...' : 'Продолжить' }}
         </button>
 
-        <div v-if="error" class="error-message">{{ error }}</div>
+        <div v-if="error" class="error-message" role="alert">
+          {{ error }}
+        </div>
       </form>
 
-      <div class="register-link">
-        <span> Уже с нами? </span>
-        <router-link to="/login" class="register-text"> Войти </router-link>
+      <div class="links-container">
+        <div class="login-link">
+          <span>Уже с нами? </span>
+          <router-link to="/login" class="link-text">Войти</router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -57,15 +80,14 @@
 
 <script>
 import AppNavbar from "@/components/AppNavbar.vue";
-import Cookies from "js-cookie"; // Подключаем js-cookie
-import axios from "axios"; // Подключаем axios
-import { API_CONFIG } from '@/config/api'
+import Cookies from "js-cookie";
+import axios from "axios";
+import { API_CONFIG } from "@/config/api";
 
 export default {
   components: {
     AppNavbar,
   },
-
   data() {
     return {
       email: "",
@@ -82,18 +104,19 @@ export default {
       return emailPattern.test(this.email);
     },
     isValidPassword() {
-      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+      const passwordPattern =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
       return passwordPattern.test(this.temporaryPassword);
     },
   },
   methods: {
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-    const input = this.$refs.passwordInput;
-    if (input) {
-      input.type = this.showPassword ? 'text' : 'password';
-    }
-  },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+      const input = this.$refs.passwordInput;
+      if (input) {
+        input.type = this.showPassword ? "text" : "password";
+      }
+    },
     async handleLogin() {
       if (this.isSubmitting) return;
 
@@ -103,7 +126,8 @@ export default {
       }
 
       if (!this.isValidPassword) {
-        this.error = "Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы (!@#$%^&*).";
+        this.error =
+          "Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы (!@#$%^&*).";
         return;
       }
 
@@ -112,52 +136,42 @@ export default {
       this.error = "";
 
       try {
-        // Сохраняем данные в куках
-        Cookies.set("email", this.email, { expires: 1 / 144 }); // 10 минут        
-        Cookies.set("temporaryPassword", this.temporaryPassword, { expires: 1 / 144 }); // 10 минут
-        console.log(this.temporaryPassword, "временный пароль");
+        Cookies.set("email", this.email, { expires: 1 / 144 });
+        Cookies.set("temporaryPassword", this.temporaryPassword, { expires: 1 / 144 });
 
-        // Вызываем метод для проверки временного пароля
         const userId = await this.checkTemporaryPassword(this.temporaryPassword);
 
         if (userId) {
-          // Сохраняем user_id в cookies
-          Cookies.set("user_id", userId, { expires: 1 / 144 }); // 10 минут
+          Cookies.set("user_id", userId, { expires: 1 / 144 });
           console.log("User ID сохранен в cookies:", userId);
-
-          // Перенаправляем на страницу изменения пароля
           this.$router.push("/set-password");
         } else {
           this.error = "Временный пароль неверный или пользователь не найден";
         }
       } catch (error) {
-        console.log(Cookies.get("email"));
-        console.log(Cookies.get("newPassword"));
+        console.error("Ошибка при обработке данных:", error);
         this.error = "Ошибка при обработке данных";
       } finally {
         this.isLoading = false;
         this.isSubmitting = false;
       }
     },
-
-    // Метод для проверки временного пароля через axios
     async checkTemporaryPassword(password) {
       try {
-        const response = await axios.get(API_CONFIG.BASE_URL +'/user/password_check', {
+        const response = await axios.get(API_CONFIG.BASE_URL + "/user/password_check", {
           params: {
-            password: password, // Передаем временный пароль как параметр
+            password: password,
           },
         });
 
-        // Если запрос успешен и user_id найден
         if (response.data && response.data.user_id) {
-          return response.data.user_id; // Возвращаем user_id
+          return response.data.user_id;
         } else {
-          return null; // Если user_id не найден
+          return null;
         }
       } catch (error) {
         console.error("Ошибка при проверке временного пароля:", error);
-        throw error; // Пробрасываем ошибку для обработки в handleLogin
+        throw error;
       }
     },
   },
@@ -165,347 +179,239 @@ export default {
 </script>
 
 <style scoped>
+/* Modern and clean design */
 body,
 html {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: url("/public/фон.jpg") no-repeat center center fixed;
-  background-size: cover;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
 }
 
-/* Главный контейнер */
-.login-container {
+/* Main container */
+.registration-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: auto; /* Изменено с 100vh */
-  background-color: rgba(244, 244, 249, 0.8);
-  width: auto;
-  max-width: 420px; /* Уменьшено с 480px */
-  margin: 100px auto 30px; /* Уменьшен нижний отступ */
-  padding: 25px 30px; /* Уменьшены отступы */
-  border-radius: 10px; /* Немного уменьшено скругление */
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08); /* Более легкая тень */
-}
-
-/* Форма */
-.form-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 350px;
+  min-height: 100vh;
   padding: 20px;
-  box-sizing: border-box; /* Добавлено для правильного расчета ширины */
+  box-sizing: border-box;
 }
 
-
-/* Навбар */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* Form container */
+.form-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  background-color: white;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  padding: 32px;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-out;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
+/* Form title */
+.form-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.logo-img {
-  height: 40px;
-  margin-right: 10px;
-}
-
-/* Кнопка "Назад" */
-.back-button {
-  background-color: #fff;
-  color: #004281;
-  border: 1px solid #004281;
-  padding: 8px 16px;
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: static;
-  margin-left: auto;
-}
-
-.back-button:hover {
-  background-color: #004281;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 85, 165, 0.2);
-}
-
-/* Элементы формы */
+/* Input group */
 .input-group {
-  margin-bottom: 18px;
-  width: 100%; /* Добавлено */
+  margin-bottom: 20px;
 }
 
-label {
+.input-label {
   display: block;
   font-size: 14px;
-  margin-bottom: 6px;
-  color: #555;
-  width: 100%; /* Добавлено */
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f7fafc;
   transition: all 0.3s ease;
-  background-color: #f9f9f9;
-  box-sizing: border-box; /* Добавлено */
-  display: block; /* Добавлено */
+  box-sizing: border-box;
 }
 
 input:focus {
-  border-color: rgba(255, 174, 0, 0.615);
   outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(255, 174, 0, 0.1);
-}
-
-/* Кнопка входа */
-.btn-login {
-  background-color: #004281;
-  color: white;
-  border: none;
-  padding: 13px 20px;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.3s ease;
-  margin-top: 5px;
-}
-
-.btn-login:hover {
-  background-color: #003365;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Сообщения об ошибках */
-.error-text {
-  font-size: 12px;
-  color: red;
-  margin-top: 4px;
-  display: block;
-}
-
-.error-message {
-  color: red;
-  margin: 12px 0;
-  text-align: center;
-  font-size: 14px;
-}
-
-.loading-message {
-  color: #666;
-  margin: 12px 0;
-  text-align: center;
-  font-size: 14px;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  background: white;
 }
 
 .input-error {
-  border-color: red !important;
+  border-color: #e53e3e !important;
 }
 
-/* Ссылка на регистрацию */
-.register-link {
-  margin-top: 18px;
-  text-align: center;
-}
-
-.register-text {
-  color: #004281;
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.2s ease;
-}
-
-.register-text:hover {
-  text-decoration: underline;
-  color: #003366;
-}
-
-/* Уведомления */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.notification.show {
-  opacity: 1;
-  visibility: visible;
-  top: 30px;
-}
-
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.8);
-}
-
-.notification.error {
-  background-color: rgba(255, 174, 0, 0.8);
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .login-container {
-    max-width: 100%;
-    padding: 20px 15px;
-  }
-  
-  .form-container {
-    padding: 20px;
-  }
-  
-  .navbar {
-    padding: 10px 15px;
-  }
-  
-  .back-button {
-    padding: 7px 12px;
-    font-size: 13px;
-  }
-}
-
-/* Адаптивные стили для маленьких экранов */
-@media (max-width: 480px) {
-  .form-container {
-    padding: 18px;
-    width: calc(100% - 20px); /* Учитываем отступы */
-    max-width: none; /* Убираем ограничение максимальной ширины */
-  }
-  
-  .form-container {
-    padding: 18px;
-    margin-top: 15px;
-  }
-  input {
-    padding: 10px;
-    width: 100%;
-  }
-  
-  .btn-login {
-    padding: 12px;
-    font-size: 15px;
-  }
-  
-  .logo-img {
-    height: 35px;
-  }
-}
-
-@media (max-width: 360px) {
-  .form-container {
-    padding: 15px;
-    width: calc(100% - 16px);
-  }
-  
-  .navbar {
-    flex-wrap: wrap;
-    padding: 8px 10px;
-  }
-  
-  .logo {
-    margin-bottom: 8px;
-  }
-  
-  .back-button {
-    width: 100%;
-    margin-top: 8px;
-    text-align: center;
-  }
-}
-/* Элементы формы */
-.input-group {
-  margin-bottom: 18px;
-  width: 100%;
-}
-
+/* Password input container */
 .password-input-container {
   position: relative;
 }
 
 .toggle-password {
   position: absolute;
-  right: 12px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #666;
-  z-index: 2;
+  color: #718096;
+  transition: color 0.2s ease;
 }
 
 .toggle-password:hover {
-  color: #333;
+  color: #2d3748;
 }
 
-/* ... остальные стили без изменений ... */
+/* Error text */
+.error-text {
+  font-size: 12px;
+  color: #e53e3e;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Error message */
+.error-message {
+  color: #e53e3e;
+  font-size: 14px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+/* Submit button */
+.btn-submit {
+  background: linear-gradient(90deg, #3182ce 0%, #2b6cb0 100%);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: linear-gradient(90deg, #2b6cb0 0%, #2c5282 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-submit:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* Links container */
+.links-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.login-link {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.link-text {
+  color: #3182ce;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.link-text:hover {
+  color: #2b6cb0;
+  text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 15px;
+  }
+
+  .form-container {
+    padding: 24px;
+    max-width: 360px;
+  }
+
+  .form-title {
+    font-size: 22px;
+  }
+
+  input,
+  .btn-submit {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 20px;
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .form-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .btn-submit {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
 
 @media (max-width: 360px) {
-  .login-container {
-    margin-top: 60px;
-    width: 95%;
-    padding: 20px;
-  }
-  
-  .navbar {
-    flex-wrap: wrap;
-    padding: 8px 10px;
-  }
-  
-  .logo {
-    margin-bottom: 8px;
-  }
-  
-  .back-button {
-    width: 100%;
-    margin-top: 8px;
-    text-align: center;
-  }
-  
   .form-container {
-    padding: 15px;
-    width: calc(100% - 16px);
+    padding: 16px;
   }
-  
-  input, .btn-login {
-    font-size: 14px;
+
+  .form-title {
+    font-size: 18px;
+  }
+
+  input,
+  .btn-submit {
+    font-size: 13px;
   }
 }
 </style>
