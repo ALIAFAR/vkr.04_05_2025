@@ -8,7 +8,18 @@
         <span>Дата: {{ chat.date }}</span>
       </div>
     </div>
-    <div class="chat-messages" ref="messagesContainer">
+    <div v-if="isLoadingChat" class="loading-state">
+      <span class="loading-icon">⏳</span>
+      <p>Загрузка чата...</p>
+    </div>
+    <div v-else-if="errorLoadingChat" class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>Не удалось загрузить чат. Попробуйте снова.</p>
+      <button class="retry-button" @click="loadChat($route.params.id)" aria-label="Попробовать снова">
+        Попробовать снова
+      </button>
+    </div>
+    <div v-else class="chat-messages" ref="messagesContainer">
       <div
         v-for="(message, index) in messages"
         :key="index"
@@ -18,13 +29,15 @@
           <img
             :src="message.isCurrentUser ? userAvatar : companionAvatar"
             alt="Avatar"
-            :aria-label="message.isCurrentUser ? 'Your avatar' : 'Companion avatar'"
+            :aria-label="message.isCurrentUser ? 'Ваш аватар' : 'Аватар собеседника'"
+            @error="handleImageError"
           />
         </div>
         <div class="message-content">
           <span class="message-sender">{{ message.senderName }}</span>
           <span class="message-text">{{ message.content }}</span>
           <span class="message-time">{{ formatTime(message.sent_at) }}</span>
+          <span v-if="message.isSending" class="message-status">Отправка...</span>
         </div>
       </div>
     </div>
@@ -32,7 +45,7 @@
       v-if="showScrollButton"
       class="scroll-bottom-btn"
       @click="scrollToBottom"
-      aria-label="Scroll to bottom"
+      aria-label="Прокрутить вниз"
     >
       <span class="scroll-icon">⬇</span>
     </button>
@@ -42,10 +55,25 @@
         @keyup.enter="sendMessage"
         placeholder="Введите сообщение..."
         aria-label="Введите сообщение"
+        :disabled="isSendingMessage"
       />
-      <button @click="sendMessage" aria-label="Отправить сообщение">
-        <span class="send-text">Отправить</span>
+      <button
+        @click="sendMessage"
+        :disabled="isSendingMessage || !newMessage.trim()"
+        aria-label="Отправить сообщение"
+        class="action-button send"
+      >
+        <span v-if="isSendingMessage" class="loading-icon">⏳</span>
+        <span v-else class="send-text">Отправить</span>
         <span class="send-icon">➤</span>
+      </button>
+      <button
+        class="action-button clear-input"
+        @click="clearInput"
+        aria-label="Очистить поле ввода"
+        :disabled="!newMessage.trim()"
+      >
+        Очистить
       </button>
     </div>
   </div>
@@ -56,6 +84,7 @@ import axios from 'axios';
 import AppNavbar from "@/components/AppNavbar.vue";
 import Cookies from 'js-cookie';
 import { API_CONFIG } from '@/config/api';
+import { debounce } from 'lodash';
 
 export default {
   components: {
@@ -72,8 +101,12 @@ export default {
       currentUserId: null,
       companionId: null,
       showScrollButton: false,
+      isLoadingChat: false,
+      errorLoadingChat: false,
+      isSendingMessage: false,
       reconnectAttempts: 0,
       maxReconnectAttempts: 5,
+      reconnectDelay: 3000,
     };
   },
   async created() {
@@ -86,12 +119,14 @@ export default {
   },
   beforeUnmount() {
     if (this.socket) {
-      this.socket.close();
+      this.socket.close(1000, 'Component unmounted');
     }
   },
   methods: {
     async loadChat(chatId) {
       try {
+        this.isLoadingChat = true;
+        this.errorLoadingChat = false;
         const response = await axios.get(
           `${API_CONFIG.BASE_URL}/chat/${chatId}`,
           {
@@ -106,16 +141,22 @@ export default {
           : this.chat.passenger_id;
       } catch (error) {
         console.error("Ошибка при загрузке данных о чате:", error);
-        alert("Не удалось загрузить данные чата. Попробуйте позже.");
+        this.errorLoadingChat = true;
+        this.$toast.error('Не удалось загрузить данные чата.');
+      } finally {
+        this.isLoadingChat = false;
       }
     },
     async loadMessages(chatId) {
       try {
-        const response = await axios.get(`${API_CONFIG.BASE_URL}/chat/${chatId}/messages`, {
-          headers: {
-            'Authorization': `Bearer ${Cookies.get("token")}`
+        const response = await axios.get(
+          `${API_CONFIG.BASE_URL}/chat/${chatId}/messages`,
+          {
+            headers: {
+              'Authorization': `Bearer ${Cookies.get("token")}`
+            }
           }
-        });
+        );
         this.messages = response.data.map(msg => ({
           ...msg,
           isCurrentUser: msg.sender_id === this.currentUserId,
@@ -124,51 +165,59 @@ export default {
         this.$nextTick(() => this.scrollToBottom());
       } catch (error) {
         console.error("Ошибка при загрузке сообщений:", error);
-        alert("Не удалось загрузить сообщения. Попробуйте позже.");
+        this.$toast.error('Не удалось загрузить сообщения.');
       }
     },
     initWebSocket(chatId) {
       const connect = () => {
-        this.socket = new WebSocket(`${API_CONFIG.WS_URL}/chat/${chatId}`);
+        try {
+          this.socket = new WebSocket(`${API_CONFIG.WS_URL}/chat/${chatId}`);
 
-        this.socket.onopen = () => {
-          console.log('WebSocket соединение установлено');
-          this.reconnectAttempts = 0; // Reset attempts on successful connection
-          this.socket.send(JSON.stringify({
-            type: 'auth',
-            token: Cookies.get('token'), // Send token for authentication
-            user_id: this.currentUserId
-          }));
-        };
+          this.socket.onopen = () => {
+            console.log('WebSocket соединение установлено');
+            this.reconnectAttempts = 0;
+            this.socket.send(JSON.stringify({
+              type: 'auth',
+              token: Cookies.get('token'),
+              user_id: this.currentUserId
+            }));
+            this.$toast.success('Подключение к чату установлено.');
+          };
 
-        this.socket.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            if (message.type === 'message') {
-              this.handleNewMessage(message);
+          this.socket.onmessage = (event) => {
+            try {
+              const message = JSON.parse(event.data);
+              if (message.type === 'message') {
+                this.handleNewMessage(message);
+              }
+            } catch (error) {
+              console.error('Ошибка обработки WebSocket сообщения:', error);
+              this.$toast.error('Ошибка обработки сообщения.');
             }
-          } catch (error) {
-            console.error('Ошибка обработки WebSocket сообщения:', error);
-          }
-        };
+          };
 
-        this.socket.onclose = (event) => {
-          console.log('WebSocket соединение закрыто:', event);
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            setTimeout(() => {
-              console.log(`Попытка переподключения ${this.reconnectAttempts + 1}...`);
-              this.reconnectAttempts++;
-              connect();
-            }, 3000);
-          } else {
-            console.error('Достигнуто максимальное количество попыток переподключения.');
-            alert('Не удалось подключиться к чату. Проверьте соединение.');
-          }
-        };
+          this.socket.onclose = (event) => {
+            console.log('WebSocket соединение закрыто:', event);
+            if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+              const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
+              setTimeout(() => {
+                console.log(`Попытка переподключения ${this.reconnectAttempts + 1}...`);
+                this.reconnectAttempts++;
+                connect();
+              }, delay);
+            } else if (event.code !== 1000) {
+              console.error('Достигнуто максимальное количество попыток переподключения.');
+              this.$toast.error('Не удалось подключиться к чату. Используется резервный режим.');
+            }
+          };
 
-        this.socket.onerror = (error) => {
-          console.error('WebSocket ошибка:', error);
-        };
+          this.socket.onerror = (error) => {
+            console.error('WebSocket ошибка:', error);
+          };
+        } catch (error) {
+          console.error('Ошибка инициализации WebSocket:', error);
+          this.$toast.error('Ошибка подключения к чату.');
+        }
       };
 
       connect();
@@ -177,62 +226,77 @@ export default {
       this.messages.push({
         ...message,
         isCurrentUser: message.sender_id === this.currentUserId,
-        senderName: message.sender_id === this.currentUserId ? 'Вы' : 'Собеседник'
+        senderName: message.sender_id === this.currentUserId ? 'Вы' : 'Собеседник',
+        isSending: false
       });
       this.$nextTick(() => this.scrollToBottom());
     },
-    async sendMessage() {
+    sendMessage: debounce(async function () {
       if (!this.newMessage.trim()) {
-        alert("Сообщение не может быть пустым!");
+        this.$toast.warning('Сообщение не может быть пустым.');
         return;
       }
 
-      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-        alert("Нет соединения с сервером. Попробуйте позже.");
-        return;
-      }
+      this.isSendingMessage = true;
+      const messageData = {
+        type: 'message',
+        chat_id: parseInt(this.$route.params.id),
+        sender_id: this.currentUserId,
+        content: this.newMessage,
+        sent_at: new Date().toISOString()
+      };
 
       try {
-        const messageData = {
-          type: 'message',
-          chat_id: parseInt(this.$route.params.id),
-          sender_id: this.currentUserId,
-          content: this.newMessage,
-          sent_at: new Date().toISOString()
-        };
-
-        // Send via WebSocket
-        this.socket.send(JSON.stringify(messageData));
-
-        // Optionally persist to backend via HTTP
-        await axios.post(
-          `${API_CONFIG.BASE_URL}/chat/${this.$route.params.id}/messages`,
-          {
-            content: this.newMessage,
-            sender_id: this.currentUserId
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${Cookies.get("token")}`
-            }
-          }
-        );
-
-        // Add message to UI immediately (optimistic update)
+        // Optimistic update
         this.messages.push({
-          content: this.newMessage,
-          sender_id: this.currentUserId,
+          ...messageData,
           isCurrentUser: true,
           senderName: 'Вы',
-          sent_at: new Date().toISOString()
+          isSending: true
         });
-
         this.newMessage = "";
         this.$nextTick(() => this.scrollToBottom());
+
+        // Try WebSocket
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          this.socket.send(JSON.stringify(messageData));
+        } else {
+          // Fallback to HTTP
+          await axios.post(
+            `${API_CONFIG.BASE_URL}/chat/${this.$route.params.id}/messages`,
+            {
+              content: messageData.content,
+              sender_id: messageData.sender_id
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${Cookies.get("token")}`
+              }
+            }
+          );
+        }
+
+        // Update message status
+        this.messages = this.messages.map(msg =>
+          msg.sent_at === messageData.sent_at && msg.isSending
+            ? { ...msg, isSending: false }
+            : msg
+        );
+        this.$toast.success('Сообщение отправлено.');
       } catch (error) {
         console.error("Ошибка при отправке сообщения:", error);
-        alert("Не удалось отправить сообщение. Попробуйте снова.");
+        this.$toast.error('Не удалось отправить сообщение.');
+        // Revert optimistic update on failure
+        this.messages = this.messages.filter(
+          msg => !(msg.sent_at === messageData.sent_at && msg.isSending)
+        );
+      } finally {
+        this.isSendingMessage = false;
       }
+    }, 300),
+    clearInput() {
+      this.newMessage = "";
+      this.$toast.info('Поле ввода очищено.');
     },
     scrollToBottom() {
       this.$nextTick(() => {
@@ -253,10 +317,14 @@ export default {
       }
     },
     formatTime(timestamp) {
-      return new Date(timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
+      if (!timestamp) return 'Не указано';
+      const date = new Date(timestamp);
+      return isNaN(date.getTime())
+        ? 'Неверное время'
+        : date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    },
+    handleImageError(event) {
+      event.target.src = 'https://via.placeholder.com/40?text=Avatar';
     }
   }
 };
@@ -264,19 +332,6 @@ export default {
 
 <style scoped>
 /* Базовые стили */
-.chat-page {
-  max-width: 600px;
-  margin: 80px auto 0;
-  padding: 20px;
-  background-color: var(--bg-color);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  min-height: calc(100vh - 80px);
-  display: flex;
-  flex-direction: column;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-/* Переменные для темы, синхронизированные с AppNavbar и ChatPage */
 :root {
   --bg-color: #ffffff;
   --text-color: #1a1a1a;
@@ -287,6 +342,9 @@ export default {
   --secondary-color: #6b7280;
   --message-you-bg: #004281;
   --message-other-bg: #e5e7eb;
+  --danger-color: #ff1a1a; /* Bright red for better contrast */
+  --danger-hover: #cc0000;
+  --success-color: #10b981;
 }
 
 .dark-theme {
@@ -299,6 +357,21 @@ export default {
   --secondary-color: #94a3b8;
   --message-you-bg: #60a5fa;
   --message-other-bg: #334155;
+  --danger-color: #ff5555; /* Brighter red for dark mode */
+  --danger-hover: #bb0000;
+  --success-color: #34d399;
+}
+
+.chat-page {
+  max-width: 600px;
+  margin: 80px auto 0;
+  padding: 20px;
+  background-color: var(--bg-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .chat-header {
@@ -370,12 +443,6 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.message-time {
-  font-size: 0.75rem;
-  color: var(--secondary-color);
-  margin-top: 2px;
-}
-
 .message-you .message-content {
   margin-left: auto;
   margin-right: 12px;
@@ -385,6 +452,18 @@ export default {
 .message-you .message-text {
   background-color: var(--message-you-bg);
   color: white;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+  margin-top: 2px;
+}
+
+.message-status {
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+  font-style: italic;
 }
 
 .scroll-bottom-btn {
@@ -446,30 +525,64 @@ export default {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.chat-input button {
+.action-button {
   padding: 10px 16px;
-  background-color: var(--accent-color);
-  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-size: 0.95rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.chat-input button:hover,
-.chat-input button:focus-visible {
+.action-button.send {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.action-button.send:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-button.send:hover:not(:disabled),
+.action-button.send:focus-visible:not(:disabled) {
   background-color: var(--accent-hover);
   transform: translateY(-1px);
 }
 
-.chat-input button:focus-visible {
+.action-button.send:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
+}
+
+.action-button.clear-input {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-button.clear-input:hover:not(:disabled),
+.action-button.clear-input:focus-visible:not(:disabled) {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-button.clear-input:disabled {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  cursor: not-allowed;
+  transform: none;
 }
 
 .send-text {
@@ -478,6 +591,43 @@ export default {
 
 .send-icon {
   font-size: 1.1rem;
+}
+
+.loading-state, .error-state {
+  padding: 24px;
+  border-radius: 10px;
+  text-align: center;
+  color: var(--secondary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  border: 2px dashed var(--border-color);
+  margin-bottom: 24px;
+}
+
+.loading-icon, .error-icon {
+  font-size: 2.5rem;
+  opacity: 0.7;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover,
+.retry-button:focus-visible {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes fadeIn {
@@ -539,7 +689,7 @@ export default {
     font-size: 0.9rem;
   }
   
-  .chat-input button {
+  .action-button {
     padding: 8px 12px;
   }
 }

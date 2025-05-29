@@ -1,7 +1,7 @@
 // src/config/api.js
 export const API_CONFIG = {
     BASE_URL: 'https://unigo.onrender.com/api',
-    WS_URL: 'ws//unigo.onrender.com',
+    WS_URL: 'wss://unigo.onrender.com/ws',
     TINKOFF_TERMINAL_KEY: '16009807012222DEMO'
     /*ENDPOINTS: {
       AUTH: '/auth',
@@ -9,4 +9,4 @@ export const API_CONFIG = {
       USERS: '/users',
       // добавьте другие эндпоинты по мере необходимости
     }*/
-  }
+};
