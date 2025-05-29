@@ -64,7 +64,7 @@
             </div>
             
             <div class="trip-actions">
-              <button class="action-button edit" @click.stop="openEditModal(trip)" aria-label="Редактировать поездку">
+              <button class="action-button" @click.stop="openEditModal(trip)" aria-label="Редактировать поездку">
                 Редактировать
               </button>
               <button class="action-button reschedule" @click.stop="openRescheduleModal(trip)" aria-label="Перенести поездку">
@@ -155,7 +155,7 @@
                 </div>
               </div>
               <div class="add-stop">
-                <input id="new-stop" type="text" v-model="newStop" placeholder="Добавить остановку" aria-label="New Stop">
+                <input id="new-stop" type="text" v-model="newStop" placeholder="Добавить остановку" aria-label="Новая остановка">
                 <button type="button" class="add-stop-button" @click="addStop" aria-label="Добавить остановку">
                   +
                 </button>
@@ -642,8 +642,8 @@ export default {
   --accent-hover: #003366;
   --success-color: #10b981;
   --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
+  --danger-color: #ff3333;
+  --danger-hover: #cc0000;
 }
 
 .dark-mode {
@@ -656,8 +656,8 @@ export default {
   --accent-hover: #3b82f6;
   --success-color: #34d399;
   --warning-color: #facc15;
-  --danger-color: #f87171;
-  --danger-hover: #dc2626;
+  --danger-color: #ff5555;
+  --danger-hover: #cc3333;
 }
 
 .trip-details {
@@ -786,6 +786,7 @@ export default {
   transition: all 0.2s ease;
   min-width: 100px;
   text-align: center;
+  z-index: 2;
 }
 
 .action-button.edit {
@@ -802,16 +803,22 @@ export default {
   background-color: var(--danger-color);
   color: white;
   border: 1px solid var(--danger-color);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .action-button.cancel-booking {
   background-color: var(--danger-color);
   color: white;
   border: 1px solid var(--danger-color);
-  font-weight: 600;
-  padding: 8px 14px;
-  min-width: 140px;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 16px;
+  min-width: 160px;
   margin-top: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  z-index: 2;
 }
 
 .action-button.cancel:hover,
@@ -820,13 +827,13 @@ export default {
 .action-button.cancel-booking:focus-visible {
   background-color: var(--danger-hover);
   border-color: var(--danger-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .action-button:hover,
 .action-button:focus-visible {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -876,7 +883,7 @@ export default {
 .retry-button:hover,
 .retry-button:focus-visible {
   background-color: var(--accent-hover);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -919,16 +926,12 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
-}
-
-.dark-mode .modal-overlay {
-  background-color: #1e293b;
 }
 
 .modal {
@@ -938,10 +941,11 @@ export default {
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   transition: transform 0.3s ease;
   transform: scale(1);
   opacity: 1;
+  z-index: 1001;
 }
 
 .dark-mode .modal {
@@ -958,6 +962,7 @@ export default {
   color: var(--secondary-color);
   cursor: pointer;
   transition: color 0.2s ease;
+  z-index: 1002;
 }
 
 .modal-close-button:hover,
@@ -1083,87 +1088,7 @@ export default {
   border-radius: 8px;
   font-size: 0.95rem;
 }
-.trip-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 16px;
-  flex-wrap: wrap;
-  width: 100%;
-}
 
-.action-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  text-align: center;
-  flex: 1;
-}
-
-.action-button.edit {
-  background-color: var(--warning-color);
-  color: #1a202c;
-}
-
-.action-button.reschedule {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.action-button.cancel {
-  background-color: var(--danger-color);
-  color: white;
-  border: 1px solid var(--danger-color);
-}
-
-.action-button.cancel-booking {
-  background-color: var(--danger-color);
-  color: white;
-  border: 1px solid var(--danger-color);
-  font-weight: 600;
-  padding: 8px 14px;
-  min-width: 140px;
-  margin-top: 8px;
-}
-
-/* Улучшенные стили для мобильных устройств */
-@media (max-width: 768px) {
-  .trip-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .action-button {
-    width: 100%;
-    padding: 12px;
-  }
-}
-
-/* Анимация при наведении */
-.action-button:hover,
-.action-button:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  opacity: 0.9;
-}
-
-.action-button.cancel:hover,
-.action-button.cancel-booking:hover,
-.action-button.cancel:focus-visible,
-.action-button.cancel-booking:focus-visible {
-  background-color: var(--danger-hover);
-  border-color: var(--danger-hover);
-}
-
-.action-button:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
-}
 .remove-stop {
   background: var(--danger-color);
   color: white;
@@ -1238,8 +1163,9 @@ export default {
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   opacity: 1;
+  z-index: 1001;
 }
 
 .dark-mode .modal-content {
@@ -1416,7 +1342,6 @@ export default {
   }
 
   .modal {
-    padding: flex;
     padding: 20px;
   }
 
@@ -1428,6 +1353,12 @@ export default {
     width: 36px;
     height: 36px;
   }
+
+  .action-button.cancel-booking {
+    min-width: 120px;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1436,7 +1367,7 @@ export default {
   }
 
   .section-title {
-    font-size: 1.1em;
+    font-size: 1.1rem;
   }
 
   .detail-item p,
@@ -1457,6 +1388,11 @@ export default {
   .passenger-details {
     flex-direction: column;
     gap: 4px;
+  }
+
+  .action-button.cancel-booking {
+    min-width: 100px;
+    font-size: 0.9rem;
   }
 }
 </style>
