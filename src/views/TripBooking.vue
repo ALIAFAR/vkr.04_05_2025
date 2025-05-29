@@ -348,6 +348,7 @@ export default {
 
         if (trips.length === 0) {
           console.warn("API вернул пустой список поездок");
+          console.log(token)
         }
       } catch (error) {
         console.error("Ошибка при загрузке забронированных поездок:", error);
