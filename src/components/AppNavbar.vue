@@ -39,7 +39,6 @@
         <button class="menu-item theme-toggle" @click="toggleTheme" aria-label="Переключить тему">
           <span v-if="isDarkTheme" class="theme-icon">☀️</span>
           <span v-else class="theme-icon">🌙</span>
-          <span class="theme-text">{{ isDarkTheme  }}</span>
         </button>
 
         <!-- Профиль -->
@@ -51,7 +50,6 @@
               alt="Профиль"
             />
             <span v-if="windowWidth > 768" class="profile-name">
-              {{ isAuthenticated ? 'Мой профиль' : 'Войти' }}
             </span>
           </div>
           <div v-if="isProfileDropdownVisible" class="dropdown-menu">
