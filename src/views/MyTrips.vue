@@ -656,8 +656,8 @@ export default {
   --accent-hover: #3b82f6;
   --success-color: #34d399;
   --warning-color: #facc15;
-  --danger-color: #ff5555;
-  --danger-hover: #cc3333;
+  --danger-color: #ff4444; /* Brighter red for dark mode */
+  --danger-hover: #bb0000; /* Darker hover for dark mode */
 }
 
 .trip-details {
@@ -803,7 +803,10 @@ export default {
   background-color: var(--danger-color);
   color: white;
   border: 1px solid var(--danger-color);
+  font-weight: 600;
+  text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .action-button.cancel-booking {
