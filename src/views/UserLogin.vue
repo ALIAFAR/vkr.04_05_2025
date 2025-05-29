@@ -139,50 +139,60 @@ export default {
     },
     async handleLogin() {
       if (!this.isFormValid) {
-        this.error = "Пожалуйста, проверьте введенные данные.";
-        return;
+          this.error = "Пожалуйста, проверьте введенные данные.";
+          return;
       }
 
       this.isLoading = true;
       this.error = "";
 
       try {
-        const response = await axios.post(API_CONFIG.BASE_URL + "/user/login", {
-          login: this.emailOrPhone,
-          password: this.password,
-        });
+          const response = await axios.post(API_CONFIG.BASE_URL + "/user/login", {
+              login: this.emailOrPhone,
+              password: this.password,
+          });
 
-        console.log("response.data.token:",response.data.token)
+          console.log("Ответ сервера:", response.data);
 
-        if(response.data.token==-1){
-          this.$router.push("/operator-panel");
-        }
+          // Сохраняем токен и роль
+          Cookies.set("token", response.data.token, { expires: 12 / 24 });
+          Cookies.set("role", response.data.role, { expires: 12 / 24 });
 
-        Cookies.set("token", response.data.token, { expires: 12 / 24 });
+          // Проверка роли оператора
+          if (response.data.role === 'operator') {
+              notify({
+                  title: "Успех",
+                  text: "Вы вошли как оператор!",
+                  type: "success",
+              });
+              this.$router.push("/operator-panel");
+              return;
+          }
 
-        notify({
-          title: "Успех",
-          text: "Вы успешно вошли в систему!",
-          type: "success",
-        });
-
-        this.$router.push("/");
+          // Обычный пользователь
+          notify({
+              title: "Успех",
+              text: "Вы успешно вошли в систему!",
+              type: "success",
+          });
+          this.$router.push("/");
+          
       } catch (error) {
-        console.error("Ошибка при входе:", error);
+          console.error("Ошибка при входе:", error);
 
-        if (error.response) {
-          this.error =
-            error.response.data.message || "Неверная почта, номер или пароль";
-        } else if (error.request) {
-          this.error =
-            "Ошибка сети. Пожалуйста, проверьте подключение к интернету.";
-        } else {
-          this.error = "Произошла ошибка. Пожалуйста, попробуйте еще раз.";
-        }
+          if (error.response) {
+              this.error =
+                  error.response.data.message || "Неверная почта, номер или пароль";
+          } else if (error.request) {
+              this.error =
+                  "Ошибка сети. Пожалуйста, проверьте подключение к интернету.";
+          } else {
+              this.error = "Произошла ошибка. Пожалуйста, попробуйте еще раз.";
+          }
       } finally {
-        this.isLoading = false;
+          this.isLoading = false;
       }
-    },
+  },
   },
   created() {
     if (Cookies.get("authToken")) {
