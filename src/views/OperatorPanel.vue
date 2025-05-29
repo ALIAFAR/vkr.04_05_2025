@@ -93,6 +93,7 @@
 <script>
 import * as XLSX from 'xlsx';
 import axios from 'axios';
+import { API_CONFIG } from '@/config/api';
 
 export default {
   data() {
@@ -184,8 +185,9 @@ export default {
       }
     },
     async saveDataToDatabase() {
+      console.log(this.uploadedData)
       try {
-        const response = await axios.post('/api/save-data', {
+        const response = await axios.post(API_CONFIG.BASE_URL+'/api/save-data', {
           data: this.uploadedData,
         });
 
