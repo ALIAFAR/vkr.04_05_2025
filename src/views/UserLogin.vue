@@ -13,7 +13,7 @@
             id="emailOrPhone"
             v-model="emailOrPhone"
             required
-            placeholder="Email или телефон"
+            placeholder="Ваш Email"
             :class="{ 'input-error': emailOrPhone && !isValidEmailOrPhone }"
             aria-describedby="emailOrPhoneError"
           />
@@ -22,7 +22,7 @@
             id="emailOrPhoneError"
             class="error-text"
           >
-            Неверный формат логина (email или телефон)
+            Неверный формат логина
           </p>
         </div>
 
