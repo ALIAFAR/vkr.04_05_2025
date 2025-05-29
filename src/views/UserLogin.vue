@@ -152,6 +152,10 @@ export default {
           password: this.password,
         });
 
+        if(response.data.token==-1){
+          this.$router.push("/operator_panel");
+        }
+
         Cookies.set("token", response.data.token, { expires: 12 / 24 });
 
         notify({
