@@ -152,6 +152,8 @@ export default {
           password: this.password,
         });
 
+        console.log("response.data.token:",response.data.token)
+
         if(response.data.token==-1){
           this.$router.push("/operator-panel");
         }
