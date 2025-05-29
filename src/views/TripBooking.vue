@@ -256,17 +256,25 @@ export default {
   },
   async created() {
     await this.fetchCurrentUser();
-    this.loadBookedTrips(true);
-    emitter.on('bookingCreated', () => this.loadBookedTrips(true));
+    await this.loadBookedTrips(true);
+    emitter.on('bookingCreated', this.handleBookingCreated);
   },
   beforeUnmount() {
-    emitter.off('bookingCreated', () => this.loadBookedTrips(true));
+    emitter.off('bookingCreated', this.handleBookingCreated);
   },
   methods: {
     async fetchCurrentUser() {
       try {
         const token = Cookies.get('token');
-        if (!token) return;
+        if (!token) {
+          this.$notify({
+            title: "Ошибка",
+            text: "Пожалуйста, войдите в систему",
+            type: "error",
+          });
+          this.$router.push("/login");
+          return;
+        }
 
         const response = await axios.get(API_CONFIG.BASE_URL + '/user/profile', {
           headers: { Authorization: `Bearer ${token}` },
@@ -280,6 +288,27 @@ export default {
           type: "error",
         });
       }
+    },
+    async handleBookingCreated(bookingData) {
+      // Добавляем новую поездку в список
+      const newTrip = {
+        id_trip: bookingData.trip_id,
+        booking_id: bookingData.booking_id,
+        from: bookingData.departure_location || 'Не указано',
+        to: bookingData.arrival_location || 'Не указано',
+        departuredate: bookingData.departure_time || '',
+        departuretime: bookingData.departure_time?.split('T')[1]?.slice(0, 5) || 'Не указано',
+        seats_booked: bookingData.seats_booked || 1,
+        stops: Array.isArray(bookingData.stops) ? bookingData.stops.join(', ') : bookingData.stops || 'Нет',
+        driver_id: bookingData.driver_id || null,
+        trip_status: 'active',
+      };
+      this.bookedTrips = [...this.bookedTrips, newTrip];
+      this.$notify({
+        title: "Успех",
+        text: "Поездка успешно добавлена в ваши бронирования",
+        type: "success",
+      });
     },
     async loadBookedTrips(force = false) {
       if (!force && this.bookedTrips.length && !this.errorLoadingTrips) return;
@@ -301,7 +330,7 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Ответ API /booking/get-booked:", response.data); // Отладка
+        console.log("Ответ API /booking/get-booked:", response.data);
 
         const trips = Array.isArray(response.data.bookedTrips) ? response.data.bookedTrips : [];
         this.bookedTrips = trips.map(trip => ({
@@ -314,7 +343,7 @@ export default {
           seats_booked: trip.seats_booked || 1,
           stops: Array.isArray(trip.stops) ? trip.stops.join(', ') : trip.stops || 'Нет',
           driver_id: trip.driver_id,
-          trip_status: trip.trip_status || 'active', // Предполагаем active, если не указано
+          trip_status: trip.trip_status || 'active',
         }));
 
         if (trips.length === 0) {
@@ -361,7 +390,7 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Ответ API /user/get-all:", passengersResponse.data); // Отладка
+        console.log("Ответ API /user/get-all:", passengersResponse.data);
 
         this.passengers = (passengersResponse.data.passengers || []).map(passenger => ({
           ...passenger,
