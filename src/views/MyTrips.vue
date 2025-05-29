@@ -2,80 +2,75 @@
   <div>
     <AppNavbar />
 
-    <div class="booking-details">
+    <div class="trip-details">
       <div class="details-header">
-        <h1>Мои забронированные поездки</h1>
-        <button class="refresh-button" @click="loadBookedTrips" aria-label="Обновить список поездок">
-          Обновить
-        </button>
+        <h1 class="header-title">Мои опубликованные поездки</h1>
       </div>
 
-      <!-- Loading Indicator -->
-      <div v-if="loading" class="loading-state">
+      <!-- Loading State -->
+      <div v-if="isLoadingTrips" class="loading-state">
         <span class="loading-icon">⏳</span>
         <p>Загрузка поездок...</p>
       </div>
 
-      <!-- Error Message -->
-      <div v-if="error && !loading" class="error-state">
+      <!-- Error State -->
+      <div v-else-if="errorLoadingTrips" class="error-state">
         <span class="error-icon">⚠️</span>
-        <p>{{ error }}</p>
-        <button class="retry-button" @click="loadBookedTrips" aria-label="Попробовать снова">
+        <p>Не удалось загрузить поездки. Попробуйте снова.</p>
+        <button class="retry-button" @click="loadUserTrips" aria-label="Попробовать снова">
           Попробовать снова
         </button>
       </div>
 
-      <!-- Список забронированных поездок -->
-      <div class="booking-list">
-        <div v-if="bookedTrips.length === 0 && !loading && !error" class="no-trips">
-          У вас нет забронированных поездок.
-        </div>
-        <div v-else>
+      <!-- Активные поездки -->
+      <div v-else-if="activeTrips.length > 0">
+        <h2 class="section-title">Активные поездки</h2>
+        <div class="trip-list">
           <div 
-            v-for="(trip, index) in bookedTrips" 
-            :key="index" 
+            v-for="trip in activeTrips" 
+            :key="trip.id" 
             class="trip-item"
+            @click="showPassengers(trip.id)"
+            role="button"
+            tabindex="0"
+            @keydown.enter="showPassengers(trip.id)"
           >
             <div class="trip-content">
+              <div class="trip-icon">🚗</div>
               <div class="detail-item">
                 <p><strong>Откуда:</strong></p>
-                <span>{{ trip.from }}</span>
+                <span>{{ trip.departure_location }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Куда:</strong></p>
-                <span>{{ trip.to }}</span>
+                <span>{{ trip.arrival_location }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Дата отбытия:</strong></p>
-                <span>{{ formatDate(trip.departuredate) }}</span>
+                <span>{{ formatDate(trip.departure_time) }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Время отбытия:</strong></p>
-                <span>{{ trip.departuretime }}</span>
+                <span>{{ formatTime(trip.departure_time) }}</span>
               </div>
               <div class="detail-item">
-                <p><strong>Цена:</strong></p>
-                <span>{{ trip.cost }} ₽</span>
+                <p><strong>Пассажиры:</strong></p>
+                <span>{{ trip.seats }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Остановки:</strong></p>
-                <span>{{ trip.stops }}</span>
+                <span>{{ trip.stops.join(', ') || 'Нет' }}</span>
               </div>
             </div>
             
             <div class="trip-actions">
-              <button 
-                class="action-button view-passengers" 
-                @click="showPassengers(trip, 'departure')"
-                aria-label="Посмотреть пассажиров"
-              >
-                Пассажиры
+              <button class="action-button" @click.stop="openEditModal(trip)" aria-label="Редактировать поездку">
+                Редактировать
               </button>
-              <button 
-                class="action-button cancel" 
-                @click="cancelBooking(trip)"
-                aria-label="Отменить бронирование"
-              >
+              <button class="action-button reschedule" @click.stop="openRescheduleModal(trip)" aria-label="Перенести поездку">
+                Перенести
+              </button>
+              <button class="action-button cancel" @click.stop="confirmCancel(trip)" aria-label="Отменить поездку">
                 Отменить
               </button>
             </div>
@@ -83,77 +78,192 @@
         </div>
       </div>
 
-      <button class="back-button" @click="goToHome" aria-label="Вернуться на главную">
-        Вернуться на главную
-      </button>
-    </div>
-
-    <!-- Модальное окно с пассажирами -->
-    <div v-if="showPassengersModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <button class="modal-close" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
-        
-        <!-- Информация о водителе -->
-        <div class="driver-info-modal" v-if="driver">
-          <img :src="driver.avatarurl || '/default-avatar.jpg'" class="driver-avatar" @error="handleImageError" alt="Аватар водителя">
-          <div class="driver-details">
-            <h4>{{ driver.driver_name }} {{ driver.driver_surname }}</h4>
-            <p>Рейтинг: ★ {{ driver.rating?.toFixed(1) || 'Нет оценки' }}</p>
-            <p>Стаж: {{ calculateDrivingExperience(driver.license_issue_date) }}</p>
-            <p>Автомобиль: {{ driver.brand }} {{ driver.mark }}</p>
-          </div>
-        </div>
-        
-        <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
-        <p class="location-info">{{ currentLocation }}</p>
-        
-        <div class="passengers-filter">
-          <label>
-            <input type="checkbox" v-model="showOnlyMyBookings" aria-label="Показать только мои бронирования">
-            Показать только мои бронирования
-          </label>
-        </div>
-        
-        <div class="passengers-list">
-          <div v-if="filteredPassengers.length === 0" class="no-passengers">
-            <p>Нет забронировавших пассажиров</p>
-          </div>
-          <div v-else>
-            <div v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
-              <router-link :to="`/profile/${passenger.user_id}`" class="passenger-avatar-link" :aria-label="`Профиль пассажира ${passenger.name} ${passenger.surname}`">
-                <img 
-                  :src="passenger.avatarUrl || '/default-avatar.jpg'" 
-                  alt="Аватар пассажира" 
-                  class="passenger-avatar"
-                  @error="handleImageError"
-                >
-              </router-link>
-              <div class="passenger-info">
-                <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
-                <div class="passenger-meta">
-                  <span class="passenger-gender" :class="passenger.gender">
-                    {{ passenger.gender === 'male' ? 'Женщина' : 'Мужчина' }}
-                  </span>
-                  <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
-                  <span v-if="passenger.passenger_rating" class="passenger-rating">
-                    ★ {{ passenger.passenger_rating.toFixed(1) }}
-                  </span>
-                </div>
-                <div class="passenger-details">
-                  <span class="passenger-seats">Мест: {{ passenger.seats_booked }}</span>
-                  <span class="passenger-price">{{ passenger.position }} ₽</span>
-                </div>
-                <div v-if="passenger.comment" class="passenger-comment">
-                  "{{ passenger.comment }}"
-                </div>
+      <!-- Завершённые поездки -->
+      <div v-if="completedTrips.length > 0">
+        <h2 class="section-title">Завершённые поездки</h2>
+        <div class="trip-list">
+          <div v-for="trip in completedTrips" :key="trip.id" class="trip-item completed">
+            <div class="trip-content">
+              <div class="trip-icon">🚖</div>
+              <div class="detail-item">
+                <p><strong>Откуда:</strong></p>
+                <span>{{ trip.departure_location }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Куда:</strong></p>
+                <span>{{ trip.arrival_location }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Дата отбытия:</strong></p>
+                <span>{{ formatDate(trip.departure_time) }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Время отбытия:</strong></p>
+                <span>{{ formatTime(trip.departure_time) }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Пассажиры:</strong></p>
+                <span>{{ trip.seats }}</span>
+              </div>
+              <div class="detail-item">
+                <p><strong>Остановки:</strong></p>
+                <span>{{ trip.stops.join(', ') || 'Нет' }}</span>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="passengers-summary">
-          <p>Всего пассажиров: {{ filteredPassengers.length }}</p>
-          <p>Общее количество мест: {{ totalBookedSeats }}</p>
+      </div>
+
+      <div v-if="!isLoadingTrips && !errorLoadingTrips && userTrips.length === 0" class="no-trips">
+        <span class="no-trips-icon">🚍</span>
+        <p>У вас нет опубликованных поездок.</p>
+        <button class="create-trip-btn" @click="goToCreateTrip" aria-label="Создать новую поездку">
+          Создать поездку
+        </button>
+      </div>
+
+      <button class="back-button" @click="goToHome" aria-label="Вернуться на главную">
+        Назад
+      </button>
+
+      <!-- Модальное окно редактирования -->
+      <div v-if="showEditModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal">
+          <button class="modal-close-button" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
+          <h3>Редактировать поездку</h3>
+          <form @submit.prevent="saveEdit">
+            <div class="form-group">
+              <label for="departure_location">Откуда:</label>
+              <input id="departure_location" v-model="editingTrip.departure_location" required aria-label="Место отправления">
+            </div>
+            <div class="form-group">
+              <label for="arrival_location">Куда:</label>
+              <input id="arrival_location" v-model="editingTrip.arrival_location" required aria-label="Место прибытия">
+            </div>
+            <div class="form-group">
+              <label for="seats">Пассажиры:</label>
+              <input id="seats" type="number" v-model="editingTrip.seats" required aria-label="Количество пассажиров" min="1">
+            </div>
+            <div class="form-group">
+              <label>Остановки:</label>
+              <div class="stops-list">
+                <div v-for="(stop, index) in editingTrip.stops" :key="index" class="stop-item">
+                  <input v-model="editingTrip.stops[index]" :aria-label="`Остановка ${index + 1}`">
+                  <button type="button" class="remove-stop" @click="removeStop(index)" aria-label="Удалить остановку">
+                    ×
+                  </button>
+                </div>
+              </div>
+              <div class="add-stop">
+                <input id="new-stop" type="text" v-model="newStop" placeholder="Добавить остановку" aria-label="Новая остановка">
+                <button type="button" class="add-stop-button" @click="addStop" aria-label="Добавить остановку">
+                  +
+                </button>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="cancel-btn" @click="closeModal">Отмена</button>
+              <button type="submit" class="save-button">Сохранить</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Модальное окно переноса -->
+      <div v-if="showRescheduleModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal">
+          <button class="modal-close-button" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
+          <h3>Перенести поездку</h3>
+          <form @submit.prevent="saveReschedule">
+            <div class="form-group">
+              <label for="new-date">Новая дата:</label>
+              <input id="new-date" type="date" v-model="rescheduleData.newDate" required aria-label="Новая дата поездки">
+            </div>
+            <div class="form-group">
+              <label for="new-time">Новое время:</label>
+              <input id="new-time" type="time" v-model="rescheduleData.newTime" required aria-label="Новое время поездки">
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="cancel-btn" @click="closeModal">Отмена</button>
+              <button type="submit" class="save-button">Перенести</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Модальное окно с пассажирами -->
+      <div v-if="showPassengersModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+          <button class="modal-close-button" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
+          <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
+          <p class="location-info">{{ currentLocation || 'Не указано' }}</p>
+          
+          <div class="passengers-filter">
+            <label class="filter-label">
+              <input type="checkbox" v-model="showOnlyMyBookings" aria-label="Показать только мои бронирования">
+              Показать только мои бронирования
+            </label>
+          </div>
+          
+          <div class="passengers-list">
+            <div v-if="isLoadingPassengers" class="loading-state">
+              <span class="loading-icon">⏳</span>
+              <p>Загрузка пассажиров...</p>
+            </div>
+            <div v-else-if="errorLoadingPassengers" class="error-state">
+              <span class="error-icon">⚠️</span>
+              <p>Не удалось загрузить пассажиров.</p>
+            </div>
+            <div v-else-if="filteredPassengers.length === 0" class="no-passengers">
+              <span class="no-passengers-icon">👥</span>
+              <p>Нет забронировавших пассажиров</p>
+            </div>
+            <div v-else>
+              <div v-for="(passenger, index) in filteredPassengers" :key="index" class="passenger-item">
+                <router-link :to="`/profile/${passenger.user_id}`" class="passenger-avatar-link">
+                  <img 
+                    :src="passenger.avatarUrl || '/default-avatar.jpg'" 
+                    :alt="`Аватар ${passenger.name} ${passenger.surname}`" 
+                    class="passenger-avatar"
+                    @error="handleImageError"
+                  >
+                </router-link>
+                <div class="passenger-info">
+                  <div class="passenger-name">{{ passenger.name }} {{ passenger.surname }}</div>
+                  <div class="passenger-meta">
+                    <span class="passenger-gender" :class="passenger.gender">
+                      {{ passenger.gender === 'male' ? 'Мужчина' : passenger.gender === 'female' ? 'Женщина' : 'Не указано' }}
+                    </span>
+                    <span class="passenger-age">{{ calculateAge(passenger.birthday) }} лет</span>
+                    <span v-if="passenger.passenger_rating" class="passenger-rating">
+                      ★ {{ passenger.passenger_rating.toFixed(1) }}
+                    </span>
+                  </div>
+                  <div class="passenger-details">
+                    <span class="passenger-seats">Мест: {{ passenger.seats_booked || 'Не указано' }}</span>
+                    <span class="passenger-price">{{ passenger.position || 0 }} ₽</span>
+                  </div>
+                  <div v-if="passenger.comment" class="passenger-comment">
+                    "{{ passenger.comment }}"
+                  </div>
+                  <div v-if="passenger.user_id === currentUserId" class="passenger-actions">
+                    <button 
+                      class="action-button cancel-booking" 
+                      @click.stop="confirmCancelPassenger(passenger.user_id)"
+                      aria-label="Отменить бронирование"
+                    >
+                      Отменить бронирование
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="passengers-summary" v-if="!isLoadingPassengers && !errorLoadingPassengers && filteredPassengers.length > 0">
+            <p>Всего пассажиров: {{ filteredPassengers.length }}</p>
+            <p>Общее количество мест: {{ totalBookedSeats }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -162,303 +272,583 @@
 
 <script>
 import AppNavbar from "@/components/AppNavbar.vue";
-import axios from "axios";
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import { API_CONFIG } from '@/config/api';
-import mitt from 'mitt';
-
-const emitter = mitt();
 
 export default {
-  components: { AppNavbar },
+  components: {
+    AppNavbar,
+  },
   data() {
     return {
-      bookedTrips: [],
+      userTrips: [],
+      showEditModal: false,
+      showRescheduleModal: false,
       showPassengersModal: false,
-      passengers: [],
-      currentLocation: '',
-      modalLocationType: 'departure',
-      showOnlyMyBookings: false,
-      driver: {
-        driver_name: '',
-        driver_surname: '',
-        avatarurl: '',
-        birth_date: '',
-        license_issue_date: '',
-        registration_date: '',
-        rating: null,
-        reviews_count: 0,
-        total_trips: 0,
-        canceled_trips: 0,
-        rescheduled_trips: 0,
-        mark: '',
-        brand: '',
-        reviews: [],
+      isLoadingTrips: false,
+      isLoadingPassengers: false,
+      errorLoadingTrips: false,
+      errorLoadingPassengers: false,
+      editingTrip: {
+        id: null,
+        departure_location: '',
+        arrival_location: '',
+        seats: 0,
+        stops: []
       },
-      loading: false,
-      error: null,
+      rescheduleData: {
+        tripId: null,
+        newDate: '',
+        newTime: ''
+      },
+      newStop: '',
+      currentTripPassengers: [],
+      selectedTripId: null,
+      modalLocationType: 'departure',
+      currentLocation: '',
+      showOnlyMyBookings: false,
+      currentUserId: null
     };
   },
   computed: {
+    activeTrips() {
+      return this.userTrips.filter(trip => trip.trip_status === 'active');
+    },
+    completedTrips() {
+      return this.userTrips.filter(trip => trip.trip_status === 'last');
+    },
     filteredPassengers() {
-      let passengers = this.passengers;
-      if (this.showOnlyMyBookings) {
-        const userId = Cookies.get('userId');
-        if (userId) {
-          passengers = passengers.filter(p => p.user_id === userId);
-        }
+      if (this.showOnlyMyBookings && this.currentUserId) {
+        return this.currentTripPassengers.filter(passenger => passenger.user_id === this.currentUserId);
       }
-      return passengers;
+      return this.currentTripPassengers;
     },
     totalBookedSeats() {
-      return this.filteredPassengers.reduce((sum, passenger) => sum + passenger.seats_booked, 0);
-    },
+      return this.filteredPassengers.reduce((total, passenger) => total + (passenger.seats_booked || 0), 0);
+    }
   },
-  created() {
-    this.loadBookedTrips();
-    emitter.on('bookingCreated', this.loadBookedTrips);
-  },
-  beforeUnmount() {
-    emitter.off('bookingCreated', this.loadBookedTrips);
+  async created() {
+    await this.fetchCurrentUser();
+    this.loadUserTrips();
   },
   methods: {
-    async loadBookedTrips() {
-      this.loading = true;
-      this.error = null;
+    async fetchCurrentUser() {
       try {
         const token = Cookies.get('token');
+        if (!token) return;
+
+        const response = await axios.get(API_CONFIG.BASE_URL + '/user/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        });
+        this.currentUserId = response.data.id;
+      } catch (error) {
+        console.error("Ошибка при загрузке профиля пользователя:", error);
+      }
+    },
+
+    async loadUserTrips() {
+      try {
+        this.isLoadingTrips = true;
+        this.errorLoadingTrips = false;
+        const token = Cookies.get('token');
         if (!token) {
-          this.error = "Пользователь не авторизован";
-          this.$router.push("/login");
+          console.error("Токен отсутствует. Пользователь не авторизован.");
           return;
         }
 
-        const response = await axios.get(API_CONFIG.BASE_URL + '/booking/get-booked', {
-          headers: { "Authorization": `Bearer ${token}` },
+        const response = await axios.get(API_CONFIG.BASE_URL + '/trip/search', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
         });
 
-        this.bookedTrips = response.data.bookedTrips.map(trip => ({
-          id_trip: trip.id_trip,
-          booking_id: trip.booking_id,
-          from: trip.departure_location || trip.from,
-          to: trip.arrival_location || trip.to,
-          departuredate: trip.departure_date || trip.departure_time,
-          departuretime: trip.departure_time?.split('T')[1]?.slice(0, 5) || trip.departuretime,
-          cost: trip.cost || trip.price,
-          stops: trip.stops?.join(', ') || 'Без остановок',
-          driver_id: trip.driver_id,
-        }));
-
-        if (!this.bookedTrips.length) {
-          this.error = "У вас нет забронированных поездок";
-        }
+        this.userTrips = response.data.data || [];
       } catch (error) {
-        console.error("Ошибка при загрузке забронированных поездок:", error);
-        this.error = error.response?.data?.message || "Ошибка загрузки поездок";
-        this.bookedTrips = [];
-        this.$notify({
-          title: "Ошибка",
-          text: this.error,
-          type: "error",
-        });
+        console.error("Ошибка при загрузке поездок:", error);
+        this.errorLoadingTrips = true;
+        this.userTrips = [];
       } finally {
-        this.loading = false;
+        this.isLoadingTrips = false;
       }
     },
+
     formatDate(dateString) {
       if (!dateString) return 'Не указано';
       const date = new Date(dateString);
-      return isNaN(date.getTime())
-        ? 'Неверная дата'
-        : date.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
+      return isNaN(date.getTime()) 
+        ? 'Неверная дата' 
+        : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     },
-    async showPassengers(trip, locationType) {
-      this.modalLocationType = locationType;
-      this.currentLocation = locationType === 'departure' ? trip.from : trip.to;
+
+    formatTime(dateString) {
+      if (!dateString) return 'Не указано';
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) 
+        ? 'Неверное время' 
+        : date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    },
+
+    goToHome() {
+      this.$router.push("/");
+    },
+
+    goToCreateTrip() {
+      this.$router.push("/create-trip");
+    },
+
+    openEditModal(trip) {
+      this.editingTrip = {
+        id: trip.id,
+        departure_location: trip.departure_location,
+        arrival_location: trip.arrival_location,
+        seats: trip.seats,
+        stops: [...(trip.stops || [])]
+      };
+      this.newStop = '';
+      this.showEditModal = true;
+    },
+
+    openRescheduleModal(trip) {
+      const date = new Date(trip.departure_time);
+      const formattedDate = date.toISOString().split('T')[0];
+      const formattedTime = date.toTimeString().substring(0, 5);
+      
+      this.rescheduleData = {
+        tripId: trip.id,
+        newDate: formattedDate,
+        newTime: formattedTime
+      };
+      this.showRescheduleModal = true;
+    },
+
+    async showPassengers(tripId) {
       try {
         const token = Cookies.get('token');
-        const driverResponse = await axios.get(
-          API_CONFIG.BASE_URL + `/user/driver/${trip.driver_id}`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        this.driver = driverResponse.data;
-        const passengersResponse = await axios.get(
+        this.isLoadingPassengers = true;
+        this.errorLoadingPassengers = false;
+        this.selectedTripId = tripId;
+        
+        const response = await axios.get(
           API_CONFIG.BASE_URL + '/user/get-all',
           {
-            params: { trip_id: trip.id_trip },
-            headers: { 'Authorization': `Bearer ${token}` },
+            params: { trip_id: tripId },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
         );
-        this.passengers = (passengersResponse.data.passengers || []).map(passenger => ({
+
+        this.showPassengersModal = true;
+        this.currentTripPassengers = (response.data.passengers || []).map(passenger => ({
           ...passenger,
           name: passenger.name || 'Не указано',
           surname: passenger.surname || '',
           gender: passenger.gender || 'unknown',
           passenger_rating: passenger.passenger_rating ? parseFloat(passenger.passenger_rating) : null,
-          seats_booked: passenger.seats_booked || 1,
-          department: passenger.department || '',
-          birthday: passenger.birthday,
-          position: passenger.position || '?',
+          seats_booked: passenger.seats_booked || 0,
+          birthday: passenger.birthday || null,
+          position: passenger.position || '0',
+          user_id: passenger.user_id || null
         }));
-        this.showPassengersModal = true;
+
+        const trip = this.userTrips.find(t => t.id === tripId);
+        this.currentLocation = trip 
+          ? `${trip.departure_location} → ${trip.arrival_location}`
+          : 'Маршрут не найден';
       } catch (error) {
-        console.error('Ошибка при загрузке информации:', error);
-        this.$notify({
-          title: 'Ошибка',
-          text: 'Не удалось загрузить информацию',
-          type: 'error',
-        });
+        console.error("Ошибка при загрузке пассажиров:", error);
+        this.errorLoadingPassengers = true;
+        this.$toast.error('Не удалось загрузить информацию о пассажирах');
+      } finally {
+        this.isLoadingPassengers = false;
       }
     },
-    async cancelBooking(trip) {
-      try {
-        const confirm = window.confirm('Вы уверены, что хотите отменить бронирование?');
-        if (confirm) {
-          const token = Cookies.get('token');
-          await axios.put(API_CONFIG.BASE_URL + `/booking/cancell/${trip.booking_id}`, {}, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-          this.$notify({
-            title: 'Успех',
-            text: 'Бронирование отменено',
-            type: 'success',
-          });
-          await this.loadBookedTrips();
-        }
-      } catch (error) {
-        console.error('Ошибка при отмене бронирования:', error);
-        this.$notify({
-          title: 'Ошибка',
-          text: 'Не удалось отменить бронирование',
-          type: 'error',
-        });
-      }
-    },
-    calculateAge(birthDate) {
-      if (!birthDate) return 'Не указан';
-      const birthYear = new Date(birthDate).getFullYear();
-      const currentYear = new Date().getFullYear();
-      return currentYear - birthYear;
-    },
-    calculateDrivingExperience(licenseDate) {
-      if (!licenseDate) return 'Не указано';
-      const licenseYear = new Date(licenseDate).getFullYear();
-      const currentYear = new Date().getFullYear();
-      const experience = currentYear - licenseYear;
-      return experience === 0 ? 'Менее года' : `${experience} ${this.declension(experience, ['год', 'года', 'лет'])}`;
-    },
-    declension(number, titles) {
-      const cases = [2, 0, 1, 1, 1, 2];
-      return titles[
-        number % 100 > 4 && number % 100 < 20 
-          ? 2 
-          : cases[number % 10 < 5 ? number % 10 : 5]
-      ];
-    },
+
     closeModal() {
+      this.showEditModal = false;
+      this.showRescheduleModal = false;
       this.showPassengersModal = false;
-      this.passengers = [];
+      this.newStop = '';
+      this.currentTripPassengers = [];
+      this.errorLoadingPassengers = false;
+      this.selectedTripId = null;
     },
-    goToHome() {
-      this.$router.push("/");
+
+    addStop() {
+      if (this.newStop.trim()) {
+        this.editingTrip.stops.push(this.newStop.trim());
+        this.newStop = '';
+      }
     },
+    
+    removeStop(index) {
+      this.editingTrip.stops.splice(index, 1);
+    },
+
+    async saveEdit() {
+      try {
+        const token = Cookies.get('token');
+        const updatedTrip = {
+          ...this.editingTrip,
+          stops: this.editingTrip.stops.filter(stop => stop.trim() !== '')
+        };
+
+        await axios.put(API_CONFIG.BASE_URL + `/trip/${this.editingTrip.id}`, updatedTrip, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.notifyPassengers(this.editingTrip.id, 'Поездка была отредактирована. Проверьте новые детали.');
+
+        this.closeModal();
+        this.loadUserTrips();
+        this.$toast.success('Поездка успешно обновлена! Пассажиры уведомлены.');
+      } catch (error) {
+        console.error("Ошибка при обновлении поездки:", error);
+        this.$toast.error('Ошибка при обновлении поездки');
+      }
+    },
+
+    async saveReschedule() {
+      try {
+        const token = Cookies.get('token');
+        const newDateTime = new Date(`${this.rescheduleData.newDate}T${this.rescheduleData.newTime}`);
+        if (isNaN(newDateTime.getTime())) {
+          throw new Error('Неверная дата или время');
+        }
+        
+        await axios.patch(API_CONFIG.BASE_URL + `/trip/${this.rescheduleData.tripId}/reschedule`, {
+          new_departure_time: newDateTime.toISOString()
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.notifyPassengers(this.rescheduleData.tripId, 'Поездка была перенесена. Проверьте новые дату и время.');
+
+        this.closeModal();
+        this.loadUserTrips();
+        this.$toast.success('Поездка успешно перенесена! Пассажиры уведомлены.');
+      } catch (error) {
+        console.error("Ошибка при переносе поездки:", error);
+        this.$toast.error('Ошибка при переносе поездки');
+      }
+    },
+
+    confirmCancel(trip) {
+      if (confirm('Вы уверены, что хотите отменить эту поездку? Все пассажиры будут уведомлены.')) {
+        this.cancelTrip(trip.id);
+      }
+    },
+
+    async cancelTrip(tripId) {
+      try {
+        const token = Cookies.get('token');
+        
+        await axios.delete(API_CONFIG.BASE_URL + `/api/trip/${tripId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.notifyPassengers(tripId, 'Поездка была отменена водителем.');
+
+        this.loadUserTrips();
+        this.$toast.success('Поездка отменена. Пассажиры уведомлены.');
+      } catch (error) {
+        console.error("Ошибка при отмене поездки:", error);
+        this.$toast.error('Ошибка при отмене поездки');
+      }
+    },
+
+    confirmCancelPassenger(userId) {
+      if (confirm('Вы уверены, что хотите отменить ваше бронирование?')) {
+        this.cancelPassengerBooking(userId);
+      }
+    },
+
+    async cancelPassengerBooking(userId) {
+      try {
+        const token = Cookies.get('token');
+        
+        await axios.delete(API_CONFIG.BASE_URL + `/trip/${this.selectedTripId}/passenger/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.notifyPassengers(this.selectedTripId, 'Пассажир отменил бронирование.');
+
+        await this.showPassengers(this.selectedTripId);
+        await this.loadUserTrips();
+        this.$toast.success('Бронирование успешно отменено.');
+      } catch (error) {
+        console.error("Ошибка при отмене бронирования:", error);
+        this.$toast.error('Ошибка при отмене бронирования');
+      }
+    },
+
+    async notifyPassengers(tripId, message) {
+      try {
+        const token = Cookies.get('token');
+        
+        await axios.post(API_CONFIG.BASE_URL + '/trip/notify', {
+          trip_id: tripId,
+          message: message
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        console.error("Ошибка при отправке уведомлений:", error);
+      }
+    },
+
+    calculateAge(birthday) {
+      if (!birthday) return 'Не указан';
+      const birthDate = new Date(birthday);
+      if (isNaN(birthDate.getTime())) return 'Неверная дата';
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age >= 0 ? age : 'Неверная дата';
+    },
+
     handleImageError(event) {
-      event.target.src = '/default-avatar.jpg';
-    },
+      event.target.src = 'https://via.placeholder.com/40?text=Avatar';
+    }
   },
 };
 </script>
 
 <style scoped>
-/* Theme variables */
+/* Базовые стили */
 :root {
   --bg-color: #ffffff;
   --text-color: #1a202c;
-  --container-bg: #f9fafb;
+  --secondary-color: #6b7280;
+  --container-bg: #ffffff;
   --border-color: #e2e8f0;
   --accent-color: #004281;
   --accent-hover: #003366;
-  --secondary-color: #6b7280;
   --success-color: #10b981;
-  --success-hover: #059669;
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --warning-color: #f59e0b;
+  --danger-color: #ff1a1a; /* Brighter red for better contrast */
+  --danger-hover: #cc0000;
 }
 
-.dark-theme {
+.dark-mode {
   --bg-color: #0f172a;
   --text-color: #e2e8f0;
+  --secondary-color: #94a3b8;
   --container-bg: #1e293b;
   --border-color: #475569;
   --accent-color: #60a5fa;
   --accent-hover: #3b82f6;
-  --secondary-color: #94a3b8;
   --success-color: #34d399;
-  --success-hover: #10b981;
-  --danger-color: #f87171;
-  --danger-hover: #ef4444;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --warning-color: #facc15;
+  --danger-color: #ff5555; /* Brighter red for dark mode */
+  --danger-hover: #bb0000;
 }
 
-.booking-details {
-  max-width: 800px;
-  margin: 96px auto 24px;
-  padding: 24px;
-  background-color: var(--bg-color);
+.trip-details {
+  padding: 32px;
+  max-width: 900px;
+  margin: 80px auto;
+  background: var(--container-bg);
   border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .details-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--border-color);
 }
 
-.details-header h1 {
+.header-title {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-color);
   margin: 0;
 }
 
-.refresh-button {
-  padding: 8px 16px;
-  background-color: var(--accent-color);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
+.section-title {
+  margin: 32px 0 16px;
+  font-size: 1.4rem;
   font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  padding-left: 12px;
+  border-left: 4px solid var(--accent-color);
+  text-align: left;
 }
 
-.refresh-button:hover,
-.refresh-button:focus-visible {
-  background-color: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.refresh-button:focus-visible {
+.trip-item {
+  padding: 20px;
+  background: var(--container-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideIn 0.5s ease-out;
+}
+
+.trip-item.completed {
+  background-color: var(--container-bg);
+  opacity: 0.7;
+  cursor: default;
+}
+
+.trip-item:not(.completed) {
+  cursor: pointer;
+}
+
+.trip-item:not(.completed):hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  border-color: var(--accent-color);
+}
+
+.trip-item:not(.completed):focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
 
-.loading-state, .error-state {
-  padding: 32px;
-  border-radius: 12px;
+.trip-icon {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  margin-bottom: 8px;
+}
+
+.trip-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.detail-item {
+  flex: 1 1 45%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.detail-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.detail-item span {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.trip-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  text-align: center;
+  z-index: 2;
+}
+
+.action-button.edit {
+  background-color: var(--warning-color);
+  color: #1a202c;
+}
+
+.action-button.reschedule {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.action-button.cancel {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 700; /* Increased from 600 for bolder text */
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Enhanced text readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger default shadow */
+  min-width: 120px; /* Increased from 100px for better visibility */
+}
+
+.action-button.cancel-booking {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 16px;
+  min-width: 160px;
+  margin-top: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.action-button.cancel:hover,
+.action-button.cancel-booking:hover,
+.action-button.cancel:focus-visible,
+.action-button.cancel-booking:focus-visible {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-button:hover,
+.action-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.no-trips, .loading-state, .error-state {
+  padding: 24px;
+  border-radius: 10px;
   text-align: center;
   color: var(--secondary-color);
   display: flex;
@@ -467,142 +857,44 @@ export default {
   gap: 16px;
   border: 2px dashed var(--border-color);
   margin-bottom: 24px;
-  background-color: var(--container-bg);
 }
 
-.loading-icon, .error-icon {
-  font-size: 3rem;
-  opacity: 0.8;
+.no-trips-icon, .loading-icon, .error-icon {
+  font-size: 2.5rem;
+  opacity: 0.7;
 }
 
-.loading-state p, .error-state p {
+.no-trips p, .loading-state p, .error-state p {
+  margin: 0;
   font-size: 1.1rem;
   font-weight: 500;
 }
 
-.retry-button {
-  padding: 12px 24px;
+.create-trip-btn, .retry-button {
+  padding: 10px 20px;
   background-color: var(--accent-color);
-  color: #ffffff;
+  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
 }
 
+.create-trip-btn:hover,
+.create-trip-btn:focus-visible,
 .retry-button:hover,
 .retry-button:focus-visible {
   background-color: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.create-trip-btn:focus-visible,
 .retry-button:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
-}
-
-.booking-list {
-  margin-top: 24px;
-}
-
-.trip-item {
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: var(--container-bg);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-}
-
-.trip-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.trip-content {
-  margin-bottom: 16px;
-}
-
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-}
-
-.detail-item p {
-  margin: 0;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-.detail-item span {
-  color: var(--secondary-color);
-  text-align: right;
-  max-width: 60%;
-}
-
-.trip-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.action-button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
-}
-
-.action-button.view-passengers {
-  background-color: var(--success-color);
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.action-button.view-passengers:hover,
-.action-button.view-passengers:focus-visible {
-  background-color: var(--success-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.action-button.cancel {
-  background-color: var(--danger-color);
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.action-button.cancel:hover,
-.action-button.cancel:focus-visible {
-  background-color: var(--danger-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.action-button:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
-}
-
-.no-trips {
-  padding: 24px;
-  font-size: 1.1rem;
-  color: var(--secondary-color);
-  background-color: var(--container-bg);
-  border-radius: 10px;
-  border: 2px dashed var(--border-color);
-  text-align: center;
 }
 
 .back-button {
@@ -610,21 +902,20 @@ export default {
   margin: 24px auto 0;
   padding: 12px 24px;
   background-color: var(--accent-color);
-  color: #ffffff;
+  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
 }
 
 .back-button:hover,
 .back-button:focus-visible {
   background-color: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .back-button:focus-visible {
@@ -632,195 +923,257 @@ export default {
   outline-offset: 2px;
 }
 
+/* Модальные окна */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
 }
 
-.modal-content {
-  background-color: var(--bg-color);
-  padding: 32px;
+.modal {
+  position: relative;
+  background: #ffffff;
+  padding: 24px;
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-  transition: background-color 0.3s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  transform: scale(1);
+  opacity: 1;
+  z-index: 1001;
 }
 
-.modal-close {
+.dark-mode .modal {
+  background: #1e293b;
+}
+
+.modal-close-button {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background-color: var(--container-bg);
+  top: 12px;
+  right: 12px;
+  background: none;
   border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 20px;
+  font-size: 1.25rem;
+  color: var(--secondary-color);
   cursor: pointer;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
+  z-index: 1002;
 }
 
-.modal-close:hover,
-.modal-close:focus-visible {
-  background-color: var(--border-color);
+.modal-close-button:hover,
+.modal-close-button:focus-visible {
   color: var(--accent-color);
 }
 
-.modal-close:focus-visible {
+.modal-close-button:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
 
-.driver-info-modal {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.driver-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--border-color);
-}
-
-.driver-details h4 {
-  margin: 0 0 8px;
-  font-size: 1.25rem;
-  color: var(--text-color);
-}
-
-.driver-details p {
-  margin: 4px 0;
-  font-size: 0.9rem;
-  color: var(--secondary-color);
-}
-
-.passengers-list {
-  margin: 20px 0;
-  max-height: 50vh;
-  overflow-y: auto;
-  padding: 16px;
-  background-color: var(--container-bg);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-}
-
-.passenger-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.2s ease;
-}
-
-.passenger-item:hover {
-  background-color: var(--bg-color);
-}
-
-.passenger-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--border-color);
-}
-
-.passenger-info {
-  flex-grow: 1;
-}
-
-.passenger-name {
+.modal h3 {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
   font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-color);
-  margin-bottom: 4px;
-}
-
-.passenger-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: var(--secondary-color);
-  flex-wrap: wrap;
-}
-
-.passenger-gender {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-.passenger-gender.male {
-  background-color: var(--accent-color);
-  color: #ffffff;
-}
-
-.passenger-gender.female {
-  background-color: var(--danger-color);
-  color: #ffffff;
-}
-
-.passenger-rating {
-  color: #f59e0b;
-  font-weight: 600;
-}
-
-.passenger-details {
-  display: flex;
-  gap: 16px;
-  font-size: 0.85rem;
-  color: var(--text-color);
-  margin-top: 6px;
-}
-
-.passenger-comment {
-  font-style: italic;
-  color: var(--secondary-color);
-  margin-top: 8px;
-  font-size: 0.85rem;
-  padding: 8px;
-  background-color: var(--bg-color);
-  border-radius: 6px;
-}
-
-.passengers-summary {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-  font-size: 0.9rem;
   color: var(--text-color);
 }
 
-.no-passengers {
-  padding: 20px;
-  text-align: center;
-  color: var(--secondary-color);
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
   font-size: 0.95rem;
-  background-color: var(--bg-color);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: var(--bg-color);
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn {
+  padding: 10px 16px;
+  background: var(--border-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover,
+.cancel-btn:focus-visible {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.dark-mode .cancel-btn:hover,
+.dark-mode .cancel-btn:focus-visible {
+  background: #475569;
+}
+
+.cancel-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.save-button {
+  padding: 10px 16px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.save-button:hover,
+.save-button:focus-visible {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.save-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Стили для остановок */
+.stops-list {
+  margin-bottom: 16px;
+}
+
+.stop-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.stop-item input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.remove-stop {
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-stop:hover,
+.remove-stop:focus-visible {
+  background: var(--danger-hover);
+  transform: scale(1.1);
+}
+
+.remove-stop:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.add-stop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-stop input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.add-stop-button {
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-stop-button:hover,
+.add-stop-button:focus-visible {
+  background: #059669;
+  transform: scale(1.1);
+}
+
+.add-stop-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Пассажиры */
+.modal-content {
+  position: relative;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  opacity: 1;
+  z-index: 1001;
+}
+
+.dark-mode .modal-content {
+  background: #1e293b;
 }
 
 .passengers-filter {
@@ -828,69 +1181,151 @@ export default {
   text-align: left;
 }
 
-.passengers-filter label {
+.filter-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--text-color);
 }
 
-.passengers-filter input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
+.passengers-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.passenger-item {
+  display: flex;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--bg-color);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.passenger-item:hover {
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-2px);
+}
+
+.passenger-avatar-link {
+  flex-shrink: 0;
+}
+
+.passenger-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.passenger-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.passenger-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.passenger-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--secondary-color);
+}
+
+.passenger-gender.male {
+  color: #3b82f6;
+}
+
+.passenger-gender.female {
+  color: #ec4899;
+}
+
+.passenger-rating {
+  color: var(--warning-color);
+}
+
+.passenger-details {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.passenger-comment {
+  font-size: 0.875rem;
+  color: var(--secondary-color);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.passenger-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.passengers-summary {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.95rem;
+  color: var(--text-color);
+  text-align: left;
+}
+
+.no-passengers, .loading-state, .error-state {
+  text-align: center;
+  padding: 20px;
+  color: var(--secondary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.no-passengers-icon, .loading-icon, .error-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.location-info {
+  font-size: 0.95rem;
+  color: var(--secondary-color);
+  margin-bottom: 16px;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (min-width: 768px) {
-  .booking-details {
-    margin-top: 112px;
-    padding: 32px;
-  }
-
-  .details-header h1 {
-    font-size: 2rem;
-  }
-
-  .trip-item {
-    padding: 24px;
-  }
-
-  .trip-actions {
-    gap: 16px;
-  }
-
-  .action-button {
-    padding: 12px 20px;
-  }
-
-  .modal-content {
-    padding: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .booking-details {
-    margin: 80px auto 16px;
+@media (max-width: 768px) {
+  .trip-details {
     padding: 16px;
+    margin: 70px auto;
+    width: 95%;
   }
 
-  .details-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .details-header h1 {
+  .header-title {
     font-size: 1.5rem;
   }
 
-  .refresh-button {
-    width: 100%;
+  .section-title {
+    font-size: 1.25rem;
   }
 
   .trip-item {
@@ -898,30 +1333,70 @@ export default {
   }
 
   .detail-item {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .detail-item span {
-    text-align: left;
-    max-width: 100%;
+    flex: 1 1 100%;
   }
 
   .trip-actions {
     flex-direction: column;
+    gap: 8px;
   }
 
   .action-button {
     width: 100%;
   }
 
-  .modal-content {
-    padding: 24px;
+  .modal {
+    padding: 20px;
   }
 
-  .driver-info-modal {
+  .passenger-item {
+    padding: 12px;
+  }
+
+  .passenger-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .action-button.cancel-booking {
+    min-width: 120px;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .detail-item p,
+  .detail-item span {
+    font-size: 0.85rem;
+  }
+
+  .action-button {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .passenger-meta {
     flex-direction: column;
-    text-align: center;
+    gap: 4px;
+  }
+
+  .passenger-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-button.cancel-booking {
+    min-width: 100px;
+    font-size: 0.9rem;
   }
 }
 </style>
