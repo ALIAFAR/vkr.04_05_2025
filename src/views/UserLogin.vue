@@ -4,61 +4,88 @@
 
     <!-- Основной контент -->
     <div class="form-container">
-      <h1>Вход</h1>
-      <form @submit.prevent="handleLogin">
+      <h1 class="form-title">Вход</h1>
+      <form @submit.prevent="handleLogin" aria-label="Форма входа">
         <div class="input-group">
-          <label for="emailOrPhone">Логин</label>
+          <label for="emailOrPhone" class="input-label">Логин</label>
           <input
             type="text"
             id="emailOrPhone"
             v-model="emailOrPhone"
             required
-            placeholder="Введите ваш логин"
+            placeholder="Email или телефон"
             :class="{ 'input-error': emailOrPhone && !isValidEmailOrPhone }"
+            aria-describedby="emailOrPhoneError"
           />
-          <p v-if="emailOrPhone && !isValidEmailOrPhone" class="error-text">
+          <p
+            v-if="emailOrPhone && !isValidEmailOrPhone"
+            id="emailOrPhoneError"
+            class="error-text"
+          >
             Неверный формат логина (email или телефон)
           </p>
         </div>
 
         <div class="input-group">
-  <label for="password">Пароль</label>
-  <div class="password-input-container">
-    <input
-      type="password"
-      id="password"
-      v-model="password"
-      required
-      placeholder="Введите ваш пароль"
-      :class="{ 'input-error': password && !isValidPassword }"
-      ref="passwordInput"
-    />
-    <span class="toggle-password" @click="togglePasswordVisibility">
-      <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
-    </span>
-  </div>
-  <p v-if="password && !isValidPassword" class="error-text">
-    Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы.
-  </p>
-</div>
+          <label for="password" class="input-label">Пароль</label>
+          <div class="password-input-container">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              v-model="password"
+              required
+              placeholder="Введите ваш пароль"
+              :class="{ 'input-error': password && !isValidPassword }"
+              ref="passwordInput"
+              aria-describedby="passwordError"
+            />
+            <span
+              class="toggle-password"
+              @click="togglePasswordVisibility"
+              role="button"
+              aria-label="Переключить видимость пароля"
+            >
+              <i :class="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+            </span>
+          </div>
+          <p
+            v-if="password && !isValidPassword"
+            id="passwordError"
+            class="error-text"
+          >
+            Пароль должен содержать минимум 8 символов, включая заглавные и
+            строчные буквы, цифры и специальные символы.
+          </p>
+        </div>
 
-        <button type="submit" :disabled="isLoading || !isFormValid" class="btn-login">
+        <button
+          type="submit"
+          :disabled="isLoading || !isFormValid"
+          class="btn-login"
+          :class="{ 'btn-loading': isLoading }"
+        >
           {{ isLoading ? 'Загрузка...' : 'Войти' }}
         </button>
 
         <!-- Сообщение об ошибке -->
-        <div v-if="error" class="error-message">{{ error }}</div>
+        <div v-if="error" class="error-message" role="alert">
+          {{ error }}
+        </div>
       </form>
 
-      <!-- Ссылка на регистрацию -->
-      <div class="register-link">
-        <span>Еще не с нами? </span>
-        <router-link to="/registration" class="register-text"
-          >Зарегистрироваться</router-link
-        >
-      </div>
-      <div class="forgot-password-link">
-        <router-link to="/forgot-password">Забыли пароль?</router-link>
+      <!-- Ссылки -->
+      <div class="links-container">
+        <div class="register-link">
+          <span>Еще не с нами? </span>
+          <router-link to="/registration" class="link-text"
+            >Зарегистрироваться</router-link
+          >
+        </div>
+        <div class="forgot-password-link">
+          <router-link to="/forgot-password" class="link-text"
+            >Забыли пароль?</router-link
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -67,9 +94,9 @@
 <script>
 import axios from "axios";
 import AppNavbar from "@/components/AppNavbar.vue";
-import { notify } from "@kyvg/vue3-notification"; // Библиотека для уведомлений
-import Cookies from "js-cookie"; // Импорт библиотеки для работы с cookies
-import { API_CONFIG } from '@/config/api'
+import { notify } from "@kyvg/vue3-notification";
+import Cookies from "js-cookie";
+import { API_CONFIG } from "@/config/api";
 
 export default {
   components: {
@@ -79,39 +106,37 @@ export default {
     return {
       emailOrPhone: "",
       password: "",
-      error: "", // Для отображения ошибок
-      isLoading: false, // Для отслеживания состояния загрузки
+      error: "",
+      isLoading: false,
       showPassword: false,
     };
   },
   computed: {
-    // Проверка на корректный формат email или телефона
     isValidEmailOrPhone() {
       const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      const phonePattern = /^\+?\d{10,15}$/; // Подходит для телефонных номеров в международном формате
+      const phonePattern = /^\+?\d{10,15}$/;
       return (
         emailPattern.test(this.emailOrPhone) ||
         phonePattern.test(this.emailOrPhone)
       );
     },
-    // Проверка на корректный формат пароля
     isValidPassword() {
-      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+      const passwordPattern =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
       return passwordPattern.test(this.password);
     },
-    // Проверка валидности всей формы
     isFormValid() {
       return this.isValidEmailOrPhone && this.isValidPassword;
     },
   },
   methods: {
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-    const input = this.$refs.passwordInput;
-    if (input) {
-      input.type = this.showPassword ? 'text' : 'password';
-    }
-  },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+      const input = this.$refs.passwordInput;
+      if (input) {
+        input.type = this.showPassword ? "text" : "password";
+      }
+    },
     async handleLogin() {
       if (!this.isFormValid) {
         this.error = "Пожалуйста, проверьте введенные данные.";
@@ -122,37 +147,30 @@ export default {
       this.error = "";
 
       try {
-        const response = await axios.post(API_CONFIG.BASE_URL +'/user/login',
-          {
-            login: this.emailOrPhone,
-            password: this.password,
-          }
-        );
+        const response = await axios.post(API_CONFIG.BASE_URL + "/user/login", {
+          login: this.emailOrPhone,
+          password: this.password,
+        });
 
-        // Сохраняем токен в cookies
-        Cookies.set("token", response.data.token, { expires: 12 / 24 }); // Токен сохраняется на 7 дней
+        Cookies.set("token", response.data.token, { expires: 12 / 24 });
 
-        // Уведомление об успешной авторизации
         notify({
           title: "Успех",
           text: "Вы успешно вошли в систему!",
           type: "success",
         });
 
-        // Переход на главную страницу после успешного входа
         this.$router.push("/");
       } catch (error) {
         console.error("Ошибка при входе:", error);
 
         if (error.response) {
-          // Ошибка от сервера
           this.error =
             error.response.data.message || "Неверная почта, номер или пароль";
         } else if (error.request) {
-          // Ошибка сети (нет ответа от сервера)
-          this.error = "Ошибка сети. Пожалуйста, проверьте подключение к интернету.";
+          this.error =
+            "Ошибка сети. Пожалуйста, проверьте подключение к интернету.";
         } else {
-          // Другие ошибки
           this.error = "Произошла ошибка. Пожалуйста, попробуйте еще раз.";
         }
       } finally {
@@ -161,332 +179,249 @@ export default {
     },
   },
   created() {
-    // Проверка на наличие токена при заходе на страницу входа
     if (Cookies.get("authToken")) {
-      this.$router.push("/"); // Если пользователь уже авторизован, перенаправляем на главную
+      this.$router.push("/");
     }
   },
 };
 </script>
 
 <style scoped>
-/* Базовые стили */
+/* Modern and clean design with improved UX */
 body,
 html {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: url("/public/фон.jpg") no-repeat center center fixed;
-  background-size: cover;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
 }
 
-/* Главный контейнер */
+/* Main container */
 .login-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: auto;
-  background-color: rgba(244, 244, 249, 0.8);
-  width: 90%;
-  max-width: 420px;
-  margin: 80px auto 20px;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-}
-
-/* Форма */
-.form-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 350px;
+  min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
 }
 
-/* Навбар */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* Form container */
+.form-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  background-color: white;
-  padding: 10px 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  padding: 32px;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-out;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
+/* Form title */
+.form-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.logo-img {
-  height: 35px;
-  margin-right: 8px;
-}
-
-/* Кнопка "Назад" */
-.back-button {
-  background-color: #fff;
-  color: #004281;
-  border: 1px solid #004281;
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.back-button:hover {
-  background-color: #004281;
-  color: #fff;
-}
-
-/* Элементы формы */
+/* Input group */
 .input-group {
-  margin-bottom: 15px;
-  width: 100%;
+  margin-bottom: 20px;
 }
 
-label {
+.input-label {
   display: block;
   font-size: 14px;
-  margin-bottom: 5px;
-  color: #555;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f7fafc;
   transition: all 0.3s ease;
-  background-color: #f9f9f9;
   box-sizing: border-box;
 }
 
 input:focus {
-  border-color: rgba(255, 174, 0, 0.615);
   outline: none;
-  background-color: #fff;
-}
-
-/* Кнопка входа */
-.btn-login {
-  background-color: #004281;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 5px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.3s ease;
-  margin-top: 5px;
-}
-
-.btn-login:hover {
-  background-color: #003365;
-}
-
-/* Сообщения об ошибках */
-.error-text {
-  font-size: 12px;
-  color: red;
-  margin-top: 4px;
-  display: block;
-}
-
-.error-message {
-  color: red;
-  margin: 10px 0;
-  text-align: center;
-  font-size: 13px;
-}
-
-.loading-message {
-  color: #666;
-  margin: 10px 0;
-  text-align: center;
-  font-size: 13px;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  background: white;
 }
 
 .input-error {
-  border-color: red !important;
+  border-color: #e53e3e !important;
 }
 
-/* Уведомления */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  max-width: 90%;
-}
-
-.notification.success {
-  background-color: rgba(0, 128, 0, 0.8);
-}
-
-.notification.error {
-  background-color: rgba(255, 174, 0, 0.8);
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .login-container {
-    margin-top: 70px;
-    width: 85%;
-    padding: 15px;
-  }
-  
-  .navbar {
-    padding: 8px 12px;
-  }
-  
-  .logo-img {
-    height: 30px;
-  }
-  
-  .back-button {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-container {
-    margin-top: 60px;
-    width: 90%;
-    padding: 15px;
-    border-radius: 6px;
-  }
-  
-  .form-container {
-    padding: 15px;
-    box-shadow: none;
-  }
-  
-  input {
-    padding: 10px;
-    font-size: 15px;
-  }
-  
-  .btn-login {
-    padding: 12px;
-  }
-}
-  .navbar {
-    flex-wrap: wrap;
-    padding: 8px 10px;
-  }
-  
-  .logo {
-    margin-bottom: 5px;
-  }
-  
-  .back-button {
-    width: 100%;
-    margin-top: 5px;
-    text-align: center;
-  }
-  
-  .form-container {
-    padding: 22px;
-  }
-  
-  input, .btn-login {
-    font-size: 14px;
-  }
-
-/* Элементы формы */
-.input-group {
-  margin-bottom: 15px;
-  width: 100%;
-}
-
+/* Password input container */
 .password-input-container {
   position: relative;
 }
 
 .toggle-password {
   position: absolute;
-  right: 10px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #666;
-  z-index: 2; /* Добавлено для уверенности, что иконка будет поверх поля ввода */
+  color: #718096;
+  transition: color 0.2s ease;
 }
 
 .toggle-password:hover {
-  color: #333;
+  color: #2d3748;
 }
 
+/* Error text */
+.error-text {
+  font-size: 12px;
+  color: #e53e3e;
+  margin-top: 6px;
+  line-height: 1.4;
+}
 
-.forgot-password-link {
-  margin-top: 15px;
+/* Error message */
+.error-message {
+  color: #e53e3e;
+  font-size: 14px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+/* Login button */
+.btn-login {
+  background: linear-gradient(90deg, #3182ce 0%, #2b6cb0 100%);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-login:hover:not(:disabled) {
+  background: linear-gradient(90deg, #2b6cb0 0%, #2c5282 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-login:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* Links container */
+.links-container {
+  margin-top: 20px;
   text-align: center;
 }
 
-.forgot-password-link a {
-  color: #004281;
-  text-decoration: none;
+.register-link,
+.forgot-password-link {
+  margin: 12px 0;
+  font-size: 14px;
+  color: #4a5568;
 }
 
-.forgot-password-link a:hover {
+.link-text {
+  color: #3182ce;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.link-text:hover {
+  color: #2b6cb0;
   text-decoration: underline;
 }
 
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 15px;
+  }
+
+  .form-container {
+    padding: 24px;
+    max-width: 360px;
+  }
+
+  .form-title {
+    font-size: 22px;
+  }
+
+  input,
+  .btn-login {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 20px;
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .form-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .btn-login {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
 
 @media (max-width: 360px) {
-  .login-container {
-    margin-top: 60px;
-    width: 95%;
-    padding: 20px;
-  }
-  
-  .navbar {
-    flex-wrap: wrap;
-    padding: 8px 10px;
-  }
-  
-  .logo {
-    margin-bottom: 5px;
-  }
-  
-  .back-button {
-    width: 100%;
-    margin-top: 5px;
-    text-align: center;
-  }
-  
   .form-container {
-    padding: 22px;
+    padding: 16px;
   }
-  
-  input, .btn-login {
-    font-size: 14px;
+
+  .form-title {
+    font-size: 18px;
+  }
+
+  input,
+  .btn-login {
+    font-size: 13px;
   }
 }
 </style>
