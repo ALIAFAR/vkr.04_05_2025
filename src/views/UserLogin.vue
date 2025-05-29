@@ -153,7 +153,7 @@ export default {
         });
 
         if(response.data.token==-1){
-          this.$router.push("/operator_panel");
+          this.$router.push("/operator-panel");
         }
 
         Cookies.set("token", response.data.token, { expires: 12 / 24 });
