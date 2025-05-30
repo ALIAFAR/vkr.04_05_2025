@@ -722,7 +722,7 @@ export default {
           );
           
           console.log('Уведомление водителю отправлено');
-        } catch (error) {Add commentMore actions
+        } catch (error) {
           console.error('Ошибка при отправке уведомления водителю:', error);
         }
 
