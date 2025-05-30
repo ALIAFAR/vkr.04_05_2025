@@ -180,6 +180,8 @@ export default {
 
     async goToPublishTrip() {
       const isAuthenticated = await this.isUserAuthenticated();
+      
+
       if (!isAuthenticated) {
         this.showNotification = true;
         setTimeout(() => {
@@ -188,6 +190,20 @@ export default {
         }, 3000);
         return;
       }
+
+      const response = await axios.get(API_CONFIG.BASE_URL +'/car/profileCar', {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+
+      if (response.data.car && response.data.car.length === 0) {
+        // Массив пустой
+        console.alert('Добавтье автомобиль');
+        this.$router.push("/personal-information");
+        return;
+      }
+
       this.navWithClose("/publish-trip");
     },
 
