@@ -51,6 +51,11 @@
             placeholder="Куда (например, Казань)"
             @keydown.enter.prevent="handleEnter(points.length - 1)"
           />
+
+          <div v-if="!isValid(points[points.length - 1].input)" class="error">
+            Введите "ул" или "пер" и хотя бы одну цифру
+          </div>
+
           <ul v-if="points[points.length - 1].suggestions.length && points[points.length - 1].showSuggestions" class="suggestions">
             <li v-for="(item, index) in points[points.length - 1].suggestions" :key="index" @click="selectSuggestion(item, points.length - 1)">
               {{ item }}
@@ -121,6 +126,12 @@ function isAddressComplete(addressData) {
   if (!addressData) return false;
   const { street, house } = addressData;
   return !!(street && house); // Проверяем, что есть улица и номер дома
+}
+
+function isValid(value) {
+    const hasStreetKeyword = /ул|пер/i.test(value);
+    const hasNumber = /\d/.test(value);
+    return hasStreetKeyword && hasNumber;
 }
 
 function secondsToTimeFormat(totalSeconds) {
