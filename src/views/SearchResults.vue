@@ -697,6 +697,35 @@ export default {
 
         await this.fetchTrips();
         this.closeModal();
+
+        const userResponse = await axios.get(
+          API_CONFIG.BASE_URL +'/user/get-id',
+          { headers: { 'Authorization': `Bearer ${this.token}` } }
+        );
+
+        // Отправка сообщения водителю о бронированииAdd commentMore actions
+        try {
+          const messageContent = `Вашу поездку забронировали на ${this.searchParams.passengers} мест. Осталось свободных мест: ${trip.total_seats - trip.available_seats - this.searchParams.passengers}`;
+          
+          // Отправка через HTTP API
+          await axios.post(
+            `${API_CONFIG.BASE_URL}/chat/${chatId}/messages`,
+            {
+              content: messageContent,
+              sender_id: userResponse.data.user_id
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('Уведомление водителю отправлено');
+        } catch (error) {Add commentMore actions
+          console.error('Ошибка при отправке уведомления водителю:', error);
+        }
+
         this.$router.push(`/chat/${chatId}`);
       } catch (error) {
         this.$notify({
