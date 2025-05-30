@@ -51,8 +51,6 @@
             placeholder="Куда (например, Казань)"
             @keydown.enter.prevent="handleEnter(points.length - 1)"
           />
-
-          
           <ul v-if="points[points.length - 1].suggestions.length && points[points.length - 1].showSuggestions" class="suggestions">
             <li v-for="(item, index) in points[points.length - 1].suggestions" :key="index" @click="selectSuggestion(item, points.length - 1)">
               {{ item }}
@@ -87,14 +85,14 @@ const API_TOKEN = "72a0f8ef0a9e1bd454cf61b1d040c7b875965ed6";
 const SUGGESTIONS_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
 
 const points = ref([
-  { input: '', value: '', suggestions: [], showSuggestions: false, addressData: null }, // Start point
-  { input: '', value: '', suggestions: [], showSuggestions: false, addressData: null }  // End point
+  { input: '', value: '', suggestions: [], showSuggestions: false }, // Start point
+  { input: '', value: '', suggestions: [], showSuggestions: false }  // End point
 ])
 
 let map = null
 let multiRoute = null
 let ymapsLoaded = ref(false)
-const routeBuilt = ref(false)
+const routeBuilt = ref(false) // флаг, что маршрут построен
 
 onMounted(async () => {
   await loadYandexScript()
@@ -116,25 +114,18 @@ const intermediatePoints = computed(() => {
 })
 
 const isRouteValid = computed(() => {
-  return points.value.every(p => p.value && isAddressComplete(p.addressData))
+  return points.value.every(p => p.value) && points.value.length >= 2
 })
 
-function isAddressComplete(addressData) {
-  if (!addressData) return false;
-  const { street, house } = addressData;
-  return !!(street && house); // Проверяем, что есть улица и номер дома
-}
-
-/*function isValid(value) {
-    const hasStreetKeyword = /ул|пер/i.test(value);
-    const hasNumber = /\d/.test(value);
-    return hasStreetKeyword && hasNumber;
-}*/
-
 function secondsToTimeFormat(totalSeconds) {
-  const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
-  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+  const hours = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
   const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
   return `${hours}:${minutes}:${seconds}`;
 }
 
@@ -159,7 +150,7 @@ function initMap() {
 
 function addPoint() {
   points.value.splice(points.value.length - 1, 0,
-    { input: '', value: '', suggestions: [], showSuggestions: false, addressData: null }
+    { input: '', value: '', suggestions: [], showSuggestions: false }
   )
 }
 
@@ -172,7 +163,6 @@ async function suggest(index) {
   if (query.length < 3) {
     points.value[index].suggestions = []
     points.value[index].value = ''
-    points.value[index].addressData = null
     return
   }
 
@@ -191,10 +181,8 @@ async function suggest(index) {
     })
 
     const data = await response.json()
-    points.value[index].suggestions = data.suggestions.map(suggestion => ({
-      value: suggestion.value,
-      data: suggestion.data // Сохраняем полные данные адреса
-    }))
+
+    points.value[index].suggestions = data.suggestions.map(suggestion => suggestion.value)
   } catch (error) {
     console.error('Ошибка получения подсказок:', error)
     points.value[index].suggestions = []
@@ -202,9 +190,8 @@ async function suggest(index) {
 }
 
 function selectSuggestion(item, index) {
-  points.value[index].input = item.value
-  points.value[index].value = item.value
-  points.value[index].addressData = item.data // Сохраняем данные адреса
+  points.value[index].input = item
+  points.value[index].value = item
   points.value[index].suggestions = []
   points.value[index].showSuggestions = false
 
@@ -224,13 +211,7 @@ function handleEnter(index) {
 
 function buildRoute() {
   if (!isRouteValid.value) {
-    const incompletePoints = points.value
-      .map((p, i) => !isAddressComplete(p.addressData) ? i : null)
-      .filter(i => i !== null)
-      .map(i => i === 0 ? 'Точка отправления' : i === points.value.length - 1 ? 'Точка назначения' : `Остановка ${i}`)
-      .join(', ');
-
-    alert(`Пожалуйста, укажите полный адрес (включая улицу и номер дома) для: ${incompletePoints}`);
+    alert("Пожалуйста, заполните все точки маршрута")
     return
   }
 
@@ -276,15 +257,17 @@ function buildRoute() {
         stops: intermediatePoints.value.map(p => p.value),
         time: secondsToTimeFormat(time).split(".")[0]
       }
-
+        // Сохраняем количество остановок в куки
       const stopsCount = intermediatePoints.value.length;
       Cookies.set("stops_count", stopsCount.toString());
-      Cookies.set("from_route", points.value[0].value)
-      Cookies.set("to_route", points.value[points.value.length - 1].value)
+
+
+      Cookies.set("from_route",points.value[0].value)
+      Cookies.set("to_route",points.value[points.value.length - 1].value)
       intermediatePoints.value.forEach((point, index) => {
         Cookies.set(`stop_${index + 1}`, point.value);
       });
-      Cookies.set("trip_time", secondsToTimeFormat(time).split(".")[0])
+      Cookies.set("trip_time",secondsToTimeFormat(time).split(".")[0])
       Cookies.remove("tripData")
       Cookies.set("tripData", JSON.stringify(tripData), { expires: 7 })
       console.log(Cookies.get("from_route"), Cookies.get("to_route"), Cookies.get("stop"), Cookies.get("trip_time"))
