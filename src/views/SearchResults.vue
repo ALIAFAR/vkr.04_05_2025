@@ -1052,7 +1052,7 @@ h1 {
 
 
 .detail-label {
-  color: #636e7210;
+  color: #636e72;
   min-width: 120px;
   font-weight: 500;
 }
@@ -1112,7 +1112,7 @@ h1 {
 
 .price-per-person {
   font-size: 14px;
-  color: #636e7217;
+  color: #636e72;
 }
 
 .trip-features {
@@ -1278,7 +1278,11 @@ input {
   background: #ffffff;
   padding: 32px;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid var(--border-color);
 }
+
 .confirmation-icon {
   width: 80px;
   height: 80px;
@@ -1301,11 +1305,12 @@ input {
 }
 
 .receipt-summary {
-  background: #f8f9fa; /* Легкий серый фон для контраста */
+  background: #ffffff;
   padding: 20px;
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin: 24px 0;
   text-align: left;
+  border: 1px solid var(--border-color);
 }
 
 .receipt-summary p {
@@ -1333,7 +1338,6 @@ input {
   color: #ffffff;
   transform: translateY(-2px);
 }
-
 .confirmation-text {
   color: var(--text-color);
   font-size: 20px;
