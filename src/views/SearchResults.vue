@@ -250,6 +250,13 @@
                   ({{ Math.round(trip.cost / searchParams.passengers) }} ₽/чел.)
                 </span>
               </div>
+              <div class="price-info">
+                <span class="price-label">Сумма бронирования:</span>
+                <span class="price-value">{{ trip.cost*0.1 }} ₽</span>
+                <span v-if="searchParams.passengers > 1" class="price-per-person">
+                  ({{ Math.round(trip.cost*0.1 / searchParams.passengers) }} ₽/чел.)
+                </span>
+              </div>
             </div>
             <div class="trip-features" v-if="trip.pets || trip.luggage || trip.big_size_luggage || trip.child_seat">
               <div class="feature-tag" v-if="trip.pets"><span class="feature-icon">🐾</span> Животные</div>
