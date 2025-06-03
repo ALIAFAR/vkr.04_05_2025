@@ -105,17 +105,18 @@
 
           <!-- Payment Confirmation -->
           <div v-if="showPaymentConfirmation" class="confirmation-screen">
-          <div class="confirmation-icon">✓</div>
-          <p class="confirmation-text">Оплата успешно завершена!</p>
-          <div class="receipt-summary">
-            <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
-            <p><strong>Номер транзакции:</strong> <span class="highlight">{{ transactionId }}</span></p>
-            <p><strong>Дата:</strong> <span class="highlight">{{ transactionDate }}</span></p>
+            <div class="confirmation-icon">✓</div>
+            <p class="confirmation-text">Оплата успешно завершена!</p>
+            <div class="receipt-summary">
+              <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
+              <p><strong>Оплата бронирования:</strong> <span class="highlight">{{ Math.round(currentBookingTrip.cost * 0.1) }} ₽</span></p>
+              <p><strong>Номер транзакции:</strong> <span class="highlight">{{ transactionId }}</span></p>
+              <p><strong>Дата:</strong> <span class="highlight">{{ transactionDate }}</span></p>
+            </div>
+            <button class="btn-confirm" @click="completeBooking" aria-label="Перейти к поездке">
+              Перейти к поездке
+            </button>
           </div>
-          <button class="btn-confirm" @click="completeBooking" aria-label="Перейти к поездке">
-            Перейти к поездке
-          </button>
-        </div>
         </div>
       </div>
 
@@ -247,6 +248,13 @@
                 <span class="price-value">{{ trip.cost }} ₽</span>
                 <span v-if="searchParams.passengers > 1" class="price-per-person">
                   ({{ Math.round(trip.cost / searchParams.passengers) }} ₽/чел.)
+                </span>
+              </div>
+              <div class="price-info">
+                <span class="price-label">Сумма бронирования:</span>
+                <span class="price-value">{{ trip.cost*0.1 }} ₽</span>
+                <span v-if="searchParams.passengers > 1" class="price-per-person">
+                  ({{ Math.round(trip.cost*0.1 / searchParams.passengers) }} ₽/чел.)
                 </span>
               </div>
             </div>
@@ -1052,7 +1060,7 @@ h1 {
 
 
 .detail-label {
-  color: #636e7210;
+  color: #636e72;
   min-width: 120px;
   font-weight: 500;
 }
@@ -1112,7 +1120,7 @@ h1 {
 
 .price-per-person {
   font-size: 14px;
-  color: #636e7217;
+  color: #636e72;
 }
 
 .trip-features {
@@ -1275,11 +1283,69 @@ input {
 }
 
 .confirmation-screen {
-  background: #f5f5f5;
+  background: #ffffff;
   padding: 32px;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid var(--border-color);
 }
 
+.confirmation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--success-color);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.confirmation-text {
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.receipt-summary {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 24px 0;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+.receipt-summary p {
+  margin: 8px 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.btn-confirm {
+  padding: 14px 24px;
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.btn-confirm:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
 .confirmation-text {
   color: var(--text-color);
   font-size: 20px;
