@@ -105,17 +105,17 @@
 
           <!-- Payment Confirmation -->
           <div v-if="showPaymentConfirmation" class="confirmation-screen">
-            <div class="confirmation-icon">✓</div>
-            <p class="confirmation-text">Оплата успешно завершена!</p>
-            <div class="receipt-summary">
-              <p><strong>Сумма:</strong> {{ currentBookingTrip.cost }} ₽</p>
-              <p><strong>Номер транзакции:</strong> {{ transactionId }}</p>
-              <p><strong>Дата:</strong> {{ transactionDate }}</p>
-            </div>
-            <button class="btn-close" @click="completeBooking" aria-label="Перейти к поездке">
-              Перейти к поездке
-            </button>
+          <div class="confirmation-icon">✓</div>
+          <p class="confirmation-text">Оплата успешно завершена!</p>
+          <div class="receipt-summary">
+            <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
+            <p><strong>Номер транзакции:</strong> <span class="highlight">{{ transactionId }}</span></p>
+            <p><strong>Дата:</strong> <span class="highlight">{{ transactionDate }}</span></p>
           </div>
+          <button class="btn-confirm" @click="completeBooking" aria-label="Перейти к поездке">
+            Перейти к поездке
+          </button>
+        </div>
         </div>
       </div>
 
@@ -873,7 +873,37 @@ h1 {
   font-size: 16px;
   color: var(--text-color);
 }
+.highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
 
+.btn-confirm {
+  padding: 14px 24px;
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.btn-confirm:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.receipt-summary p {
+  margin: 12px 0;
+  font-size: 16px;
+  color: var(--text-color);
+  line-height: 1.6;
+}
 .sort-select select {
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--border-color);
