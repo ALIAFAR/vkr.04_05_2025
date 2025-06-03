@@ -1,7 +1,7 @@
 <template>
   <div class="search-results-container">
     <AppNavbar />
-
+    
     <div class="search-results">
       <h1>Результаты поиска</h1>
 
@@ -106,9 +106,7 @@
           <!-- Payment Confirmation -->
           <div v-if="showPaymentConfirmation" class="confirmation-screen">
             <div class="confirmation-icon">✓</div>
-            <p class="confirmation-text">
-              {{ currentBookingTrip.bookingType === 'instant' ? 'Оплата успешно завершена!' : 'Бронирование ожидает подтверждения!' }}
-            </p>
+            <p class="confirmation-text">Оплата успешно завершена!</p>
             <div class="receipt-summary">
               <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
               <p><strong>Оплата бронирования:</strong> <span class="highlight">{{ Math.round(currentBookingTrip.cost * 0.1) }} ₽</span></p>
@@ -148,22 +146,22 @@
         <div v-if="showFilters" class="additional-filters">
           <div class="filter-options">
             <label class="filter-option">
-              <input type="radio" v-model="filters.pets" aria-label="Разрешены животные" />
+              <input type="checkbox" v-model="filters.pets" aria-label="Разрешены животные" />
               <span class="filter-icon">🐾</span>
               <span>Разрешены животные</span>
             </label>
             <label class="filter-option">
-              <input type="radio" v-model="filters.luggage" aria-label="Багаж" />
+              <input type="checkbox" v-model="filters.luggage" aria-label="Багаж" />
               <span class="filter-icon">🧳</span>
               <span>Багаж</span>
             </label>
             <label class="filter-option">
-              <input type="radio" v-model="filters.big_size_luggage" aria-label="Крупногабаритный багаж" />
+              <input type="checkbox" v-model="filters.big_size_luggage" aria-label="Крупногабаритный багаж" />
               <span class="filter-icon">🧳</span>
               <span>Крупногабаритный багаж</span>
             </label>
             <label class="filter-option">
-              <input type="radio" v-model="filters.childSeat" aria-label="Детское кресло" />
+              <input type="checkbox" v-model="filters.childSeat" aria-label="Детское кресло" />
               <span class="filter-icon">👶</span>
               <span>Детское кресло</span>
             </label>
@@ -262,9 +260,9 @@
             </div>
             <div class="trip-features" v-if="trip.pets || trip.luggage || trip.big_size_luggage || trip.child_seat">
               <div class="feature-tag" v-if="trip.pets"><span class="feature-icon">🐾</span> Животные</div>
-              <div class="feature-tag" v-if="trip.luggage"><span class="filter-icon">🧳</span> Багаж</div>
-              <div class="feature-tag" v-if="trip.big_size_luggage"><span class="filter-icon">🧳</span> Крупный багаж</div>
-              <div class="feature-tag" v-if="trip.child_seat"><span class="filter-icon">👶</span> Детское кресло</div>
+              <div class="feature-tag" v-if="trip.luggage"><span class="feature-icon">🧳</span> Багаж</div>
+              <div class="feature-tag" v-if="trip.big_size_luggage"><span class="feature-icon">🧳</span> Крупный багаж</div>
+              <div class="feature-tag" v-if="trip.child_seat"><span class="feature-icon">👶</span> Детское кресло</div>
             </div>
           </div>
 
@@ -563,15 +561,8 @@ export default {
         return;
       }
       this.currentBookingTrip = trip;
-      // Check the bookingType of the trip
-      if (trip.bookingType === 'confirmation') {
-        // For confirmation booking, skip payment and create pending booking
-        this.handleConfirmationBooking();
-      } else {
-        // For instant booking, show payment modal
-        this.showPaymentModal = true;
-        this.resetPaymentForm();
-      }
+      this.showPaymentModal = true;
+      this.resetPaymentForm();
     },
     resetPaymentForm() {
       this.paymentDetails = { cardNumber: "", expiry: "", cvv: "" };
@@ -628,14 +619,12 @@ export default {
       return isValid;
     },
     async processDemoPayment() {
-      // Validate payment details for instant booking
       if (!this.validatePaymentDetails()) return;
 
       this.isPaymentProcessing = true;
       this.paymentError = "";
 
       try {
-        // Simulate payment processing for instant booking
         await new Promise((resolve) => setTimeout(resolve, 1500));
         const paymentData = {
           PaymentId: `DEMO-${Date.now()}`,
@@ -645,12 +634,7 @@ export default {
       } catch (error) {
         this.paymentError = "Не удалось обработать платеж. Попробуйте снова.";
         this.isPaymentProcessing = false;
-        console.error("Ошибка обработки платежа:", error);
-        this.$notify({
-          title: "Ошибка",
-          text: this.paymentError,
-          type: "error",
-        });
+        console.error("Ошибка демо-оплаты:", error);
       }
     },
     async handlePaymentSuccess(paymentData) {
@@ -659,46 +643,6 @@ export default {
       this.showPaymentConfirmation = true;
       this.isPaymentProcessing = false;
       await this.sendPaymentConfirmation(paymentData);
-    },
-    async handleConfirmationBooking() {
-      try {
-        const token = Cookies.get("token");
-        const response = await axios.post(
-          API_CONFIG.BASE_URL + "/booking/create",
-          {
-            trip_id: this.currentBookingTrip.id,
-            chat_id: null, // No chat created yet for pending booking
-            seats_booked: this.searchParams.passengers,
-            transaction_id: null, // No payment for confirmation booking
-            status: "pending", // Set status to pending
-            departure_location: this.currentBookingTrip.departure_location,
-            arrival_location: this.currentBookingTrip.arrival_location,
-            departure_time: this.currentBookingTrip.departure_time,
-            stops: this.currentBookingTrip.stops || [],
-            driver_id: this.currentBookingTrip.driver_id || null,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        this.transactionId = `CONF-${Date.now()}`;
-        this.transactionDate = new Date().toLocaleString(this.locale);
-        this.showPaymentConfirmation = true;
-        this.isPaymentProcessing = false;
-        this.paymentError = "";
-        this.$notify({
-          title: "Успех",
-          text: "Бронирование создано и ожидает подтверждения!",
-          type: "success",
-        });
-      } catch (error) {
-        this.paymentError = "Не удалось создать бронирование с подтверждением.";
-        this.isPaymentProcessing = false;
-        console.error("Ошибка создания бронирования с подтверждением:", error);
-        this.$notify({
-          title: "Ошибка",
-          text: this.paymentError,
-          type: "error",
-        });
-      }
     },
     async sendPaymentConfirmation(paymentData) {
       try {
@@ -724,37 +668,30 @@ export default {
         const token = Cookies.get("token");
         const trip = this.currentBookingTrip;
 
-        let chatId = null;
-        // Only create a chat for instant booking
-        if (trip.bookingType === 'instant') {
-          const chatResponse = await axios.post(
-            API_CONFIG.BASE_URL + "/chat/create",
-            { trip_id: trip.id },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          chatId = chatResponse.data.chatId;
-        }
-
-        const bookingData = {
-          trip_id: trip.id,
-          chat_id: chatId,
-          seats_booked: this.searchParams.passengers,
-          transaction_id: this.transactionId,
-          departure_location: trip.departure_location,
-          arrival_location: trip.arrival_location,
-          departure_time: trip.departure_time,
-          stops: trip.stops || [],
-          driver_id: trip.driver_id || null,
-          status: trip.bookingType === 'instant' ? 'confirmed' : 'pending',
-        };
+        const chatResponse = await axios.post(
+          API_CONFIG.BASE_URL + "/chat/create",
+          { trip_id: trip.id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const chatId = chatResponse.data.chatId;
 
         const bookingResponse = await axios.post(
           API_CONFIG.BASE_URL + "/booking/create",
-          bookingData,
+          {
+            trip_id: trip.id,
+            chat_id: chatId,
+            seats_booked: this.searchParams.passengers,
+            transaction_id: this.transactionId,
+            departure_location: trip.departure_location,
+            arrival_location: trip.arrival_location,
+            departure_time: trip.departure_time,
+            stops: trip.stops || [],
+            driver_id: trip.driver_id || null,
+          },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Emit booking created event
+        // Эмитируем событие с полными данными бронирования
         emitter.emit('bookingCreated', {
           booking_id: bookingResponse.data.booking_id,
           trip_id: trip.id,
@@ -770,34 +707,34 @@ export default {
         this.closeModal();
 
         const userResponse = await axios.get(
-          API_CONFIG.BASE_URL + '/user/get-id',
-          { headers: { Authorization: `Bearer ${token}` } }
+          API_CONFIG.BASE_URL +'/user/get-id',
+          { headers: { 'Authorization': `Bearer ${this.token}` } }
         );
 
-        // Send notification to driver for instant booking
-        if (trip.bookingType === 'instant' && chatId) {
-          try {
-            const messageContent = `Вашу поездку забронировали на ${this.searchParams.passengers} мест. Осталось свободных мест: ${trip.total_seats - trip.available_seats - this.searchParams.passengers}`;
-            await axios.post(
-              `${API_CONFIG.BASE_URL}/chat/${chatId}/messages`,
-              {
-                content: messageContent,
-                sender_id: userResponse.data.user_id,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            console.log('Уведомление водителю отправлено');
-          } catch (error) {
-            console.error('Ошибка при отправке уведомления водителю:', error);
-          }
+        // Отправка сообщения водителю о бронированииAdd commentMore actions
+        try {
+          const messageContent = `Вашу поездку забронировали на ${this.searchParams.passengers} мест. Осталось свободных мест: ${trip.total_seats - trip.available_seats - this.searchParams.passengers}`;
+          
+          // Отправка через HTTP API
+          await axios.post(
+            `${API_CONFIG.BASE_URL}/chat/${chatId}/messages`,
+            {
+              content: messageContent,
+              sender_id: userResponse.data.user_id
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('Уведомление водителю отправлено');
+        } catch (error) {
+          console.error('Ошибка при отправке уведомления водителю:', error);
         }
 
-        // Redirect based on booking type
-        if (trip.bookingType === 'instant' && chatId) {
-          this.$router.push(`/chat/${chatId}`);
-        } else {
-          this.$router.push(`/booking/${bookingResponse.data.booking_id}`);
-        }
+        this.$router.push(`/chat/${chatId}`);
       } catch (error) {
         this.$notify({
           title: "Ошибка",
@@ -825,7 +762,9 @@ export default {
           passenger_rating: p.passenger_rating ? parseFloat(p.passenger_rating) : null,
           seats_booked: p.seats_booked || 1,
           birthday: p.birthday || null,
+          //cost: p.cost || trip.cost,
           user_id: p.id || null,
+          //comment: p.comment || "",
           avatarUrl: p.avatarUrl || "/images/default-avatar.jpg",
         }));
         this.showPassengersModal = true;
@@ -1119,6 +1058,7 @@ h1 {
   margin-bottom: 20px;
 }
 
+
 .detail-label {
   color: #636e72;
   min-width: 120px;
@@ -1315,21 +1255,6 @@ h1 {
   padding: 24px;
   border-radius: 12px;
   margin-top: 24px;
-}
-
-.booking-type {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.booking-type label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  color: var(--text-color);
 }
 
 .form-group label {
