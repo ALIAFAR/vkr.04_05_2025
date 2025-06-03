@@ -1052,7 +1052,7 @@ h1 {
 
 
 .detail-label {
-  color: #636e72;
+  color: #636e7210;
   min-width: 120px;
   font-weight: 500;
 }
@@ -1112,7 +1112,7 @@ h1 {
 
 .price-per-person {
   font-size: 14px;
-  color: #636e72;
+  color: #636e7217;
 }
 
 .trip-features {
