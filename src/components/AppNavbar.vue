@@ -191,6 +191,8 @@ export default {
         return;
       }
 
+      console.log("token",Cookies.get("token"))
+
       try {
         const response = await axios.get(API_CONFIG.BASE_URL + '/car/profileCar', {
           headers: {
