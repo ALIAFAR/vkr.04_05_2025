@@ -197,7 +197,9 @@ export default {
         },
       });
 
-      if (response.data.car && response.data.car.length === 0) {
+      console.log("response.data.car ", response.data.car, response.data.car.length)
+
+      if (response.data.car.length === 0) {
         // Массив пустой
         console.alert('Добавтье автомобиль');
         this.$router.push("/personal-information");
