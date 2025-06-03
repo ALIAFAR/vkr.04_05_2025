@@ -427,9 +427,13 @@ export default {
     async cancelBooking(trip) {
       try {
         const token = Cookies.get('token');
-        await axios.put(API_CONFIG.BASE_URL + `/booking/cancell/${trip.booking_id}`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.put(
+          API_CONFIG.BASE_URL + `/booking/cancell/${trip.booking_id}`,
+          { seats_booked: trip.seats_booked }, // Добавляем seats_booked в тело запроса
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         this.$notify({
           title: "Успех",
           text: "Бронирование отменено",
