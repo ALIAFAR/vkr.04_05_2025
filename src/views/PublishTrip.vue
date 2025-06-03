@@ -14,6 +14,11 @@
             placeholder="Откуда (например, Уфа)"
             @keydown.enter.prevent="handleEnter(0)"
           />
+
+          <div v-if="!isValid(points[0].input)" class="error">
+            Введите полный адрес
+          </div>
+
           <ul v-if="points[0].suggestions.length && points[0].showSuggestions" class="suggestions">
             <li v-for="(item, index) in points[0].suggestions" :key="index" @click="selectSuggestion(item, 0)">
               {{ item }}
@@ -32,6 +37,11 @@
             :placeholder="'Остановка ' + (index + 1)"
             @keydown.enter.prevent="handleEnter(index + 1)"
           />
+
+          <div v-if="!isValid(point.input)" class="error">
+            Введите полный адрес
+          </div>
+
           <ul v-if="point.suggestions.length && point.showSuggestions" class="suggestions">
             <li v-for="(item, idx) in point.suggestions" :key="idx" @click="selectSuggestion(item, index + 1)">
               {{ item }}
@@ -51,6 +61,11 @@
             placeholder="Куда (например, Казань)"
             @keydown.enter.prevent="handleEnter(points.length - 1)"
           />
+
+          <div v-if="!isValid(points[points.length - 1].input)" class="error">
+            Введите полный адрес
+          </div>
+
           <ul v-if="points[points.length - 1].suggestions.length && points[points.length - 1].showSuggestions" class="suggestions">
             <li v-for="(item, index) in points[points.length - 1].suggestions" :key="index" @click="selectSuggestion(item, points.length - 1)">
               {{ item }}
@@ -127,6 +142,12 @@ function secondsToTimeFormat(totalSeconds) {
   const seconds = (totalSeconds % 60).toString().padStart(2, "0");
 
   return `${hours}:${minutes}:${seconds}`;
+}
+
+function isValid(value) {
+  const hasStreetKeyword = /ул|пер/i.test(value);
+  const hasNumber = /\d/.test(value);
+  return hasStreetKeyword && hasNumber;
 }
 
 function loadYandexScript() {

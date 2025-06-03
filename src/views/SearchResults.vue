@@ -754,9 +754,9 @@ export default {
           passenger_rating: p.passenger_rating ? parseFloat(p.passenger_rating) : null,
           seats_booked: p.seats_booked || 1,
           birthday: p.birthday || null,
-          cost: p.cost || trip.cost,
-          user_id: p.user_id || null,
-          comment: p.comment || "",
+          //cost: p.cost || trip.cost,
+          user_id: p.id || null,
+          //comment: p.comment || "",
           avatarUrl: p.avatarUrl || "/images/default-avatar.jpg",
         }));
         this.showPassengersModal = true;
