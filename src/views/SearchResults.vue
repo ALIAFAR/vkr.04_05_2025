@@ -1275,9 +1275,63 @@ input {
 }
 
 .confirmation-screen {
-  background: #f5f5f5;
+  background: #ffffff;
   padding: 32px;
   border-radius: 12px;
+}
+.confirmation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--success-color);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.confirmation-text {
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.receipt-summary {
+  background: #f8f9fa; /* Легкий серый фон для контраста */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.receipt-summary p {
+  margin: 8px 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.btn-confirm {
+  padding: 14px 24px;
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.btn-confirm:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
 .confirmation-text {
