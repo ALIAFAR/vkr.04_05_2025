@@ -105,17 +105,18 @@
 
           <!-- Payment Confirmation -->
           <div v-if="showPaymentConfirmation" class="confirmation-screen">
-          <div class="confirmation-icon">✓</div>
-          <p class="confirmation-text">Оплата успешно завершена!</p>
-          <div class="receipt-summary">
-            <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
-            <p><strong>Номер транзакции:</strong> <span class="highlight">{{ transactionId }}</span></p>
-            <p><strong>Дата:</strong> <span class="highlight">{{ transactionDate }}</span></p>
+            <div class="confirmation-icon">✓</div>
+            <p class="confirmation-text">Оплата успешно завершена!</p>
+            <div class="receipt-summary">
+              <p><strong>Сумма:</strong> <span class="highlight">{{ currentBookingTrip.cost }} ₽</span></p>
+              <p><strong>Оплата бронирования:</strong> <span class="highlight">{{ Math.round(currentBookingTrip.cost * 0.1) }} ₽</span></p>
+              <p><strong>Номер транзакции:</strong> <span class="highlight">{{ transactionId }}</span></p>
+              <p><strong>Дата:</strong> <span class="highlight">{{ transactionDate }}</span></p>
+            </div>
+            <button class="btn-confirm" @click="completeBooking" aria-label="Перейти к поездке">
+              Перейти к поездке
+            </button>
           </div>
-          <button class="btn-confirm" @click="completeBooking" aria-label="Перейти к поездке">
-            Перейти к поездке
-          </button>
-        </div>
         </div>
       </div>
 
