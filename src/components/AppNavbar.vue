@@ -191,16 +191,15 @@ export default {
         return;
       }
 
-      const response = await axios.get(API_CONFIG.BASE_URL +'/car/profileCar', {
-        headers: {
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
+      try {
+        const response = await axios.get(API_CONFIG.BASE_URL +'/car/profileCar', {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        });
 
-      console.log("response.data.car ", response.data.car, response.data.car.length)
-
-      if (response.data.car.length === 0) {
-        // Массив пустой
+        console.log("response.data.car ", response.data.car, response.data.car.length)
+      } catch (error) {
         console.alert('Добавтье автомобиль');
         this.$router.push("/personal-information");
         return;
