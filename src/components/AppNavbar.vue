@@ -192,16 +192,24 @@ export default {
       }
 
       try {
-        const response = await axios.get(API_CONFIG.BASE_URL +'/car/profileCar', {
+        const response = await axios.get(API_CONFIG.BASE_URL + '/car/profileCar', {
           headers: {
             Authorization: `Bearer ${Cookies.get("token")}`,
           },
         });
 
-        console.log("response.data.car ", response.data.car, response.data.car.length)
+        console.log("response.data.car ", response.data.car, response.data.car.length);
+        this.navWithClose("/publish-trip");
       } catch (error) {
-        console.alert('Добавтье автомобиль');
-        this.$router.push("/personal-information");
+        if (error.response && error.response.status === 404) {
+          // Обработка случая, когда машина не найдена
+          alert('Добавьте автомобиль');
+          this.$router.push("/personal-information");
+        } else {
+          // Обработка других ошибок
+          console.error('Произошла ошибка:', error.message);
+          alert('Произошла ошибка при проверке автомобиля');
+        }
         return;
       }
 
