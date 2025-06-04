@@ -139,89 +139,165 @@ export default {
 </script>
 
 <style scoped>
+/* Container styling with modern gradient and responsive padding */
 .baggage-container {
   text-align: center;
-  padding: 50px 20px;
-  max-width: 600px;
-  margin: 120px auto 0;
-  background-color: rgba(107, 151, 193, 0.299);
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem 1.5rem;
+  max-width: 40rem;
+  margin: 7rem auto 2rem;
+  background: linear-gradient(135deg, rgba(200, 220, 255, 0.2) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-radius: 1rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Title styling with improved typography */
 .baggage-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1a2a44;
+  line-height: 1.2;
 }
 
+/* General text styling for paragraphs */
+p {
+  font-size: 1.1rem;
+  color: #4a5568;
+  margin-bottom: 1.25rem;
+}
+
+/* Radio button container styling */
+.baggage-options,
+.oversized-baggage,
+.child-seat,
+.animals {
+  margin-bottom: 2rem;
+}
+
+/* Radio button label styling with better spacing and interaction */
 .baggage-options label,
 .oversized-baggage label,
 .child-seat label,
 .animals label {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: #2d3748;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
 }
 
+/* Highlight selected radio button */
+input[type="radio"]:checked + span {
+  font-weight: 500;
+  color: #0056b3;
+}
+
+/* Style radio buttons */
+input[type="radio"] {
+  accent-color: #0056b3;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+/* Textarea styling with improved focus and responsiveness */
 .comment-textarea {
   width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-top: 10px;
-  transition: border-color 0.3s, opacity 0.3s, transform 0.3s;
+  max-width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+  resize: vertical;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* Focus state for textarea */
 .comment-textarea:focus {
-  border-color: #004281;
+  border-color: #0056b3;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 66, 129, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
 }
 
+/* Button styling with modern gradient and hover effects */
 button {
-  padding: 12px;
-  font-size: 18px;
-  background-color: #004281;
-  color: white;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: linear-gradient(90deg, #0056b3 0%, #007bff 100%);
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.5rem;
   cursor: pointer;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Disabled button state */
 button:disabled {
-  background-color: #ccc;
+  background: #a0aec0;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
+/* Button hover and active states */
 button:hover:not(:disabled) {
-  background-color: #003365;
+  background: linear-gradient(90deg, #003d80 0%, #0056b3 100%);
+  transform: translateY(-1px);
 }
 
 button:active:not(:disabled) {
-  background-color: #002549;
+  transform: translateY(0);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Анимация для раскрывающихся комментариев */
+/* Improved fade transition for textareas */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: all 0.4s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-0.5rem);
 }
 
 .fade-enter-to,
 .fade-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+  .baggage-container {
+    padding: 1.5rem 1rem;
+    margin: 5rem auto 1rem;
+  }
+
+  .baggage-title {
+    font-size: 1.75rem;
+  }
+
+  p {
+    font-size: 1rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 0.75rem;
+  }
 }
 </style>
