@@ -630,89 +630,89 @@ export default {
 </script>
 
 <style scoped>
-/* Базовые стили */
 :root {
-  --bg-color: #ffffff;
-  --text-color: #1a202c;
-  --secondary-color: #6b7280;
-  --container-bg: #ffffff;
-  --border-color: #e2e8f0;
-  --accent-color: #004281;
-  --accent-hover: #003366;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ff1a1a; /* Brighter red for better contrast */
-  --danger-hover: #cc0000;
+  --primary-color: #1a73e8; /* Modern blue for primary actions */
+  --secondary-color: #5f6368; /* Softer gray for secondary text */
+  --success-color: #34c759; /* Vibrant green for success states */
+  --error-color: #d93025; /* Google-inspired red for errors */
+  --warning-color: #f4b400; /* Yellow for warnings and ratings */
+  --text-color: #202124; /* Darker text for high contrast */
+  --border-color: #dadce0; /* Subtle border color */
+  --background-color: #ffffff; /* Clean white for cards */
+  --container-bg: #f8f9fa; /* Light gray for main container */
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15); /* Enhanced hover shadow */
+  --transition: all 0.2s ease; /* Smooth transitions */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Modern font stack */
 }
 
 .dark-mode {
-  --bg-color: #0f172a;
-  --text-color: #e2e8f0;
-  --secondary-color: #94a3b8;
-  --container-bg: #1e293b;
-  --border-color: #475569;
-  --accent-color: #60a5fa;
-  --accent-hover: #3b82f6;
-  --success-color: #34d399;
-  --warning-color: #facc15;
-  --danger-color: #ff5555; /* Brighter red for dark mode */
-  --danger-hover: #bb0000;
+  --primary-color: #60a5fa; /* Lighter blue for dark mode */
+  --secondary-color: #94a3b8; /* Lighter gray for secondary text */
+  --success-color: #34d399; /* Lighter green for success */
+  --error-color: #ff5555; /* Lighter red for errors */
+  --warning-color: #facc15; /* Lighter yellow for warnings */
+  --text-color: #e2e8f0; /* Light text for contrast */
+  --border-color: #475569; /* Darker border for dark mode */
+  --background-color: #1e293b; /* Dark background for cards */
+  --container-bg: #0f172a; /* Darker container background */
 }
 
 .trip-details {
   padding: 32px;
-  max-width: 900px;
+  max-width: 960px;
   margin: 80px auto;
   background: var(--container-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  font-family: var(--font-family);
+  transition: var(--transition);
 }
 
 .details-header {
-  text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  text-align: center; /* Center header for better balance */
 }
 
 .header-title {
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: var(--text-color);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .section-title {
-  margin: 32px 0 16px;
-  font-size: 1.4rem;
+  margin: 32px 0 24px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--text-color);
   padding-left: 12px;
-  border-left: 4px solid var(--accent-color);
-  text-align: left;
+  border-left: 4px solid var(--primary-color);
 }
 
 .trip-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 .trip-item {
-  padding: 20px;
-  background: var(--container-bg);
-  border-radius: 10px;
+  padding: 24px;
+  background: var(--background-color);
+  border-radius: 16px;
   border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   animation: slideIn 0.5s ease-out;
 }
 
 .trip-item.completed {
-  background-color: var(--container-bg);
-  opacity: 0.7;
+  opacity: 0.85;
+  background: var(--background-color);
   cursor: default;
 }
 
@@ -720,323 +720,351 @@ export default {
   cursor: pointer;
 }
 
-.trip-item:not(.completed):hover {
+.trip-item:not(.completed):hover,
+.trip-item:not(.completed):focus-visible {
   transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-  border-color: var(--accent-color);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-color);
 }
 
 .trip-item:not(.completed):focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .trip-icon {
-  font-size: 1.5rem;
-  color: var(--accent-color);
-  margin-bottom: 8px;
+  font-size: 24px;
+  color: var(--primary-color);
+  margin-bottom: 12px;
+  align-self: center; /* Center icon for visual balance */
 }
 
 .trip-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 16px;
 }
 
 .detail-item {
-  flex: 1 1 45%;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Label takes 1 part, value takes 2 parts */
+  gap: 12px;
+  padding: 10px 0;
   align-items: center;
-  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color); /* Subtle separator */
 }
 
 .detail-item p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: left;
 }
 
 .detail-item span {
-  font-size: 0.9rem;
-  color: var(--secondary-color);
-  text-align: right;
-  max-width: 60%;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-color);
+  text-align: left;
   word-break: break-word;
 }
 
 .trip-actions {
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  gap: 12px;
+  justify-content: center; /* Center buttons */
   margin-top: 16px;
   flex-wrap: wrap;
 }
 
 .action-button {
-  padding: 10px 16px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 100px;
+  transition: var(--transition);
+  min-width: 120px;
   text-align: center;
-  z-index: 2;
+  background: var(--primary-color);
+  color: #fff;
 }
 
 .action-button.edit {
-  background-color: var(--warning-color);
-  color: #1a202c;
+  background: var(--warning-color);
+  color: var(--text-color);
+}
+
+.action-button.edit:hover,
+.action-button.edit:focus-visible {
+  background: #e6a700;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .action-button.reschedule {
-  background-color: #17a2b8;
-  color: white;
+  background: #17a2b8;
+  color: #fff;
 }
 
-.action-button.cancel {
-  background-color: var(--danger-color);
-  color: white;
-  border: 1px solid var(--danger-color);
-  font-weight: 700; /* Increased from 600 for bolder text */
-  text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Enhanced text readability */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Stronger default shadow */
-  min-width: 120px; /* Increased from 100px for better visibility */
+.action-button.reschedule:hover,
+.action-button.reschedule:focus-visible {
+  background: #138496;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
+.action-button.cancel,
 .action-button.cancel-booking {
-  background-color: var(--danger-color);
-  color: white;
-  border: 1px solid var(--danger-color);
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 10px 16px;
-  min-width: 160px;
-  margin-top: 8px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-  z-index: 2;
+  background: var(--error-color);
+  border: 1px solid var(--error-color);
 }
 
 .action-button.cancel:hover,
-.action-button.cancel-booking:hover,
 .action-button.cancel:focus-visible,
+.action-button.cancel-booking:hover,
 .action-button.cancel-booking:focus-visible {
-  background-color: var(--danger-hover);
-  border-color: var(--danger-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #b8251f;
+  border-color: #b8251f;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .action-button:hover,
 .action-button:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .action-button:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-.no-trips, .loading-state, .error-state {
-  padding: 24px;
-  border-radius: 10px;
+.action-button.cancel-booking {
+  min-width: 180px;
+  margin-top: 12px;
+  align-self: center; /* Center cancel-booking button */
+}
+
+.no-trips,
+.loading-state,
+.error-state {
+  padding: 32px;
+  border-radius: 12px;
   text-align: center;
-  color: var(--secondary-color);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   border: 2px dashed var(--border-color);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.no-trips-icon, .loading-icon, .error-icon {
-  font-size: 2.5rem;
+.no-trips-icon,
+.loading-icon,
+.error-icon {
+  font-size: 48px;
   opacity: 0.7;
+  color: var(--secondary-color);
 }
 
-.no-trips p, .loading-state p, .error-state p {
+.no-trips p,
+.loading-state p,
+.error-state p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 18px;
   font-weight: 500;
+  color: var(--text-color);
 }
 
-.create-trip-btn, .retry-button {
-  padding: 10px 20px;
-  background-color: var(--accent-color);
-  color: white;
+.create-trip-btn,
+.retry-button {
+  padding: 12px 24px;
+  background: var(--primary-color);
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: var(--transition);
+  align-self: center; /* Center buttons */
 }
 
 .create-trip-btn:hover,
 .create-trip-btn:focus-visible,
 .retry-button:hover,
 .retry-button:focus-visible {
-  background-color: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background: #174ea6;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .create-trip-btn:focus-visible,
 .retry-button:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .back-button {
   display: block;
-  margin: 24px auto 0;
+  margin: 32px auto 0;
   padding: 12px 24px;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  background: var(--background-color);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: var(--transition);
+  align-self: center; /* Center button */
 }
 
 .back-button:hover,
 .back-button:focus-visible {
-  background-color: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--primary-color);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .back-button:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Модальные окна */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(6px);
   animation: fadeIn 0.3s ease;
 }
 
-.modal {
+.modal,
+.modal-content {
   position: relative;
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
+  background: var(--background-color);
+  padding: 32px;
+  border-radius: 16px;
   width: 90%;
-  max-width: 500px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease;
-  transform: scale(1);
-  opacity: 1;
-  z-index: 1001;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-hover);
+  border: 1px solid var(--border-color);
 }
 
-.dark-mode .modal {
-  background: #1e293b;
+.dark-mode .modal,
+.dark-mode .modal-content {
+  background: var(--background-color);
 }
 
 .modal-close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
+  top: 16px;
+  right: 16px;
+  background: var(--container-bg);
   border: none;
-  font-size: 1.25rem;
-  color: var(--secondary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
   cursor: pointer;
-  transition: color 0.2s ease;
-  z-index: 1002;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
 }
 
 .modal-close-button:hover,
 .modal-close-button:focus-visible {
-  color: var(--accent-color);
-}
-
-.modal-close-button:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
-}
-
-.modal h3 {
-  margin: 0 0 16px;
-  font-size: 1.5rem;
-  font-weight: 600;
+  background: var(--border-color);
   color: var(--text-color);
 }
 
+.modal-close-button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.modal h3,
+.modal-content h3 {
+  margin: 0 0 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center; /* Center modal titles */
+}
+
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: left;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text-color);
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 10px;
+  font-size: 16px;
   color: var(--text-color);
-  background: var(--bg-color);
-  transition: all 0.2s ease;
+  background: var(--background-color);
+  transition: var(--transition);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
 }
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center; /* Center modal action buttons */
+  gap: 16px;
   margin-top: 24px;
 }
 
 .cancel-btn {
-  padding: 10px 16px;
+  padding: 12px 20px;
   background: var(--border-color);
   color: var(--text-color);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: 500;
+  transition: var(--transition);
 }
 
 .cancel-btn:hover,
 .cancel-btn:focus-visible {
   background: #e2e8f0;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .dark-mode .cancel-btn:hover,
@@ -1045,169 +1073,162 @@ export default {
 }
 
 .cancel-btn:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .save-button {
-  padding: 10px 16px;
-  background: var(--accent-color);
-  color: white;
+  padding: 12px 20px;
+  background: var(--primary-color);
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: 500;
+  transition: var(--transition);
 }
 
 .save-button:hover,
 .save-button:focus-visible {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background: #174ea6;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .save-button:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Стили для остановок */
 .stops-list {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .stop-item {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
-  gap: 8px;
+  gap: 12px;
 }
 
 .stop-item input {
   flex: 1;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 10px;
+  font-size: 16px;
 }
 
 .remove-stop {
-  background: var(--danger-color);
-  color: white;
+  background: var(--error-color);
+  color: #fff;
   border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .remove-stop:hover,
 .remove-stop:focus-visible {
-  background: var(--danger-hover);
+  background: #b8251f;
   transform: scale(1.1);
 }
 
 .remove-stop:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .add-stop {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .add-stop input {
   flex: 1;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 10px;
+  font-size: 16px;
 }
 
 .add-stop-button {
   background: var(--success-color);
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .add-stop-button:hover,
 .add-stop-button:focus-visible {
-  background: #059669;
+  background: #2aa648;
   transform: scale(1.1);
 }
 
 .add-stop-button:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Пассажиры */
-.modal-content {
-  position: relative;
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  opacity: 1;
-  z-index: 1001;
-}
-
-.dark-mode .modal-content {
-  background: #1e293b;
-}
-
 .passengers-filter {
-  margin-bottom: 16px;
-  text-align: left;
+  margin-bottom: 20px;
+  text-align: center; /* Center filter for consistency */
 }
 
 .filter-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
+  justify-content: center; /* Center checkbox and label */
+  gap: 12px;
+  font-size: 16px;
   color: var(--text-color);
 }
 
+.filter-label input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary-color);
+}
+
 .passengers-list {
-  max-height: 50vh;
+  max-height: 60vh;
   overflow-y: auto;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--container-bg);
+  border-radius: 12px;
 }
 
 .passenger-item {
   display: flex;
   padding: 16px;
-  margin-bottom: 12px;
-  background: var(--bg-color);
-  border-radius: 10px;
+  margin-bottom: 16px;
+  background: var(--background-color);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  gap: 12px;
-  transition: all 0.2s ease;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
 }
 
 .passenger-item:hover {
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(26, 115, 232, 0.05);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .passenger-avatar-link {
@@ -1215,38 +1236,47 @@ export default {
 }
 
 .passenger-avatar {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--border-color);
 }
 
 .passenger-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .passenger-name {
-  font-size: 1rem;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: center; /* Center passenger name for balance */
 }
 
 .passenger-meta {
   display: flex;
   gap: 12px;
-  font-size: 0.85rem;
+  font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center meta info */
 }
 
 .passenger-gender.male {
-  color: #3b82f6;
+  background: rgba(26, 115, 232, 0.1);
+  color: var(--primary-color);
+  padding: 4px 10px;
+  border-radius: 8px;
 }
 
 .passenger-gender.female {
-  color: #ec4899;
+  background: rgba(236, 72, 153, 0.1);
+  color: #c2185b;
+  padding: 4px 10px;
+  border-radius: 8px;
 }
 
 .passenger-rating {
@@ -1255,51 +1285,63 @@ export default {
 
 .passenger-details {
   display: flex;
-  gap: 12px;
-  font-size: 0.9rem;
+  gap: 16px;
+  font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center details */
 }
 
 .passenger-comment {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: var(--secondary-color);
   font-style: italic;
-  margin-top: 4px;
+  padding: 12px;
+  background: var(--container-bg);
+  border-radius: 8px;
+  margin-top: 8px;
+  text-align: center; /* Center comment */
 }
 
 .passenger-actions {
-  margin-top: 8px;
+  margin-top: 12px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  justify-content: center; /* Center passenger action buttons */
 }
 
 .passengers-summary {
-  padding-top: 16px;
+  padding-top: 20px;
   border-top: 1px solid var(--border-color);
-  font-size: 0.95rem;
+  font-size: 16px;
   color: var(--text-color);
-  text-align: left;
+  text-align: center; /* Center summary */
 }
 
-.no-passengers, .loading-state, .error-state {
+.no-passengers,
+.loading-state,
+.error-state {
   text-align: center;
-  padding: 20px;
-  color: var(--secondary-color);
+  padding: 24px;
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.no-passengers-icon, .loading-icon, .error-icon {
-  font-size: 2rem;
+.no-passengers-icon,
+.loading-icon,
+.error-icon {
+  font-size: 40px;
   opacity: 0.7;
+  color: var(--secondary-color);
 }
 
 .location-info {
-  font-size: 0.95rem;
-  color: var(--secondary-color);
-  margin-bottom: 16px;
+  font-size: 16px;
+  color: var(--text-color);
+  margin-bottom: 20px;
+  text-align: center; /* Center location info */
 }
 
 @keyframes fadeIn {
@@ -1314,88 +1356,85 @@ export default {
 
 @media (max-width: 768px) {
   .trip-details {
-    padding: 16px;
+    padding: 24px;
     margin: 70px auto;
     width: 95%;
   }
-
   .header-title {
-    font-size: 1.5rem;
+    font-size: 28px;
   }
-
   .section-title {
-    font-size: 1.25rem;
+    font-size: 20px;
   }
-
   .trip-item {
-    padding: 16px;
+    padding: 20px;
   }
-
+  .trip-content {
+    grid-template-columns: 1fr;
+  }
   .detail-item {
-    flex: 1 1 100%;
+    grid-template-columns: 1fr 1fr; /* Adjust for smaller screens */
+    gap: 8px;
+    padding: 8px 0;
   }
-
+  .detail-item p,
+  .detail-item span {
+    font-size: 15px;
+  }
   .trip-actions {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
-
   .action-button {
     width: 100%;
   }
-
-  .modal {
-    padding: 20px;
+  .modal,
+  .modal-content {
+    padding: 24px;
   }
-
   .passenger-item {
     padding: 12px;
   }
-
   .passenger-avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
-
   .action-button.cancel-booking {
-    min-width: 120px;
-    font-size: 0.95rem;
-    padding: 8px 12px;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .header-title {
-    font-size: 1.25rem;
+    font-size: 24px;
   }
-
   .section-title {
-    font-size: 1.1rem;
+    font-size: 18px;
   }
-
+  .detail-item {
+    grid-template-columns: 1fr; /* Stack label and value for very small screens */
+    gap: 6px;
+    padding: 6px 0;
+  }
   .detail-item p,
   .detail-item span {
-    font-size: 0.85rem;
+    font-size: 14px;
+    text-align: center; /* Center text for small screens */
   }
-
   .action-button {
-    font-size: 0.85rem;
-    padding: 8px 12px;
+    font-size: 14px;
+    padding: 10px 16px;
   }
-
   .passenger-meta {
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
-
   .passenger-details {
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
-
   .action-button.cancel-booking {
-    min-width: 100px;
-    font-size: 0.9rem;
+    font-size: 14px;
   }
 }
 </style>
