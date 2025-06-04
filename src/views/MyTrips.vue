@@ -660,7 +660,7 @@ export default {
 
 .trip-details {
   padding: 32px;
-  max-width: 960px; /* Slightly wider for modern screens */
+  max-width: 960px;
   margin: 80px auto;
   background: var(--container-bg);
   border-radius: 16px;
@@ -747,10 +747,10 @@ export default {
 
 .detail-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column; /* Stack label and value vertically for consistent alignment */
+  gap: 8px;
   padding: 8px 0;
+  align-items: flex-start; /* Align text to the left for uniformity */
 }
 
 .detail-item p {
@@ -758,16 +758,15 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
-  min-width: 120px;
+  width: 100%; /* Ensure label takes full width */
 }
 
 .detail-item span {
   font-size: 16px;
   font-weight: 400;
   color: var(--text-color);
-  text-align: right;
-  max-width: 60%;
   word-break: break-word;
+  width: 100%; /* Ensure value takes full width */
 }
 
 .trip-actions {
