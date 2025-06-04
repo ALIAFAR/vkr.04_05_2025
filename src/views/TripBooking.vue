@@ -144,12 +144,6 @@
           <button class="modal-close-button" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
           <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
           <p class="location-info">{{ currentLocation || 'Не указано' }}</p>
-          
-          <div class="passengers-filter">
-            <label class="filter-label">
-              <input type="checkbox" v-model="showOnlyMyBookings" aria-label="Показать только мои бронирования">
-              Показать только мои бронирования
-            </label>
           </div>
           
           <div class="passengers-list">
@@ -194,13 +188,6 @@
                     "{{ passenger.comment }}"
                   </div>
                   <div v-if="passenger.user_id === currentUserId" class="passenger-actions">
-                    <button 
-                      class="action-button cancel-booking" 
-                      @click.stop="confirmCancelPassenger(passenger.user_id)"
-                      aria-label="Отменить бронирование"
-                    >
-                      Отменить бронирование
-                    </button>
                   </div>
                 </div>
               </div>
@@ -214,7 +201,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
