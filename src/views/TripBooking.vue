@@ -144,8 +144,7 @@
           <button class="modal-close-button" @click="closeModal" aria-label="Закрыть модальное окно">×</button>
           <h3>Пассажиры {{ modalLocationType === 'departure' ? 'отправления' : 'прибытия' }}</h3>
           <p class="location-info">{{ currentLocation || 'Не указано' }}</p>
-          </div>
-          
+
           <div class="passengers-list">
             <div v-if="isLoadingPassengers" class="loading-state">
               <span class="loading-icon">⏳</span>
@@ -184,16 +183,13 @@
                     <span class="passenger-seats">Мест: {{ passenger.seats_booked || 'Не указано' }}</span>
                     <span class="passenger-price">{{ passenger.position || 0 }} ₽</span>
                   </div>
-                  <div v-if="passenger.comment" class="passenger-comment">
-                    "{{ passenger.comment }}"
-                  </div>
-                  <div v-if="passenger.user_id === currentUserId" class="passenger-actions">
-                  </div>
+                  <div v-if="passenger.comment" class="passenger-comment">"{{ passenger.comment }}"</div>
+                  <div v-if="passenger.user_id === currentUserId" class="passenger-actions"></div>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div class="passengers-summary" v-if="!isLoadingPassengers && !errorLoadingPassengers && filteredPassengers.length > 0">
             <p>Всего пассажиров: {{ filteredPassengers.length }}</p>
             <p>Общее количество мест: {{ totalBookedSeats }}</p>
@@ -201,6 +197,7 @@
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
