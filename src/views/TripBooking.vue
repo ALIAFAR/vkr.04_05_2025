@@ -100,7 +100,7 @@
               </div>
               <div class="detail-item">
                 <p><strong>Дата отбытия:</strong></p>
-                <span>{{ formatDate(trip.departuredate) }}</span>
+                <span>{{ formatDate(trip.departuretime) }}</span>
               </div>
               <div class="detail-item">
                 <p><strong>Время отбытия:</strong></p>
@@ -363,25 +363,13 @@ export default {
         this.isLoadingTrips = false;
       }
     },
-    formatDate(dateValue) {
-      if (!dateValue) return 'Не указано';
-      
-      // Если это уже отформатированная дата (строка)
-      if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dateValue.split('-');
-        const date = new Date(year, month - 1, day);
-        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-      }
-      
-      // Если это объект даты PostgreSQL
-      if (dateValue instanceof Date || (typeof dateValue === 'string' && Date.parse(dateValue))) {
-        const date = new Date(dateValue);
-        return isNaN(date.getTime()) 
-          ? 'Неверная дата' 
-          : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-      }
-      
-      return 'Неверный формат даты';
+    formatDate(dateString) {
+      console.log("dateString",dateString)
+      if (!dateString) return 'Не указано';
+      const date = new Date(dateString);
+      return isNaN(date.getTime())
+        ? 'Неверная дата'
+        : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     },
     formatTime(timeString) {
       if (!timeString) return 'Не указано';
