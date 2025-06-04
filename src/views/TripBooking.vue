@@ -107,6 +107,10 @@
                 <span>{{ formatTime(trip.departuretime) }}</span>
               </div>
               <div class="detail-item">
+                <p><strong>АААААААААА:</strong></p>
+                <span>{{ trip.departuretime  }}</span>
+              </div>
+              <div class="detail-item">
                 <p><strong>Пассажиры:</strong></p>
                 <span>{{ trip.seats_booked || 1 }}</span>
               </div>
