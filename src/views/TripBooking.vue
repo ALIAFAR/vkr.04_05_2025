@@ -296,7 +296,7 @@ export default {
         booking_id: bookingData.booking_id,
         from: bookingData.departure_location || 'Не указано',
         to: bookingData.arrival_location || 'Не указано',
-        departuredate: departureDate || '',
+        departuredate: bookingData.departure_time || '',
         departuretime: bookingData.departure_time?.split('T')[1]?.slice(0, 5) || 'Не указано',
         seats_booked: bookingData.seats_booked || 1,
         stops: Array.isArray(bookingData.stops) ? bookingData.stops.join(', ') : bookingData.stops || 'Нет',
