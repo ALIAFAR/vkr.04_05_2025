@@ -671,6 +671,7 @@ export default {
 
 .details-header {
   margin-bottom: 32px;
+  text-align: center; /* Center header for better balance */
 }
 
 .header-title {
@@ -678,7 +679,6 @@ export default {
   font-weight: 700;
   color: var(--text-color);
   margin: 0;
-  text-align: left;
   letter-spacing: -0.02em;
 }
 
@@ -736,6 +736,7 @@ export default {
   font-size: 24px;
   color: var(--primary-color);
   margin-bottom: 12px;
+  align-self: center; /* Center icon for visual balance */
 }
 
 .trip-content {
@@ -746,11 +747,12 @@ export default {
 }
 
 .detail-item {
-  display: flex;
-  flex-direction: column; /* Stack label and value vertically for consistent alignment */
-  gap: 8px;
-  padding: 8px 0;
-  align-items: flex-start; /* Align text to the left for uniformity */
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Label takes 1 part, value takes 2 parts */
+  gap: 12px;
+  padding: 10px 0;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color); /* Subtle separator */
 }
 
 .detail-item p {
@@ -758,21 +760,21 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
-  width: 100%; /* Ensure label takes full width */
+  text-align: left;
 }
 
 .detail-item span {
   font-size: 16px;
   font-weight: 400;
   color: var(--text-color);
+  text-align: left;
   word-break: break-word;
-  width: 100%; /* Ensure value takes full width */
 }
 
 .trip-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: center; /* Center buttons */
   margin-top: 16px;
   flex-wrap: wrap;
 }
@@ -845,6 +847,7 @@ export default {
 .action-button.cancel-booking {
   min-width: 180px;
   margin-top: 12px;
+  align-self: center; /* Center cancel-booking button */
 }
 
 .no-trips,
@@ -890,6 +893,7 @@ export default {
   font-size: 16px;
   font-weight: 500;
   transition: var(--transition);
+  align-self: center; /* Center buttons */
 }
 
 .create-trip-btn:hover,
@@ -919,6 +923,7 @@ export default {
   font-size: 16px;
   font-weight: 500;
   transition: var(--transition);
+  align-self: center; /* Center button */
 }
 
 .back-button:hover,
@@ -1003,6 +1008,7 @@ export default {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: center; /* Center modal titles */
 }
 
 .form-group {
@@ -1037,7 +1043,7 @@ export default {
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center; /* Center modal action buttons */
   gap: 16px;
   margin-top: 24px;
 }
@@ -1180,12 +1186,13 @@ export default {
 
 .passengers-filter {
   margin-bottom: 20px;
-  text-align: left;
+  text-align: center; /* Center filter for consistency */
 }
 
 .filter-label {
   display: flex;
   align-items: center;
+  justify-content: center; /* Center checkbox and label */
   gap: 12px;
   font-size: 16px;
   color: var(--text-color);
@@ -1247,6 +1254,7 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: center; /* Center passenger name for balance */
 }
 
 .passenger-meta {
@@ -1254,6 +1262,7 @@ export default {
   gap: 12px;
   font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center meta info */
 }
 
 .passenger-gender.male {
@@ -1279,6 +1288,7 @@ export default {
   gap: 16px;
   font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center details */
 }
 
 .passenger-comment {
@@ -1289,12 +1299,14 @@ export default {
   background: var(--container-bg);
   border-radius: 8px;
   margin-top: 8px;
+  text-align: center; /* Center comment */
 }
 
 .passenger-actions {
   margin-top: 12px;
   display: flex;
   gap: 12px;
+  justify-content: center; /* Center passenger action buttons */
 }
 
 .passengers-summary {
@@ -1302,7 +1314,7 @@ export default {
   border-top: 1px solid var(--border-color);
   font-size: 16px;
   color: var(--text-color);
-  text-align: left;
+  text-align: center; /* Center summary */
 }
 
 .no-passengers,
@@ -1329,6 +1341,7 @@ export default {
   font-size: 16px;
   color: var(--text-color);
   margin-bottom: 20px;
+  text-align: center; /* Center location info */
 }
 
 @keyframes fadeIn {
@@ -1359,6 +1372,11 @@ export default {
   .trip-content {
     grid-template-columns: 1fr;
   }
+  .detail-item {
+    grid-template-columns: 1fr 1fr; /* Adjust for smaller screens */
+    gap: 8px;
+    padding: 8px 0;
+  }
   .detail-item p,
   .detail-item span {
     font-size: 15px;
@@ -1382,7 +1400,7 @@ export default {
     height: 40px;
   }
   .action-button.cancel-booking {
-    min-width: 100%;
+    width: 100%;
   }
 }
 
@@ -1393,9 +1411,15 @@ export default {
   .section-title {
     font-size: 18px;
   }
+  .detail-item {
+    grid-template-columns: 1fr; /* Stack label and value for very small screens */
+    gap: 6px;
+    padding: 6px 0;
+  }
   .detail-item p,
   .detail-item span {
     font-size: 14px;
+    text-align: center; /* Center text for small screens */
   }
   .action-button {
     font-size: 14px;
