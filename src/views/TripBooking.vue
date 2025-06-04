@@ -349,19 +349,14 @@ export default {
         this.isLoadingTrips = false;
       }
     },
-    formatDate(dateTimeString) {
-      console.log("dateTimeString", dateTimeString);
-      if (!dateTimeString) return 'Не указано';
-      
-      const date = new Date(dateTimeString);
-      return isNaN(date.getTime())
-        ? 'Неверная дата'
-        : date.toLocaleDateString('ru-RU', { 
-            day: 'numeric', 
-            month: 'long', 
-            year: 'numeric' 
-          });
+    formatDate(dateString) {
+      if (!dateString) return 'Не указано';
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) 
+        ? 'Неверная дата' 
+        : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     },
+
 
     formatTime(dateTimeString) {
       console.log("dateTimeString", dateTimeString);
