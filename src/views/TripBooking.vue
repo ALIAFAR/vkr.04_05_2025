@@ -364,6 +364,7 @@ export default {
       }
     },
     formatDate(dateString) {
+      console.log("dateString",dateString)
       if (!dateString) return 'Не указано';
       const date = new Date(dateString);
       return isNaN(date.getTime())
