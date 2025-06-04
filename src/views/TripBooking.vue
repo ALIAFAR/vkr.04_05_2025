@@ -514,7 +514,7 @@ export default {
   --success-color: #34c759; /* Vibrant green for success states */
   --error-color: #d93025; /* Google-inspired red for errors */
   --warning-color: #f4b400; /* Yellow for warnings and ratings */
-  --text-color: #202124; /* Darker text for contrast */
+  --text-color: #202124; /* Darker text for high contrast */
   --border-color: #dadce0; /* Subtle border color */
   --background-color: #ffffff; /* Clean white for cards */
   --container-bg: #f8f9fa; /* Light gray for main container */
@@ -538,7 +538,7 @@ export default {
 
 .trip-details {
   padding: 32px;
-  max-width: 960px; /* Slightly wider for modern screens */
+  max-width: 960px;
   margin: 80px auto;
   background: var(--container-bg);
   border-radius: 16px;
@@ -627,19 +627,22 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  padding: 8px 0; /* Added padding for better spacing */
 }
 
 .detail-item p {
   margin: 0;
   font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color);
+  font-weight: 600;
+  color: var(--text-color); /* High-contrast text color */
+  min-width: 120px; /* Ensures labels don't collapse */
 }
 
 .detail-item span {
   font-size: 16px;
-  color: var(--secondary-color);
+  font-weight: 400; /* Lighter weight for values to differentiate from labels */
+  color: var(--text-color); /* Changed to high-contrast color */
   text-align: right;
   max-width: 60%;
   word-break: break-word;
@@ -706,7 +709,7 @@ export default {
   padding: 32px;
   border-radius: 12px;
   text-align: center;
-  color: var(--secondary-color);
+  color: var(--text-color); /* High-contrast for visibility */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -720,6 +723,7 @@ export default {
 .error-icon {
   font-size: 48px;
   opacity: 0.7;
+  color: var(--secondary-color);
 }
 
 .no-trips p,
@@ -728,6 +732,7 @@ export default {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
+  color: var(--text-color); /* High-contrast for visibility */
 }
 
 .create-trip-btn,
@@ -985,7 +990,7 @@ export default {
 .error-state {
   text-align: center;
   padding: 24px;
-  color: var(--secondary-color);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -997,11 +1002,12 @@ export default {
 .error-icon {
   font-size: 40px;
   opacity: 0.7;
+  color: var(--secondary-color);
 }
 
 .location-info {
   font-size: 16px;
-  color: var(--secondary-color);
+  color: var(--text-color);
   margin-bottom: 20px;
 }
 
@@ -1032,6 +1038,10 @@ export default {
   }
   .trip-content {
     grid-template-columns: 1fr;
+  }
+  .detail-item p,
+  .detail-item span {
+    font-size: 15px;
   }
   .trip-actions {
     flex-direction: column;
