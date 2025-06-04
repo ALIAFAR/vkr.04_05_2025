@@ -549,6 +549,7 @@ export default {
 
 .details-header {
   margin-bottom: 32px;
+  text-align: center; /* Center header for balance */
 }
 
 .header-title {
@@ -556,7 +557,6 @@ export default {
   font-weight: 700;
   color: var(--text-color);
   margin: 0;
-  text-align: left;
   letter-spacing: -0.02em;
 }
 
@@ -614,6 +614,7 @@ export default {
   font-size: 24px;
   color: var(--primary-color);
   margin-bottom: 12px;
+  align-self: center; /* Center icon for visual balance */
 }
 
 .trip-content {
@@ -624,34 +625,34 @@ export default {
 }
 
 .detail-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Label takes 1 part, value takes 2 parts */
+  gap: 12px;
+  padding: 10px 0;
   align-items: center;
-  gap: 16px;
-  padding: 8px 0; /* Added padding for better spacing */
+  border-bottom: 1px solid var(--border-color); /* Subtle separator */
 }
 
 .detail-item p {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-color); /* High-contrast text color */
-  min-width: 120px; /* Ensures labels don't collapse */
+  color: var(--text-color);
+  text-align: left;
 }
 
 .detail-item span {
   font-size: 16px;
-  font-weight: 400; /* Lighter weight for values to differentiate from labels */
-  color: var(--text-color); /* Changed to high-contrast color */
-  text-align: right;
-  max-width: 60%;
+  font-weight: 400;
+  color: var(--text-color);
+  text-align: left;
   word-break: break-word;
 }
 
 .trip-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: center; /* Center buttons */
   margin-top: 16px;
   flex-wrap: wrap;
 }
@@ -701,6 +702,7 @@ export default {
 .action-button.cancel-booking {
   min-width: 180px;
   margin-top: 12px;
+  align-self: center; /* Center cancel-booking button */
 }
 
 .no-trips,
@@ -709,7 +711,7 @@ export default {
   padding: 32px;
   border-radius: 12px;
   text-align: center;
-  color: var(--text-color); /* High-contrast for visibility */
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -732,7 +734,7 @@ export default {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: var(--text-color); /* High-contrast for visibility */
+  color: var(--text-color);
 }
 
 .create-trip-btn,
@@ -746,6 +748,7 @@ export default {
   font-size: 16px;
   font-weight: 500;
   transition: var(--transition);
+  align-self: center; /* Center buttons */
 }
 
 .create-trip-btn:hover,
@@ -775,6 +778,7 @@ export default {
   font-size: 16px;
   font-weight: 500;
   transition: var(--transition);
+  align-self: center; /* Center button */
 }
 
 .back-button:hover,
@@ -856,16 +860,18 @@ export default {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: center; /* Center modal titles */
 }
 
 .passengers-filter {
   margin-bottom: 20px;
-  text-align: left;
+  text-align: center; /* Center filter for consistency */
 }
 
 .filter-label {
   display: flex;
   align-items: center;
+  justify-content: center; /* Center checkbox and label */
   gap: 12px;
   font-size: 16px;
   color: var(--text-color);
@@ -927,6 +933,7 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-color);
+  text-align: center; /* Center passenger name for balance */
 }
 
 .passenger-meta {
@@ -934,6 +941,7 @@ export default {
   gap: 12px;
   font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center meta info */
 }
 
 .passenger-gender.male {
@@ -959,6 +967,7 @@ export default {
   gap: 16px;
   font-size: 14px;
   color: var(--secondary-color);
+  justify-content: center; /* Center details */
 }
 
 .passenger-comment {
@@ -969,12 +978,14 @@ export default {
   background: var(--container-bg);
   border-radius: 8px;
   margin-top: 8px;
+  text-align: center; /* Center comment */
 }
 
 .passenger-actions {
   margin-top: 12px;
   display: flex;
   gap: 12px;
+  justify-content: center; /* Center passenger action buttons */
 }
 
 .passengers-summary {
@@ -982,7 +993,7 @@ export default {
   border-top: 1px solid var(--border-color);
   font-size: 16px;
   color: var(--text-color);
-  text-align: left;
+  text-align: center; /* Center summary */
 }
 
 .no-passengers,
@@ -1009,6 +1020,7 @@ export default {
   font-size: 16px;
   color: var(--text-color);
   margin-bottom: 20px;
+  text-align: center; /* Center location info */
 }
 
 @keyframes fadeIn {
@@ -1039,6 +1051,11 @@ export default {
   .trip-content {
     grid-template-columns: 1fr;
   }
+  .detail-item {
+    grid-template-columns: 1fr 1fr; /* Adjust for smaller screens */
+    gap: 8px;
+    padding: 8px 0;
+  }
   .detail-item p,
   .detail-item span {
     font-size: 15px;
@@ -1058,7 +1075,7 @@ export default {
     height: 40px;
   }
   .action-button.cancel-booking {
-    min-width: 100%;
+    width: 100%;
   }
 }
 
@@ -1069,9 +1086,15 @@ export default {
   .section-title {
     font-size: 18px;
   }
+  .detail-item {
+    grid-template-columns: 1fr; /* Stack label and value for very small screens */
+    gap: 6px;
+    padding: 6px 0;
+  }
   .detail-item p,
   .detail-item span {
     font-size: 14px;
+    text-align: center; /* Center text for small screens */
   }
   .action-button {
     font-size: 14px;
