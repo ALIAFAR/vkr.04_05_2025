@@ -433,7 +433,7 @@ export default {
         const response = await axios.get(
           API_CONFIG.BASE_URL + '/user/get-all',
           {
-            params: { trip_id: trip.id },
+            params: { trip_id: tripId},
             headers: {
               'Authorization': `Bearer ${token}`
             }
