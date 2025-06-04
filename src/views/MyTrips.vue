@@ -65,7 +65,7 @@
             
             <div class="trip-actions">
               <button class="action-button" @click.stop="openEditModal(trip)" aria-label="Редактировать поездку">
-                РедактироватьСкажи
+                Редактировать
               </button>
               <button class="action-button reschedule" @click.stop="openRescheduleModal(trip)" aria-label="Перенести поездку">
                 Перенести
