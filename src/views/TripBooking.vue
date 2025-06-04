@@ -78,6 +78,13 @@
               >
                 Отменить
               </button>
+              <button 
+                class="action-button cancel" 
+                @click.stop="driver_info(trip)" 
+                aria-label="Отменить бронирование"
+              >
+                Водитель
+              </button>
             </div>
           </div>
         </div>
@@ -414,6 +421,9 @@ export default {
       if (confirm('Вы уверены, что хотите отменить бронирование?')) {
         this.cancelBooking(trip);
       }
+    },
+    driver_info(trip) {
+        this.$router.push(`/driver/${trip.driver_id}`);
     },
     async cancelBooking(trip) {
       try {
