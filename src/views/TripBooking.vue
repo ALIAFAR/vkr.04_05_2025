@@ -363,21 +363,32 @@ export default {
         this.isLoadingTrips = false;
       }
     },
-    formatDate(dateString) {
-      console.log("dateString",dateString)
-      if (!dateString) return 'Не указано';
-      const date = new Date(dateString);
+    formatDate(dateTimeString) {
+      console.log("dateTimeString", dateTimeString);
+      if (!dateTimeString) return 'Не указано';
+      
+      const date = new Date(dateTimeString);
       return isNaN(date.getTime())
         ? 'Неверная дата'
-        : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        : date.toLocaleDateString('ru-RU', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
     },
-    formatTime(timeString) {
-      console.log("timeString",timeString)
-      if (!timeString) return 'Не указано';
-      const date = new Date(`1970-01-01T${timeString}`);
+
+    formatTime(dateTimeString) {
+      console.log("dateTimeString", dateTimeString);
+      if (!dateTimeString) return 'Не указано';
+      
+      const date = new Date(dateTimeString);
       return isNaN(date.getTime())
         ? 'Неверное время'
-        : date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        : date.toLocaleTimeString('ru-RU', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'UTC' // Указываем UTC, если время приходит с Z в конце
+          });
     },
     async showPassengers(trip) {
       this.selectedTrip = trip;
