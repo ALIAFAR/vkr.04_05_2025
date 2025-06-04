@@ -372,6 +372,7 @@ export default {
         : date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     },
     formatTime(timeString) {
+      console.log("timeString",timeString)
       if (!timeString) return 'Не указано';
       const date = new Date(`1970-01-01T${timeString}`);
       return isNaN(date.getTime())
